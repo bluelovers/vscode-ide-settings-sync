@@ -1,0 +1,69 @@
+{
+  "name": "vscode-ide-settings-sync",
+  "displayName": "VSCode IDE Settings Sync",
+  "description": "Synchronize IDE settings across multiple VSCode-based IDEs (Antigravity, VS Code Insiders, CodeBuddy CN, custom paths)",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-ide-settings-sync.openSync",
+        "title": "Open IDE Settings Sync Panel",
+        "category": "IDE Settings Sync"
+      },
+      {
+        "command": "vscode-ide-settings-sync.refreshIDEs",
+        "title": "Refresh IDE List",
+        "category": "IDE Settings Sync"
+      },
+      {
+        "command": "vscode-ide-settings-sync.syncSettings",
+        "title": "Sync Selected Settings",
+        "category": "IDE Settings Sync"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vscode-ide-settings-sync.openSync",
+        "key": "ctrl+shift+alt+s",
+        "mac": "cmd+shift+alt+s",
+        "when": "editorFocus || editorGroupFocus"
+      },
+      {
+        "command": "vscode-ide-settings-sync.refreshIDEs",
+        "key": "ctrl+shift+alt+r",
+        "mac": "cmd+shift+alt+r",
+        "when": "editorFocus || editorGroupFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --target=node18",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "esbuild": "^0.19.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}
