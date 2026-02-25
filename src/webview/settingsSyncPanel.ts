@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { IDEProvider } from '../providers/ideProvider';
-import { LanguageConfig } from '../types';
+import { ILanguageConfig } from '../types';
 import {
   getSettingDescription,
   getSettingDescriptionWithCustomFallback,
   getSettingDescriptionBilingual,
   getSupportedLanguages,
-  LanguageCode,
+  ILanguageCode,
 } from '../utils/settingsDescriptions';
 
 export class SettingsSyncPanel {
@@ -16,14 +16,14 @@ export class SettingsSyncPanel {
   private ideProvider: IDEProvider;
   private context: vscode.ExtensionContext;
   private onDisposeCallback?: () => void;
-  private languageConfig: LanguageConfig;
-  private currentLanguage: LanguageCode;
+  private languageConfig: ILanguageConfig;
+  private currentLanguage: ILanguageCode;
 
-  constructor(context: vscode.ExtensionContext, ideProvider: IDEProvider, languageConfig?: LanguageConfig) {
+  constructor(context: vscode.ExtensionContext, ideProvider: IDEProvider, languageConfig?: ILanguageConfig) {
     this.context = context;
     this.ideProvider = ideProvider;
     this.languageConfig = languageConfig || {
-      primary: 'en' as LanguageCode,
+      primary: 'en' as ILanguageCode,
       fallbackList: ['zh-tw', 'en'],
       secondary: undefined,
       showSecondary: false,
@@ -836,8 +836,8 @@ export class SettingsSyncPanel {
 
           case 'changePrimaryLanguage':
             if (message.language) {
-              this.languageConfig.primary = message.language as LanguageCode;
-              this.currentLanguage = message.language as LanguageCode;
+              this.languageConfig.primary = message.language as ILanguageCode;
+              this.currentLanguage = message.language as ILanguageCode;
             }
             break;
 

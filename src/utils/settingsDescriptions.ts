@@ -4,7 +4,9 @@
  * With fallback mechanism
  */
 
-export type LanguageCode = 'en' | 'zh-tw' | 'zh-cn' | 'ja' | 'de' | 'fr';
+import { ILanguageCode } from '../types';
+
+export { ILanguageCode };
 
 // 英文設定描述
 const enDescriptions: Record<string, string> = {
@@ -278,7 +280,7 @@ const zhTwDescriptions: Record<string, string> = {
 };
 
 // 語言映射
-const languageDescriptions: Record<LanguageCode, Record<string, string>> = {
+const languageDescriptions: Record<ILanguageCode, Record<string, string>> = {
   'en': enDescriptions,
   'zh-tw': zhTwDescriptions,
   'zh-cn': zhTwDescriptions,
@@ -288,7 +290,7 @@ const languageDescriptions: Record<LanguageCode, Record<string, string>> = {
 };
 
 // 語言優先順序
-const languageFallbacks: Record<LanguageCode, LanguageCode[]> = {
+const languageFallbacks: Record<ILanguageCode, ILanguageCode[]> = {
   'en': ['en'],
   'zh-tw': ['zh-tw', 'en'],
   'zh-cn': ['zh-cn', 'zh-tw', 'en'],
@@ -300,7 +302,7 @@ const languageFallbacks: Record<LanguageCode, LanguageCode[]> = {
 /**
  * 獲取設定描述
  */
-export function getSettingDescription(key: string, language: LanguageCode = 'en'): string {
+export function getSettingDescription(key: string, language: ILanguageCode = 'en'): string {
   const fallbacks = languageFallbacks[language] || languageFallbacks['en'];
 
   for (const lang of fallbacks) {
@@ -323,8 +325,8 @@ export function getSettingDescription(key: string, language: LanguageCode = 'en'
  */
 export function getSettingDescriptionWithCustomFallback(
   key: string,
-  primaryLanguage: LanguageCode = 'en',
-  fallbackList: LanguageCode[] = []
+  primaryLanguage: ILanguageCode = 'en',
+  fallbackList: ILanguageCode[] = []
 ): string {
   // 建構完整的語言清單：主語言 + 自訂 Fallback + 系統 Fallback
   const languageChain = [primaryLanguage];
@@ -346,7 +348,7 @@ export function getSettingDescriptionWithCustomFallback(
 
   // 依序尋找翻譯
   for (const lang of languageChain) {
-    const descriptions = languageDescriptions[lang as LanguageCode];
+    const descriptions = languageDescriptions[lang as ILanguageCode];
     if (descriptions && descriptions[key]) {
       return descriptions[key];
     }
@@ -365,9 +367,9 @@ export function getSettingDescriptionWithCustomFallback(
  */
 export function getSettingDescriptionBilingual(
   key: string,
-  primaryLanguage: LanguageCode = 'en',
-  secondaryLanguage?: LanguageCode,
-  primaryFallbacks: LanguageCode[] = []
+  primaryLanguage: ILanguageCode = 'en',
+  secondaryLanguage?: ILanguageCode,
+  primaryFallbacks: ILanguageCode[] = []
 ): { primary: string; secondary?: string } {
   const primary = getSettingDescriptionWithCustomFallback(key, primaryLanguage, primaryFallbacks);
   
@@ -391,7 +393,7 @@ export function getAllSettingKeys(): string[] {
 /**
  * 獲取所有支援的語言
  */
-export function getSupportedLanguages(): Array<{ code: LanguageCode; name: string }> {
+export function getSupportedLanguages(): Array<{ code: ILanguageCode; name: string }> {
   return [
     { code: 'en', name: 'English' },
     { code: 'zh-tw', name: '繁體中文 (Traditional Chinese)' },
@@ -405,14 +407,14 @@ export function getSupportedLanguages(): Array<{ code: LanguageCode; name: strin
 /**
  * 驗證語言代碼是否有效
  */
-export function isValidLanguageCode(code: string): code is LanguageCode {
+export function isValidLanguageCode(code: string): code is ILanguageCode {
   return ['en', 'zh-tw', 'zh-cn', 'ja', 'de', 'fr'].includes(code);
 }
 
 /**
  * 獲取語言的系統 Fallback 清單
  */
-export function getDefaultFallbackList(language: LanguageCode): LanguageCode[] {
+export function getDefaultFallbackList(language: ILanguageCode): ILanguageCode[] {
   return languageFallbacks[language] || ['en'];
 }
 

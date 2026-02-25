@@ -1,39 +1,48 @@
+// 語言代碼類型
+export type ILanguageCode = 'en' | 'zh-tw' | 'zh-cn' | 'ja' | 'de' | 'fr';
+
 // IDE 信息接口
-export interface IDEInfo {
+export interface IIDEInfo {
   name: string;
   settingsPath: string;
   settingsJsonPath: string;
-  settings: SettingsData;
+  settings: ISettingsData;
   type: 'known' | 'custom';
-  available: boolean;        // 是否已檢測到
-  nativePath: string;         // 實際路徑（用於顯示）
-  languageId?: string;        // IDE 的語言標識
-  i18nPath?: string;          // i18n 資源路徑
+  // 是否已檢測到
+  available: boolean;
+  // 實際路徑（用於顯示）
+  nativePath: string;
+  // IDE 的語言標識
+  languageId?: string;
+  // i18n 資源路徑
+  i18nPath?: string;
 }
 
 // 未檢測到的 IDE 信息（灰顯用）
-export interface UnavailableIDE {
+export interface IUnavailableIDE {
   name: string;
   type: 'known' | 'custom';
   expectedPath: string;
 }
 
 // 設定資料
-export interface SettingsData {
+export interface ISettingsData {
   [key: string]: any;
 }
 
 // 設定項目
-export interface SettingEntry {
+export interface ISettingEntry {
   key: string;
   display: string;
   description: string;
-  currentIDEValue?: any;      // 當前 IDE 的設定值
-  values: Map<string, any>;   // IDE name -> value
+  // 當前 IDE 的設定值
+  currentIDEValue?: any;
+  // IDE name -> value
+  values: Map<string, any>;
 }
 
 // 同步操作
-export interface SyncAction {
+export interface ISyncAction {
   settingKey: string;
   targetIDEs: number[];
   sourceIDE: number;
@@ -41,28 +50,34 @@ export interface SyncAction {
 }
 
 // 語言選項
-export interface LanguageOption {
+export interface ILanguageOption {
   id: string;
   name: string;
   source: 'builtin' | 'extension' | 'custom';
-  fallbacks?: string[];       // 回退語言列表
+  // 回退語言列表
+  fallbacks?: string[];
 }
 
 // 語言配置
-export interface LanguageConfig {
-  primary: string;            // 主顯示語言
-  fallbackList: string[];     // Fallback 語言列表（依序查找）
-  secondary?: string;         // 副顯示語言（可選）
-  showSecondary: boolean;     // 是否顯示副語言描述
+export interface ILanguageConfig {
+  // 主顯示語言
+  primary: ILanguageCode;
+  // Fallback 語言列表（依序查找）
+  fallbackList: ILanguageCode[];
+  // 副顯示語言（可選）
+  secondary?: ILanguageCode;
+  // 是否顯示副語言描述
+  showSecondary: boolean;
 }
 
 // 語言源系統
-export interface LanguageSourceInfo {
+export interface ILanguageSourceInfo {
   code: string;
   name: string;
   nativeName?: string;
   locale?: string;
   available: boolean;
   source: 'builtin' | 'ide' | 'extension';
-  ideIndex?: number;          // 如果來自IDE，記錄是哪一個IDE
+  // 如果來自IDE，記錄是哪一個IDE
+  ideIndex?: number;
 }
