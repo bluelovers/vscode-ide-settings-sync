@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
+    "module": "preserve",
     "lib": ["ES2020"],
     "declaration": true,
     "outDir": "./out",
@@ -12,6 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
+    "preserveConstEnums": true,
     "types": ["node"]
   },
   "include": ["src"],
