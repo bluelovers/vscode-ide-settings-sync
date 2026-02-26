@@ -49,8 +49,20 @@ export class SettingsSyncPanel {
     }, null, this.disposables);
   }
 
-  private async updateWebview(): Promise<void> {
-    await this.ideProvider.refreshIDEList();
+  /**
+   * Update the webview HTML. By default this will also refresh the IDE
+   * list from disk, but callers can opt-out if they only need to reload
+   * settings for the already-detected IDEs.
+   *
+   * / 更新 webview 的 HTML。預設會連同重新讀取 IDE 列表，但呼叫方
+   * 可以選擇只重新載入現有 IDE 的設定值。
+   *
+   * @param refreshIDEList whether to refresh the IDE list (default true)
+   */
+  private async updateWebview(refreshIDEList: boolean = true): Promise<void> {
+    if (refreshIDEList) {
+      await this.ideProvider.refreshIDEList();
+    }
     this.panel.webview.html = this.getWebviewContent();
   }
 
@@ -563,6 +575,8 @@ export class SettingsSyncPanel {
 
         <div id="searchResults" class="settings-list"></div>
         <div class="actions">
+          <!-- refresh button added so users can manually reload settings from disk -->
+          <button class="btn" onclick="refreshSettings()">↻ Refresh Settings</button>
           <button class="btn" onclick="saveSearchSelectedSettings()">💾 Save Selected Settings</button>
           <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
           <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
@@ -576,6 +590,8 @@ export class SettingsSyncPanel {
         <h2>All IDE Settings</h2>
         <div id="allSettings" class="settings-list"></div>
         <div class="actions">
+          <!-- allow refreshing settings without touching IDE list -->
+          <button class="btn" onclick="refreshSettings()">↻ Refresh Settings</button>
           <button class="btn" onclick="saveAllSelectedSettings()">💾 Save Selected Settings</button>
           <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
           <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
@@ -591,6 +607,8 @@ export class SettingsSyncPanel {
         </p>
         <div id="selectedSettingsList" class="settings-list"></div>
         <div class="actions">
+          <!-- user may want to refresh latest values while inspecting selected list -->
+          <button class="btn" onclick="refreshSettings()">↻ Refresh Settings</button>
           <button class="btn" onclick="clearAllSelectedSettings()">🗑️ Clear All Selected</button>
           <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
           <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
@@ -629,13 +647,19 @@ export class SettingsSyncPanel {
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      event.target.classList.add('active');
+      const content = document.getElementById(tabName);
+      if (content) content.classList.add('active');
+
+      // Safely activate the corresponding tab button by index
+      const tabIndexMap = { sync: 0, values: 1, selected: 2 };
+      const tabs = Array.from(document.querySelectorAll('.tab'));
+      const btn = tabs[tabIndexMap[tabName]];
+      if (btn) btn.classList.add('active');
 
       if (tabName === 'values') {
-        displayAllSettings();
+        try { displayAllSettings(); } catch (e) { console.error(e); }
       } else if (tabName === 'selected') {
-        displaySelectedSettingsList();
+        try { displaySelectedSettingsList(); } catch (e) { console.error(e); }
       }
     }
 
@@ -856,6 +880,13 @@ export class SettingsSyncPanel {
       }
     }
 
+    /**
+     * Ask the extension to re-scan the system for IDE installations.
+     * This will update the IDE list itself and then rebuild the webview.
+     * / 請求擴充套件重新掃描 IDE 安裝，更新 IDE 列表並重建視窗。
+     *
+     * @jsdoc
+     */
     function refreshIDEs() {
       vscode.postMessage({ command: 'refreshIDEs' });
     }
@@ -890,6 +921,28 @@ export class SettingsSyncPanel {
         targetIDEs: selectedIDEs.slice(1),
         settings: selectedSettings
       });
+    }
+
+    /**
+     * Request the extension to reload all IDE settings and
+     * re-render the webview contents. Useful when external
+     * changes have been made to the settings files.
+     *
+     * / 提示擴充套件重新載入所有 IDE 設定並重新渲染視窗。
+     * 通常在設定檔已經由外部修改時使用。
+     *
+     * @jsdoc
+     */
+    /**
+     * Reload settings values for the currently-detected IDEs without
+     * re-scanning for new installations. Used by the in-panel ↻ buttons.
+     * / 僅重新載入目前已偵測到的 IDE 的設定值，不重新掃描安裝位置。
+     *
+     * @jsdoc
+     */
+    function refreshSettings() {
+      vscode.postMessage({ command: 'refreshData' });
+      showMessage('⟳ Settings refreshed', 'info');
     }
 
     function deleteSettings() {
@@ -1032,6 +1085,24 @@ export class SettingsSyncPanel {
 
       // 👇 設定值勾選框改為手動保存，不再自動監聽
       // 設定值的保存由 saveSearchSelectedSettings() 和 saveAllSelectedSettings() 手動觸發
+
+      /**
+       * If the search input already contains text (for example restored from
+       * memory after a refresh), trigger the search automatically so the
+       * UI shows the expected results immediately.
+       *
+       * / 如果搜尋框在初始化時已包含文字（例如從記憶還原），自動觸發搜尋
+       * 以便立即顯示結果。
+       *
+       * @jsdoc
+       */
+      if (searchInput && searchInput.value && searchInput.value.trim().length > 0) {
+        try {
+          searchSettings();
+        } catch (e) {
+          console.error('searchSettings failed during init:', e);
+        }
+      }
     }
 
     document.addEventListener('DOMContentLoaded', initializeEventListeners);
@@ -1096,11 +1167,13 @@ export class SettingsSyncPanel {
             break;
 
           case 'refreshIDEs':
-            await this.updateWebview();
+            // full refresh: re-scan for IDE installations
+            await this.updateWebview(true);
             break;
 
           case 'refreshData':
-            await this.updateWebview();
+            // data-only refresh: reload settings from existing IDEs
+            await this.updateWebview(false);
             break;
 
           case 'changePrimaryLanguage':
