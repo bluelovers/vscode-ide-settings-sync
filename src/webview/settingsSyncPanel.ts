@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IDEProvider } from '../providers/ideProvider';
-import { ILanguageConfig } from '../types';
+import { EnumIDEInfoType, ILanguageConfig } from '../types';
 import {
   getSupportedLanguages,
   ILanguageCode,
@@ -65,7 +65,7 @@ export class SettingsSyncPanel {
         <input type="checkbox" id="ide-${index}" class="ide-checkbox" data-index="${index}" data-name="${ide.name}">
         <label for="ide-${index}"><strong>${ide.name}</strong></label>
         <span class="ide-path" title="${ide.nativePath}">${this.formatPath(ide.nativePath)}</span>
-        ${ide.type === 'custom' ? `<button class="btn-small btn-remove" onclick="removeCustomIDE(${index})">Remove</button>` : ''}
+        ${ide.type === EnumIDEInfoType.custom ? `<button class="btn-small btn-remove" onclick="removeCustomIDE(${index})">Remove</button>` : ''}
       </div>`
       )
       .join('');

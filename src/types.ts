@@ -1,5 +1,21 @@
+import { JsonHandler } from "./utils/json";
+
 // 語言代碼類型
 export type ILanguageCode = 'en' | 'zh-tw' | 'zh-cn' | 'ja' | 'de' | 'fr';
+
+export const enum EnumIDEInfoType
+{
+  known = 'known',
+  custom = 'custom',
+}
+
+export const enum EnumLanguageOptionSource
+{
+  builtin = 'builtin',
+  extension = 'extension',
+  custom = 'custom',
+  ide = 'ide',
+}
 
 // IDE 信息接口
 export interface IIDEInfo {
@@ -7,7 +23,7 @@ export interface IIDEInfo {
   settingsPath: string;
   settingsJsonPath: string;
   settings: ISettingsData;
-  type: 'known' | 'custom';
+  type: EnumIDEInfoType;
   // 是否已檢測到
   available: boolean;
   // 實際路徑（用於顯示）
@@ -16,12 +32,14 @@ export interface IIDEInfo {
   languageId?: string;
   // i18n 資源路徑
   i18nPath?: string;
+  // JsonHandler 實例，用於讀寫 settings.json
+  jsonHandler: JsonHandler;
 }
 
 // 未檢測到的 IDE 信息（灰顯用）
 export interface IUnavailableIDE {
   name: string;
-  type: 'known' | 'custom';
+  type: EnumIDEInfoType;
   expectedPath: string;
 }
 
@@ -53,7 +71,7 @@ export interface ISyncAction {
 export interface ILanguageOption {
   id: string;
   name: string;
-  source: 'builtin' | 'extension' | 'custom';
+  source: EnumLanguageOptionSource;
   // 回退語言列表
   fallbacks?: string[];
 }
@@ -77,7 +95,7 @@ export interface ILanguageSourceInfo {
   nativeName?: string;
   locale?: string;
   available: boolean;
-  source: 'builtin' | 'ide' | 'extension';
+  source: EnumLanguageOptionSource;
   // 如果來自IDE，記錄是哪一個IDE
   ideIndex?: number;
 }
