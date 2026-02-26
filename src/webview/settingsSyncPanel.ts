@@ -1,11 +1,7 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { IDEProvider } from '../providers/ideProvider';
 import { ILanguageConfig } from '../types';
 import {
-  getSettingDescription,
-  getSettingDescriptionWithCustomFallback,
-  getSettingDescriptionBilingual,
   getSupportedLanguages,
   ILanguageCode,
 } from '../utils/settingsDescriptions';
@@ -515,7 +511,7 @@ export class SettingsSyncPanel {
           </select>
           <button class="btn-small" onclick="openLanguageConfig()" title="Configure language settings">⚙ Config</button>
         </div>
-        
+
         <div class="config-row">
           <label>Fallback Languages:</label>
           <div class="fallback-list" id="fallbackList">
@@ -544,16 +540,16 @@ export class SettingsSyncPanel {
       <div class="section">
         <h2>Search & Sync Settings</h2>
         <div class="search-container">
-          <input 
-            type="text" 
-            class="search-input" 
-            id="searchInput" 
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
             placeholder="e.g., editor.fontFamily, editor.fontSize..."
             onkeyup="searchSettings()"
           >
           <button class="btn" onclick="clearSearch()">Clear</button>
         </div>
-        
+
         <div id="searchResults" class="settings-list"></div>
         <div class="actions">
           <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
@@ -575,7 +571,7 @@ export class SettingsSyncPanel {
     const vscode = acquireVsCodeApi();
     let ideList = ${JSON.stringify(ideList)};
     let currentLanguage = '${this.currentLanguage}';
-    
+
     const settingDescriptions = {
       'editor.fontFamily': 'The font family to use in the editor',
       'editor.fontSize': 'The font size in pixels',

@@ -76,7 +76,7 @@ export async function activate(context: vscode.ExtensionContext) {
  */
 function loadLanguageConfig(context: vscode.ExtensionContext): ILanguageConfig {
   const saved = context.globalState.get<ILanguageConfig>('languageConfig');
-  
+
   if (saved && isValidLanguageCode(saved.primary)) {
     return saved;
   }
@@ -107,7 +107,7 @@ function saveLanguageConfig(context: vscode.ExtensionContext, config: ILanguageC
 async function configureLanguage(context: vscode.ExtensionContext): Promise<void> {
   const { getSupportedLanguages } = await import('./utils/settingsDescriptions');
   const supportedLangs = getSupportedLanguages();
-  
+
   // 選擇主語言
   const primaryChoice = await vscode.window.showQuickPick(
     supportedLangs.map(l => ({ label: l.name, id: l.code })),
@@ -125,7 +125,7 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
     supportedLangs
       .filter(l => l.code !== primaryChoice.id)
       .map(l => ({ label: l.name, id: l.code, picked: languageConfig.fallbackList.includes(l.code as ILanguageCode) })),
-    { 
+    {
       placeHolder: '選擇 Fallback 語言（可多選）',
       canPickMany: true
     }
@@ -159,7 +159,7 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
 
   // 保存配置
   saveLanguageConfig(context, languageConfig);
-  
+
   vscode.window.showInformationMessage(
     `✓ 語言配置已更新\n主語言: ${languageConfig.primary}\nFallback: ${languageConfig.fallbackList.join(', ')}`
   );

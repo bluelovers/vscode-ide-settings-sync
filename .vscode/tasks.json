@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "npm: esbuild",
+      "label": "pnpm: esbuild",
       "type": "shell",
-      "command": "npm",
+      "command": "pnpm",
       "args": [
         "run",
         "esbuild"

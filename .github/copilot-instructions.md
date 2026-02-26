@@ -28,7 +28,7 @@ src/
 ```
 
 ## Build Configuration
-- **Package Manager**: npm
+- **Package Manager**: pnpm
 - **Language**: TypeScript
 - **Extension Type**: Command-based with WebView UI
 - **Build Tool**: esbuild
@@ -52,7 +52,7 @@ src/
 
 ### Build for Publication
 ```bash
-npm run vscode:prepublish
+pnpm run vscode:prepublish
 ```
 
 ## Testing

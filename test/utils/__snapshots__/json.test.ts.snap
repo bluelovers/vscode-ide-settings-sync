@@ -1,0 +1,175 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`JsonHandler Array handling stringify should include array modification 1`] = `"{ "items": [ 1, 20, 3 ] }"`;
+
+exports[`JsonHandler Comment handling stringify should preserve comments 1`] = `
+"{
+	// This is a comment
+	"name": "test",
+	"value": 123
+}"
+`;
+
+exports[`JsonHandler Complex JSON handling should correctly handle deeply nested property 1`] = `"G:\\msys64\\bin\\bash.exe"`;
+
+exports[`JsonHandler Complex JSON handling should correctly handle deeply nested property 2`] = `
+JsonHandler {
+  "formattingOptions": {
+    "insertSpaces": false,
+    "keepLines": true,
+    "tabSize": 2,
+  },
+  "originalText": "{
+	"terminal.integrated.profiles.windows": {
+		"Git Bash": {
+			"path": "G:\\\\msys64\\\\bin\\\\bash.exe"
+		}
+	},
+	"editor.tabSize": 2,
+	"editor.formatOnSave": true
+}",
+  "parseErrors": [],
+  "parseOptions": {
+    "allowEmptyContent": false,
+    "allowTrailingComma": true,
+    "disallowComments": false,
+  },
+  "parsedData": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "terminal.integrated.profiles.windows": {
+      "Git Bash": {
+        "path": "G:\\msys64\\bin\\bash.exe",
+      },
+    },
+  },
+  "staging": Map {},
+}
+`;
+
+exports[`JsonHandler Complex JSON handling should correctly stringify complex JSON 1`] = `
+"{
+	"editor.tabSize": 2,
+	"editor.formatOnSave": true,
+	"editor.fontSize": 14,
+	"editor": {
+		"fontSize": 14
+	}
+}"
+`;
+
+exports[`JsonHandler Complex JSON handling should correctly stringify complex JSON 2`] = `
+{
+  "editor": {
+    "fontSize": 14,
+  },
+  "editor.fontSize": 14,
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+}
+`;
+
+exports[`JsonHandler Complex JSON handling should correctly stringify complex JSON 3`] = `
+JsonHandler {
+  "formattingOptions": {
+    "insertSpaces": false,
+    "keepLines": true,
+    "tabSize": 2,
+  },
+  "originalText": "{
+	"editor.tabSize": 2,
+	"editor.formatOnSave": true
+}",
+  "parseErrors": [],
+  "parseOptions": {
+    "allowEmptyContent": false,
+    "allowTrailingComma": true,
+    "disallowComments": false,
+  },
+  "parsedData": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+  },
+  "staging": Map {
+    "["editor.fontSize"]" => 14,
+    "["editor","fontSize"]" => 14,
+  },
+}
+`;
+
+exports[`JsonHandler Delete functionality stringify after delete should not contain the property 1`] = `
+"{
+  "a": 1
+}"
+`;
+
+exports[`JsonHandler Error handling should record parse errors 1`] = `[]`;
+
+exports[`JsonHandler Format detection should detect 2-space indentation 1`] = `
+{
+  "insertSpaces": true,
+  "keepLines": true,
+  "tabSize": 2,
+}
+`;
+
+exports[`JsonHandler Format detection should detect 4-space indentation 1`] = `
+{
+  "insertSpaces": true,
+  "keepLines": true,
+  "tabSize": 4,
+}
+`;
+
+exports[`JsonHandler Format detection should detect Tab indentation 1`] = `
+{
+  "insertSpaces": false,
+  "keepLines": true,
+  "tabSize": 2,
+}
+`;
+
+exports[`JsonHandler Formatting options should correctly set formatting options 1`] = `
+{
+  "insertSpaces": true,
+  "keepLines": true,
+  "tabSize": 4,
+}
+`;
+
+exports[`JsonHandler Nested object handling stringify should include nested new property 1`] = `
+"{
+  "user": {
+    "name": "John",
+    "age": 30
+  }
+}"
+`;
+
+exports[`JsonHandler Staging area management should correctly track staging changes 1`] = `Iterator {}`;
+
+exports[`JsonHandler Stringify functionality should correctly stringify JSON with new property 1`] = `
+"{
+  "a": 1,
+  "b": 2
+}"
+`;
+
+exports[`JsonHandler Stringify functionality should correctly stringify JSON with overridden property 1`] = `"{ "a": 100, "b": 2 }"`;
+
+exports[`JsonHandler Stringify functionality should preserve original formatting settings 1`] = `
+"{
+  "a": 1,
+  "b": 2
+}"
+`;
+
+exports[`JsonHandler getData - get complete object should return complete object including staged changes 1`] = `
+{
+  "a": 1,
+  "b": 2,
+  "c": {
+    "nested": true,
+  },
+}
+`;
