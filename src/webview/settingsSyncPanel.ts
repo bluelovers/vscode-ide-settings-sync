@@ -862,6 +862,8 @@ export class SettingsSyncPanel {
         await this.ideProvider.setSetting(targetIDEIndex, settingKey, value);
       }
     }
+
+    this.ideProvider.saveSync(sourceIDEIndex, targetIDEIndices);
   }
 
   private async performDelete(ideIndices: number[], settingKeys: string[]): Promise<void> {

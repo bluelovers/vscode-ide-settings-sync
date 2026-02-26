@@ -65,18 +65,15 @@ export class IdeSettingProvider
 
 	save()
 	{
-		if (this._loaded)
+		if (this._loaded && this.jsonHandler.isStagedChanged())
 		{
 			const staging = this.jsonHandler.getStagedChanges();
+
 			// Re-load to get fresh handler, then apply staging
 			const freshHandler = this._loadCore(this.readSettingsRaw());
-			for (const [key, value] of staging)
-			{
-				const path = JSON.parse(key);
-				freshHandler.set(path, value);
-			}
-			const out = freshHandler.stringify();
+			freshHandler.overwriteStaged(staging);
 
+			const out = freshHandler.stringify();
 			writeFileSync(this.settingsJsonPath, out, 'utf-8');
 
 			this.jsonHandler = this._loadCore(out);

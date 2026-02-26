@@ -435,12 +435,38 @@ export class IDEProvider {
 
     if (ide)
     {
-      ide.settingProvider.load().set([settingKey], value);
+      ide.settingProvider.set([settingKey], value);
       // ide?.settingProvider.save();
 
       console.log(
         `[Settings Update] 已更新 ${ide.name} 的設定: ${settingKey} = ${JSON.stringify(value)}`
       );
+    }
+  }
+
+  saveSync(sourceIDEIndex: number, targetIDEIndices: number[])
+  {
+    targetIDEIndices = [
+      ...targetIDEIndices,
+      sourceIDEIndex,
+    ];
+
+    console.log(
+      `[Settings Sync] 開始同步 ${targetIDEIndices} 的設定`
+    );
+
+    for (const ideIndex of targetIDEIndices)
+    {
+      const ide = this.getIdeByIndex(ideIndex);
+
+      if (ide)
+      {
+        ide.settingProvider.load().save();
+
+        console.log(
+          `[Settings Sync] 已同步 ${ide.name} 的設定`
+        );
+      }
     }
   }
 

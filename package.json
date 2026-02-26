@@ -11,6 +11,9 @@
     "Other"
   ],
   "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
       {
@@ -29,6 +32,20 @@
         "category": "IDE Settings Sync"
       }
     ],
+    "menus": {
+      "menubar/file": [
+        {
+          "command": "vscode-ide-settings-sync.openSync",
+          "group": "z_custom"
+        }
+      ],
+      "view/file": [
+        {
+          "command": "vscode-ide-settings-sync.openSync",
+          "group": "z_custom"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "vscode-ide-settings-sync.openSync",
