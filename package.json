@@ -46,7 +46,7 @@
   },
   "scripts": {
     "vscode:prepublish": "node --run esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --target=node18",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --external:jsonc-parser --format=cjs --platform=node --target=node18 --sourcemap",
     "esbuild": "node --run esbuild-base -- --sourcemap",
     "esbuild-watch": "node --run esbuild-base -- --sourcemap --watch",
     "compile": "tsc -p ./",

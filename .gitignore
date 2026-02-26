@@ -5,3 +5,6 @@ node_modules
 *.vsix
 *.log
 .DS_Store
+coverage
+test/*temp*
+test/**/*temp*

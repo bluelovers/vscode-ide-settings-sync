@@ -26,7 +26,7 @@ A Visual Studio Code extension that synchronizes IDE settings across multiple VS
 ## Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ## Usage
@@ -47,13 +47,13 @@ npm install
 ### Build
 
 ```bash
-npm run esbuild
+pnpm run esbuild
 ```
 
 ### Watch Mode
 
 ```bash
-npm run esbuild-watch
+pnpm run esbuild-watch
 ```
 
 ### Run Extension

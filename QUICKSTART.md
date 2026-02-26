@@ -2,13 +2,13 @@
 
 ## Prerequisites
 - Visual Studio Code 1.85.0 or higher
-- Node.js and npm
+- Node.js and pnpm
 
 ## Running in Development Mode
 
 1. **Build the extension**:
    ```bash
-   npm run esbuild
+   pnpm run esbuild
    ```
 
 2. **Launch the extension** (in VS Code):
@@ -24,14 +24,14 @@
 
 Create a minified production build:
 ```bash
-npm run vscode:prepublish
+pnpm run vscode:prepublish
 ```
 
 ## Watch Mode (Development)
 
 For continuous development with auto-rebuild:
 ```bash
-npm run esbuild-watch
+pnpm run esbuild-watch
 ```
 
 ## Available Commands
