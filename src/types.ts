@@ -21,6 +21,9 @@ export const enum EnumGlobalStateName
 {
   customIDEs = 'customIDEs',
   languageConfig = 'languageConfig',
+  searchHistory = 'searchHistory',
+  selectedSettings = 'selectedSettings',
+  selectedIDEs = 'selectedIDEs',
 }
 
 // IDE 信息接口

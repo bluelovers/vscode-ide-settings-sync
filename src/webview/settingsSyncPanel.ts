@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IDEProvider } from '../providers/ideProvider';
-import { EnumIDEInfoType, ILanguageConfig } from '../types';
+import { EnumIDEInfoType, ILanguageConfig, EnumGlobalStateName } from '../types';
 import {
   getSupportedLanguages,
   ILanguageCode,
@@ -58,6 +58,11 @@ export class SettingsSyncPanel {
     const ideList = this.ideProvider.getIDEList();
     const unavailableIDEs = this.ideProvider.getUnavailableIDEs();
     const supportedLanguages = getSupportedLanguages();
+
+    // 👇 從 globalState 中獲取已保存的值
+    const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
+    const savedSelectedSettings = this.context.globalState.get<string[]>(EnumGlobalStateName.selectedSettings) || [];
+    const savedSelectedIDEs = this.context.globalState.get<number[]>(EnumGlobalStateName.selectedIDEs) || [];
 
     // Generate available IDEs HTML
     const availableIDEsHTML = ideList
@@ -539,6 +544,7 @@ export class SettingsSyncPanel {
     <div class="tabs">
       <button class="tab active" onclick="switchTab('sync')">Sync Settings</button>
       <button class="tab" onclick="switchTab('values')">View All Settings</button>
+      <button class="tab" onclick="switchTab('selected')">Selected Settings</button>
     </div>
 
     <div id="sync" class="tab-content active">
@@ -550,13 +556,14 @@ export class SettingsSyncPanel {
             class="search-input"
             id="searchInput"
             placeholder="e.g., editor.fontFamily, editor.fontSize..."
-            onkeyup="searchSettings()"
+            onkeyup="searchSettings();saveSearchHistory()"
           >
           <button class="btn" onclick="clearSearch()">Clear</button>
         </div>
 
         <div id="searchResults" class="settings-list"></div>
         <div class="actions">
+          <button class="btn" onclick="saveSearchSelectedSettings()">💾 Save Selected Settings</button>
           <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
           <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
         </div>
@@ -568,6 +575,26 @@ export class SettingsSyncPanel {
       <div class="section">
         <h2>All IDE Settings</h2>
         <div id="allSettings" class="settings-list"></div>
+        <div class="actions">
+          <button class="btn" onclick="saveAllSelectedSettings()">💾 Save Selected Settings</button>
+          <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
+          <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="selected" class="tab-content">
+      <div class="section">
+        <h2>Selected Settings List</h2>
+        <p style="color: var(--vscode-descriptionForeground); margin-bottom: 15px; font-size: 13px;">
+          👇 All checked settings from both Search & Sync and View All sections
+        </p>
+        <div id="selectedSettingsList" class="settings-list"></div>
+        <div class="actions">
+          <button class="btn" onclick="clearAllSelectedSettings()">🗑️ Clear All Selected</button>
+          <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
+          <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
+        </div>
       </div>
     </div>
   </div>
@@ -577,6 +604,11 @@ export class SettingsSyncPanel {
     let ideList = ${JSON.stringify(this.ideProvider.getIDEListToWebviewContent())};
     let currentLanguage = '${this.currentLanguage}';
     let languageConfig = ${JSON.stringify(this.languageConfig)};
+
+    // 👇 已保存的狀態值（從 globalState 恢復）
+    const savedSearchHistory = '${savedSearchHistory.replace(/'/g, "\\'")}';
+    const savedSelectedSettings = ${JSON.stringify(savedSelectedSettings)};
+    const savedSelectedIDEs = ${JSON.stringify(savedSelectedIDEs)};
 
     // 👇 Multi-language setting descriptions
     const settingDescriptions = ${JSON.stringify(this.generateMultilingualDescriptions())};
@@ -602,6 +634,8 @@ export class SettingsSyncPanel {
 
       if (tabName === 'values') {
         displayAllSettings();
+      } else if (tabName === 'selected') {
+        displaySelectedSettingsList();
       }
     }
 
@@ -727,6 +761,83 @@ export class SettingsSyncPanel {
     function clearSearch() {
       document.getElementById('searchInput').value = '';
       document.getElementById('searchResults').innerHTML = '';
+      saveSearchHistory(); // 👇 清除搜尋歷史記憶
+    }
+
+    // 👇 顯示被勾選的設定值清單
+    function displaySelectedSettingsList() {
+      const selectedListDiv = document.getElementById('selectedSettingsList');
+      selectedListDiv.innerHTML = '';
+
+      if (!savedSelectedSettings || savedSelectedSettings.length === 0) {
+        selectedListDiv.innerHTML = '<div style="color: var(--vscode-descriptionForeground); padding: 20px; text-align: center;">No settings selected yet</div>';
+        return;
+      }
+
+      // 按字母順序排序
+      const sortedSelectedSettings = [...savedSelectedSettings].sort();
+
+      sortedSelectedSettings.forEach(key => {
+        const description = getSettingDescription(key);
+        const settingId = 'setting-' + key.replace(/\\./g, '_');
+        
+        // 查找該設定值是否在 ideList 中
+        let valuesHTML = '';
+        let settingExists = false;
+
+        ideList.forEach((ide) => {
+          if (ide.settings && ide.settings.hasOwnProperty(key)) {
+            settingExists = true;
+            const value = ide.settings[key];
+
+            let displayValue;
+            if (value === undefined) {
+              displayValue = '<em style="color: #999;">Not set</em>';
+            } else if (typeof value === 'object') {
+              displayValue = JSON.stringify(value, null, 2);
+            } else {
+              displayValue = String(value);
+            }
+
+            const valueClass = value === undefined ? 'ide-value-missing' : '';
+            valuesHTML += \`<div class="ide-value \${valueClass}">
+              <div class="ide-value-label">\${ide.name}</div>
+              <div class="ide-value-content">\${displayValue}</div>
+            </div>\`;
+          }
+        });
+
+        selectedListDiv.innerHTML += \`<div class="setting-item">
+          <div class="setting-key">
+            <input type="checkbox" class="setting-checkbox" id="\${settingId}" data-key="\${key}" checked>
+            <label for="\${settingId}">\${key}</label>
+            <button class="btn-small" onclick="removeFromSelectedSettings('\${key}')" style="margin-left: auto;">✕ Remove</button>
+          </div>
+          <div class="setting-description">\${description}</div>
+          <div class="setting-values">\${valuesHTML}</div>
+        </div>\`;
+      });
+    }
+
+    // 👇 從被勾選的設定值清單中移除一個項目
+    function removeFromSelectedSettings(key) {
+      const index = savedSelectedSettings.indexOf(key);
+      if (index > -1) {
+        savedSelectedSettings.splice(index, 1);
+        vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: savedSelectedSettings });
+        displaySelectedSettingsList();
+        showMessage(\`✓ Removed "\${key}" from selected settings\`, 'success');
+      }
+    }
+
+    // 👇 清除所有被勾選的設定值
+    function clearAllSelectedSettings() {
+      if (confirm('Clear all selected settings?')) {
+        savedSelectedSettings = [];
+        vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: [] });
+        displaySelectedSettingsList();
+        showMessage('✓ All selected settings cleared', 'success');
+      }
     }
 
     function addCustomIDE() {
@@ -823,6 +934,75 @@ export class SettingsSyncPanel {
       }, 5000);
     }
 
+    // 👇 記憶功能：初始化時恢復已保存的狀態
+    function initializeMemory() {
+      // 恢復搜尋字符串
+      if (savedSearchHistory) {
+        document.getElementById('searchInput').value = savedSearchHistory;
+      }
+
+      // 恢復勾選的IDE
+      if (savedSelectedIDEs && savedSelectedIDEs.length > 0) {
+        savedSelectedIDEs.forEach(index => {
+          const checkbox = document.querySelector(\`input.ide-checkbox[data-index="\${index}"]\`);
+          if (checkbox) {
+            checkbox.checked = true;
+          }
+        });
+      }
+
+      // 恢復勾選的設定值
+      if (savedSelectedSettings && savedSelectedSettings.length > 0) {
+        savedSelectedSettings.forEach(key => {
+          const settingId = 'setting-' + key.replace(/\\./g, '_');
+          const checkbox = document.getElementById(settingId);
+          if (checkbox) {
+            checkbox.checked = true;
+          }
+        });
+      }
+    }
+
+    // 👇 記憶功能：保存搜尋字符串
+    function saveSearchHistory() {
+      const searchText = document.getElementById('searchInput').value;
+      vscode.postMessage({ command: 'saveSearchHistory', searchText: searchText });
+    }
+
+    // 👇 記憶功能：手動保存搜尋結果中的勾選設定值
+    function saveSearchSelectedSettings() {
+      const selectedSettings = [];
+      // 只從搜尋結果中獲取勾選的設定值
+      document.querySelectorAll('#searchResults .setting-checkbox:checked').forEach(checkbox => {
+        selectedSettings.push(checkbox.dataset.key);
+      });
+      vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: selectedSettings });
+      showMessage('✓ Search settings saved', 'success');
+    }
+
+    // 👇 記憶功能：手動保存所有設定值中的勾選設定值
+    function saveAllSelectedSettings() {
+      const selectedSettings = [];
+      // 只從所有設定值中獲取勾選的設定值
+      document.querySelectorAll('#allSettings .setting-checkbox:checked').forEach(checkbox => {
+        selectedSettings.push(checkbox.dataset.key);
+      });
+      vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: selectedSettings });
+      showMessage('✓ All settings saved', 'success');
+    }
+
+    // 👇 記憶功能：保存勾選的IDE
+    function saveSelectedIDEs() {
+      const selectedIDEs = [];
+      document.querySelectorAll('.ide-checkbox:checked').forEach(checkbox => {
+        const index = parseInt(checkbox.dataset.index);
+        if (!isNaN(index)) {
+          selectedIDEs.push(index);
+        }
+      });
+      vscode.postMessage({ command: 'saveSelectedIDEs', selectedIDEs: selectedIDEs });
+    }
+
     window.addEventListener('message', event => {
       const message = event.data;
       if (message.command === 'syncComplete') {
@@ -833,6 +1013,28 @@ export class SettingsSyncPanel {
         vscode.postMessage({ command: 'refreshData' });
       }
     });
+
+    // 👇 在 DOM 加載完成後初始化事件監聽和恢復狀態
+    function initializeEventListeners() {
+      // 初始化時恢復已保存的狀態
+      initializeMemory();
+
+      // 為搜尋輸入框添加事件監聽
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', saveSearchHistory);
+      }
+
+      // 為所有IDE勾選框添加事件監聽 - 保持自動保存
+      document.querySelectorAll('.ide-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', saveSelectedIDEs);
+      });
+
+      // 👇 設定值勾選框改為手動保存，不再自動監聽
+      // 設定值的保存由 saveSearchSelectedSettings() 和 saveAllSelectedSettings() 手動觸發
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeEventListeners);
   </script>
 </body>
 </html>`;
@@ -910,6 +1112,18 @@ export class SettingsSyncPanel {
 
           case 'openLanguageConfig':
             vscode.commands.executeCommand('vscode-ide-settings-sync.configLanguage');
+            break;
+
+          case 'saveSearchHistory':
+            this.context.globalState.update(EnumGlobalStateName.searchHistory, message.searchText);
+            break;
+
+          case 'saveSelectedSettings':
+            this.context.globalState.update(EnumGlobalStateName.selectedSettings, message.selectedSettings);
+            break;
+
+          case 'saveSelectedIDEs':
+            this.context.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
             break;
         }
       },
