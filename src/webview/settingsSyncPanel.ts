@@ -577,7 +577,7 @@ export class SettingsSyncPanel {
         <div class="actions">
           <!-- refresh button added so users can manually reload settings from disk -->
           <button class="btn" onclick="refreshSettings()">↻ Refresh Settings</button>
-          <button class="btn" onclick="saveSearchSelectedSettings()">💾 Save Selected Settings</button>
+          <button class="btn" onclick="saveSearchSelectedSettings()">💾 Save Selected Settings List</button>
           <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
           <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
         </div>
