@@ -1,4 +1,5 @@
 
+import { kMaxLength } from 'buffer';
 import {
 	applyEdits,
 	format,
@@ -9,7 +10,7 @@ import {
 	modify,
 	ParseError as IParseError,
 	printParseErrorCode,
-	JSONPath,
+	JSONPath as IJSONPath,
 	ModificationOptions as IModificationOptions,
 	Segment,
 } from 'jsonc-parser';
@@ -22,7 +23,7 @@ const MAX_LINES = 30;
 /**
  * 偵測 JSON 文字的格式選項
  * Detect formatting options from JSON text
- * 
+ *
  * 此函式會掃描 JSON 文字的前 N 行，自動偵測使用的縮排類型（空格或 Tab）
  * 以及縮排的寬度（2 個或 4 個空格）
  * This function scans the first N lines of JSON text to automatically detect
@@ -85,7 +86,7 @@ export function detectFormat(text: string): IJsonHandlerFormattingOptions
 /**
  * JSON 處理錯誤
  * JSON handling error
- * 
+ *
  * 當 JSON 解析失敗或發生其他處理錯誤時拋出此異常
  * Thrown when JSON parsing fails or other handling errors occur
  */
@@ -104,7 +105,7 @@ export class JsonHandlerError extends Error
 	/**
 	 * 取得錯誤的詳細描述
 	 * Get detailed error description
-	 * 
+	 *
 	 * @returns 錯誤描述陣列，每個元素包含行號、錯誤碼和位置資訊
 	 */
 	getErrorDetails(): string[]
@@ -121,7 +122,7 @@ export class JsonHandlerError extends Error
 /**
  * 將解析錯誤轉換為日誌訊息
  * Convert parse errors to log messages
- * 
+ *
  * @param parseErrors - 解析錯誤陣列
  * @returns 日誌訊息陣列
  */
@@ -146,7 +147,7 @@ export function _handleJsonHandlerParseErrorsToLogs(parseErrors: IParseError[])
 /**
  * 列印日誌訊息
  * Print log messages
- * 
+ *
  * @param logs - 日誌訊息陣列
  * @param fnOrType - 日誌函式或 console 方法名稱 (預設: 'log')
  */
@@ -163,7 +164,7 @@ export function _printLogs(logs: any[], fnOrType?: keyof typeof console | typeof
 /**
  * JSON 處理器選項
  * JsonHandler options
- * 
+ *
  * 用於配置 JsonHandler 的行為
  * Used to configure JsonHandler behavior
  */
@@ -180,7 +181,7 @@ export interface IJsonHandlerOptions
 /**
  * JSON 解析選項
  * JSON parse options
- * 
+ *
  * 控制 JSON 解析時的行為
  * Controls behavior during JSON parsing
  */
@@ -194,7 +195,7 @@ export interface IJsonHandlerParseOptions
 /**
  * 處理解析選項的核心邏輯
  * Core logic for handling parse options
- * 
+ *
  * 將 IJsonHandlerOptions 轉換為 IJsonHandlerParseOptions
  * @param options - JSON 處理器選項
  * @returns 解析選項
@@ -211,10 +212,10 @@ export function _handleJsonHandlerParseOptionsCore(options: IJsonHandlerOptions 
 /**
  * 處理格式化選項的核心邏輯
  * Core logic for handling formatting options
- * 
+ *
  * 自動偵測 JSON 格式，並與使用者提供的選項合併
  * Automatically detects JSON format and merges with user-provided options
- * 
+ *
  * @param text - JSON 文字
  * @param formattingOptions - 使用者提供的格式化選項
  * @returns 合併後的格式化選項
@@ -242,12 +243,12 @@ export function _handleJsonHandlerFormattingOptionsCore(text: string, formatting
 /**
  * 將 JSON 路徑轉換為鍵值字串
  * Convert JSON path to key string
- * 
+ *
  * @param path - JSON 路徑 (例如: ['a', 'b'] 或 ['editor', 'tabSize'])
  * @returns 鍵值字串 (JSON 格式)
  * @throws TypeError 如果 path 不是陣列
  */
-export function _pathToKey(path: JSONPath): string
+export function _pathToKey(path: IJSONPath): string
 {
 	const key = JSON.stringify(path);
 	if (!path?.length || !Array.isArray(path))
@@ -262,11 +263,11 @@ export function _pathToKey(path: JSONPath): string
 /**
  * 將鍵值字串轉換為 JSON 路徑
  * Convert key string to JSON path
- * 
+ *
  * @param key - 鍵值字串 (JSON 格式)
  * @returns JSON 路徑陣列
  */
-export function _keyToPath(key: string): JSONPath
+export function _keyToPath(key: string): IJSONPath
 {
 	return JSON.parse(key);
 	// return key.split('.').map(segment =>
@@ -279,7 +280,7 @@ export function _keyToPath(key: string): JSONPath
 /**
  * 遍歷暫存區的產生器函式
  * Generator function to iterate through staging area
- * 
+ *
  * @param staging - 暫存區 Map
  * @yield { key, value, path } - 每次迭代回傳鍵、值和路徑
  */
@@ -291,6 +292,18 @@ export function *_eachStaging(staging: Map<string, any>)
 
 		yield { key, value, path };
 	}
+}
+
+export type IStagingInput = Map<string, any> | JsonHandler;
+
+export function _getStaging(staging: IStagingInput)
+{
+	if (staging instanceof JsonHandler)
+	{
+		staging = staging.getStagedChanges();
+	}
+
+	return new Map(staging);
 }
 
 /**
@@ -321,7 +334,7 @@ export function *_eachStaging(staging: Map<string, any>)
 export class JsonHandler
 {
 	/** 原始 JSON 文字 */
-	protected originalText: string;
+	protected sourceText: string;
 
 	/** 解析後的 JSON 物件 (包含暫存區的修改) */
 	protected parsedData: any;
@@ -348,7 +361,7 @@ export class JsonHandler
 	 */
 	constructor(text: string, options: IJsonHandlerOptions = {})
 	{
-		this.originalText = text;
+		this.sourceText = text;
 
 		// 設定解析選項
 		this.parseOptions = _handleJsonHandlerParseOptionsCore(options);
@@ -368,7 +381,7 @@ export class JsonHandler
 	/**
 	 * 重置為原始狀態
 	 * Reset to original state
-	 * 
+	 *
 	 * 清空暫存區，並重新解析原始 JSON 文字
 	 */
 	reset(): void
@@ -381,24 +394,24 @@ export class JsonHandler
 	/**
 	 * 取得解析後的資料
 	 * Get parsed data
-	 * 
+	 *
 	 * @param raw - 若為 true，清除錯誤並重新解析
 	 * @returns 解析後的 JSON 物件
 	 */
 	getParsedData(raw?: boolean)
 	{
 		// 解析 JSON
-		return parse(this.originalText, raw ? (this.parseErrors = []) : [], this.parseOptions);
+		return parse(this.sourceText, raw ? (this.parseErrors = []) : [], this.parseOptions);
 	}
 
 	/**
 	 * 從解析後的物件中取得指定路徑的值 (不含暫存區)
 	 * Get value from parsed object by path (excluding staging)
-	 * 
+	 *
 	 * @param path - JSON 路徑
 	 * @returns 路徑對應的值，若不存在則返回 undefined
 	 */
-	protected getValueFromParsed(path: JSONPath): any
+	protected getValueFromParsed(path: IJSONPath): any
 	{
 		let current = this.parsedData;
 		for (const segment of path)
@@ -423,7 +436,7 @@ export class JsonHandler
 	 * @param path - JSON 路徑 (例如: ['a'] 或 ['user', 'name'])
 	 * @returns 路徑對應的值，若不存在則返回 undefined
 	 */
-	get<T = any>(path: JSONPath): T
+	get<T = any>(path: IJSONPath): T
 	{
 		const key = _pathToKey(path);
 
@@ -445,7 +458,7 @@ export class JsonHandler
 	 * @param path - JSON 路徑
 	 * @param value - 要設定的值
 	 */
-	set(path: JSONPath, value: any): void
+	set<T = any>(path: IJSONPath, value: T)
 	{
 		const key = _pathToKey(path);
 		this.staging.set(key, value);
@@ -459,7 +472,7 @@ export class JsonHandler
 	 * @param path - JSON 路徑
 	 * @returns 是否成功刪除
 	 */
-	delete(path: JSONPath): boolean
+	delete(path: IJSONPath): boolean
 	{
 		const key = _pathToKey(path);
 
@@ -484,7 +497,7 @@ export class JsonHandler
 	 * @param path - JSON 路徑
 	 * @returns 是否存在 (值為 undefined 也視為不存在)
 	 */
-	has(path: JSONPath): boolean
+	has(path: IJSONPath): boolean
 	{
 		const key = _pathToKey(path);
 
@@ -498,10 +511,26 @@ export class JsonHandler
 		return this.getValueFromParsed(path) !== undefined;
 	}
 
+	overwriteStaged(staging: IStagingInput)
+	{
+		this.staging = _getStaging(staging);
+
+		return this;
+	}
+
+	applyStaged(staging: IStagingInput)
+	{
+		_getStaging(staging).forEach((v, k) => {
+			this.staging.set(k, v);
+		});
+
+		return this;
+	}
+
 	/**
 	 * 取得所有暫存區的修改 (深拷貝)
 	 * Get all staged modifications (deep copy)
-	 * 
+	 *
 	 * @returns 新的 Map 包含所有暫存區的鍵值對
 	 */
 	getStagedChanges(): Map<string, any>
@@ -509,10 +538,15 @@ export class JsonHandler
 		return new Map(this.staging);
 	}
 
+	isStagedChanged()
+	{
+		return this.staging.size
+	}
+
 	/**
 	 * 清空暫存區
 	 * Clear the staging area
-	 * 
+	 *
 	 * 清空後，get 將只回傳解析後物件中的值
 	 */
 	clearStaging(): void
@@ -521,50 +555,9 @@ export class JsonHandler
 	}
 
 	/**
-	 * 取得解析後的完整物件 (包含暫存修改)
-	 * Get the complete parsed object (including staged changes)
-	 * 
-	 * 將解析後的資料與暫存區的修改合併後回傳
-	 * @returns 合併後的完整 JSON 物件
-	 */
-	getData(): any
-	{
-		// 深拷貝解析後的資料
-		// const result = JSON.parse(JSON.stringify(this.parsedData));
-		const result = this.getParsedData();
-
-		// 應用暫存區的修改
-		for (const { key, value, path } of _eachStaging(this.staging))
-		{
-			let current = result;
-			for (let i = 0; i < path.length - 1; i++)
-			{
-				const segment = path[i];
-				if (current[segment] === undefined)
-				{
-					current[segment] = typeof path[i + 1] === 'number' ? [] : {};
-				}
-				current = current[segment];
-			}
-
-			const lastSegment = path[path.length - 1];
-			if (value === undefined)
-			{
-				delete current[lastSegment];
-			}
-			else
-			{
-				current[lastSegment] = value;
-			}
-		}
-
-		return result;
-	}
-
-	/**
 	 * 取得格式化選項 (拷貝)
 	 * Get formatting options (copy)
-	 * 
+	 *
 	 * @returns 格式化選項物件的拷貝
 	 */
 	getFormattingOptions(): IJsonHandlerFormattingOptions
@@ -575,7 +568,7 @@ export class JsonHandler
 	/**
 	 * 設定格式化選項
 	 * Set formatting options
-	 * 
+	 *
 	 * @param options - 部分格式化選項 (會與現有選項合併)
 	 */
 	setFormattingOptions(options: Partial<IJsonHandlerFormattingOptions>): void
@@ -586,7 +579,7 @@ export class JsonHandler
 	/**
 	 * 取得解析錯誤
 	 * Get parse errors
-	 * 
+	 *
 	 * @returns 解析錯誤陣列的拷貝
 	 */
 	getErrors(): IParseError[]
@@ -597,12 +590,24 @@ export class JsonHandler
 	/**
 	 * 檢查是否有解析錯誤
 	 * Check if there are parse errors
-	 * 
+	 *
 	 * @returns 是否有錯誤
 	 */
 	hasErrors(): boolean
 	{
 		return this.parseErrors.length > 0;
+	}
+
+	/**
+	 * 取得解析後的完整物件 (包含暫存修改)
+	 * Get the complete parsed object (including staged changes)
+	 *
+	 * 將解析後的資料與暫存區的修改合併後回傳
+	 * @returns 合併後的完整 JSON 物件
+	 */
+	getData(): any
+	{
+		return parse(this.stringify());
 	}
 
 	/**
@@ -618,7 +623,7 @@ export class JsonHandler
 	 */
 	stringify(): string
 	{
-		let currentText = this.originalText;
+		let currentText = this.sourceText;
 
 		// 依序應用暫存區的修改
 		for (const { key, value, path } of _eachStaging(this.staging))
@@ -639,11 +644,11 @@ export class JsonHandler
 	/**
 	 * 取得原始 JSON 文字
 	 * Get original JSON text
-	 * 
+	 *
 	 * @returns 原始輸入的 JSON 字串 (未經過任何修改)
 	 */
-	getOriginalText(): string
+	getSourceText(): string
 	{
-		return this.originalText;
+		return this.sourceText;
 	}
 }
