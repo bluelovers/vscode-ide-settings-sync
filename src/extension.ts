@@ -120,20 +120,8 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
 
   languageConfig.primary = primaryChoice.id as ILanguageCode;
 
-  // 選擇 Fallback 語言清單
-  const fallbackChoices = await vscode.window.showQuickPick(
-    supportedLangs
-      .filter(l => l.code !== primaryChoice.id)
-      .map(l => ({ label: l.name, id: l.code, picked: languageConfig.fallbackList.includes(l.code as ILanguageCode) })),
-    {
-      placeHolder: '選擇 Fallback 語言（可多選）',
-      canPickMany: true
-    }
-  );
-
-  if (fallbackChoices) {
-    languageConfig.fallbackList = fallbackChoices.map(c => c.id as ILanguageCode);
-  }
+  // 👇 New: Sort Fallback Languages by letting user select them in order
+  await configureFallbackLanguages(supportedLangs, primaryChoice.id as ILanguageCode);
 
   // 選擇是否顯示副語言
   const showSecondaryChoice = await vscode.window.showQuickPick(
@@ -168,6 +156,75 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
   if (syncPanel) {
     syncPanel.refreshData();
   }
+}
+
+/**
+ * 👇 Configure fallback languages with custom ordering
+ * 配置 Fallback 語言清單 - 允許用戶自訂排序
+ * @param supportedLangs 支援的語言清單
+ * @param primaryLanguage 主語言代碼
+ */
+async function configureFallbackLanguages(
+  supportedLangs: Array<{ code: ILanguageCode; name: string }>,
+  primaryLanguage: ILanguageCode
+): Promise<void> {
+  const availableLangs = supportedLangs.filter(l => l.code !== primaryLanguage);
+  const selectedLangs: ILanguageCode[] = [];
+
+  // Show current fallback list
+  const currentList = languageConfig.fallbackList
+    .filter(l => l !== primaryLanguage)
+    .map(code => supportedLangs.find(l => l.code === code)?.name || code)
+    .join(', ');
+
+  vscode.window.showInformationMessage(
+    `Current Fallback Languages: ${currentList || '(none)'}. Select languages to reorder them.`
+  );
+
+  // Learn the selected languages first
+  const fallbackChoices = await vscode.window.showQuickPick(
+    availableLangs.map(l => ({
+      label: l.name,
+      id: l.code,
+      picked: languageConfig.fallbackList.includes(l.code as ILanguageCode),
+    })),
+    {
+      placeHolder: 'Select Fallback Languages (you can reorder them next)',
+      canPickMany: true,
+    }
+  );
+
+  if (!fallbackChoices || fallbackChoices.length === 0) {
+    languageConfig.fallbackList = [];
+    return;
+  }
+
+  // 👇 Allow user to reorder selected languages
+  const reorderedFallbacks: ILanguageCode[] = [];
+  let remainingLangs = fallbackChoices.map(c => ({
+    label: c.label,
+    id: c.id as ILanguageCode,
+  }));
+
+  while (remainingLangs.length > 0) {
+    const orderPrompt =
+      reorderedFallbacks.length === 0
+        ? `Select the 1st Fallback Language (${remainingLangs.length} remaining)`
+        : `Select the ${reorderedFallbacks.length + 1}th Fallback Language (${remainingLangs.length} remaining)`;
+
+    const selected = await vscode.window.showQuickPick(remainingLangs, {
+      placeHolder: orderPrompt,
+    });
+
+    if (!selected) {
+      break;
+    }
+
+    reorderedFallbacks.push(selected.id);
+    remainingLangs = remainingLangs.filter(l => l.id !== selected.id);
+  }
+
+  languageConfig.fallbackList = reorderedFallbacks;
 }
 
 export function deactivate() {

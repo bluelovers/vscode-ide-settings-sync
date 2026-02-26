@@ -4,6 +4,8 @@ import { EnumIDEInfoType, ILanguageConfig } from '../types';
 import {
   getSupportedLanguages,
   ILanguageCode,
+  getSettingDescriptionBilingual,
+  getAllSettingKeys,
 } from '../utils/settingsDescriptions';
 
 export class SettingsSyncPanel {
@@ -574,15 +576,23 @@ export class SettingsSyncPanel {
     const vscode = acquireVsCodeApi();
     let ideList = ${JSON.stringify(this.ideProvider.getIDEListToWebviewContent())};
     let currentLanguage = '${this.currentLanguage}';
+    let languageConfig = ${JSON.stringify(this.languageConfig)};
 
-    const settingDescriptions = {
-      'editor.fontFamily': 'The font family to use in the editor',
-      'editor.fontSize': 'The font size in pixels',
-      'editor.tabSize': 'The number of spaces a tab represents',
-      'editor.insertSpaces': 'Insert spaces instead of tabs',
-      'files.autoSave': 'Enable auto save',
-      'workbench.colorTheme': 'The color theme to use',
-    };
+    // 👇 Multi-language setting descriptions
+    const settingDescriptions = ${JSON.stringify(this.generateMultilingualDescriptions())};
+    
+    // 👇 Description lookup function with language fallback
+    function getSettingDescription(key) {
+      if (settingDescriptions[key]) {
+        const desc = settingDescriptions[key];
+        // If there's a secondary language description, show both
+        if (desc.secondary) {
+          return \`\${desc.primary}<br/><small style="color: #999; font-style: italic;">(\${desc.secondary})</small>\`;
+        }
+        return desc.primary || 'No description available';
+      }
+      return 'No description available';
+    }
 
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -614,18 +624,30 @@ export class SettingsSyncPanel {
       const allSettingsDiv = document.getElementById('allSettings');
       allSettingsDiv.innerHTML = '';
 
+      // 👇 Step 1: Collect all unique setting keys across ALL IDEs
+      const allKeys = new Set();
+      ideList.forEach((ide) => {
+        Object.keys(ide.settings || {}).forEach(key => allKeys.add(key));
+      });
+
+      // 👇 Step 2: Create a map with entries for each key in ALL IDEs (even missing ones)
       const settingMap = new Map();
-      ideList.forEach((ide, ideIndex) => {
-        Object.entries(ide.settings).forEach(([key, value]) => {
-          if (!settingMap.has(key)) {
-            settingMap.set(key, {});
+      allKeys.forEach(key => {
+        settingMap.set(key, {});
+        ideList.forEach((ide) => {
+          if (ide.settings && ide.settings.hasOwnProperty(key)) {
+            settingMap.get(key)[ide.name] = ide.settings[key];
+          } else {
+            // 👇 Mark missing values explicitly
+            settingMap.get(key)[ide.name] = undefined;
           }
-          settingMap.get(key)[ide.name] = value;
         });
       });
 
-      settingMap.forEach((values, key) => {
-        allSettingsDiv.innerHTML += createSettingHTML(key, values);
+      // 👇 Sort keys for consistent display
+      const sortedKeys = Array.from(allKeys).sort();
+      sortedKeys.forEach(key => {
+        allSettingsDiv.innerHTML += createSettingHTML(key, settingMap.get(key));
       });
     }
 
@@ -638,35 +660,60 @@ export class SettingsSyncPanel {
         return;
       }
 
-      const settingMap = new Map();
+      // 👇 Step 1: Collect all unique setting keys across ALL IDEs that match query
+      const matchedKeys = new Set();
       ideList.forEach((ide) => {
-        Object.entries(ide.settings).forEach(([key, value]) => {
+        Object.keys(ide.settings || {}).forEach(key => {
           if (key.toLowerCase().includes(query)) {
-            if (!settingMap.has(key)) {
-              settingMap.set(key, {});
-            }
-            settingMap.get(key)[ide.name] = value;
+            matchedKeys.add(key);
           }
         });
       });
 
-      settingMap.forEach((values, key) => {
-        resultsDiv.innerHTML += createSettingHTML(key, values);
+      // 👇 Step 2: Create a map with entries for each matched key in ALL IDEs
+      const settingMap = new Map();
+      matchedKeys.forEach(key => {
+        settingMap.set(key, {});
+        ideList.forEach((ide) => {
+          if (ide.settings && ide.settings.hasOwnProperty(key)) {
+            settingMap.get(key)[ide.name] = ide.settings[key];
+          } else {
+            // 👇 Mark missing values explicitly for consistency
+            settingMap.get(key)[ide.name] = undefined;
+          }
+        });
+      });
+
+      // 👇 Sort keys for consistent display
+      const sortedKeys = Array.from(matchedKeys).sort();
+      sortedKeys.forEach(key => {
+        resultsDiv.innerHTML += createSettingHTML(key, settingMap.get(key));
       });
     }
 
     function createSettingHTML(key, values) {
       let valuesHTML = '';
       Object.entries(values).forEach(([ideName, value]) => {
-        const displayValue = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
-        valuesHTML += \`<div class="ide-value">
+        // 👇 Handle missing values (undefined) with special display
+        let displayValue;
+        if (value === undefined) {
+          displayValue = '<em style="color: #999;">Not set</em>';
+        } else if (typeof value === 'object') {
+          displayValue = JSON.stringify(value, null, 2);
+        } else {
+          displayValue = String(value);
+        }
+        
+        const valueClass = value === undefined ? 'ide-value-missing' : '';
+        valuesHTML += \`<div class="ide-value \${valueClass}">
           <div class="ide-value-label">\${ideName}</div>
           <div class="ide-value-content">\${displayValue}</div>
         </div>\`;
       });
 
       const settingId = 'setting-' + key.replace(/\\./g, '_');
-      const description = settingDescriptions[key] || 'No description available';
+      // 👇 Use the new multilingual description function
+      const description = getSettingDescription(key);
       return \`<div class="setting-item">
         <div class="setting-key">
           <input type="checkbox" class="setting-checkbox" id="\${settingId}" data-key="\${key}">
@@ -797,6 +844,27 @@ export class SettingsSyncPanel {
       return '...' + parts.slice(-3).join('/');
     }
     return fullPath;
+  }
+
+  /**
+   * 生成多語言設定描述對象
+   * Generate multi-language setting descriptions object for WebView injection
+   */
+  private generateMultilingualDescriptions(): Record<string, { primary: string; secondary?: string }> {
+    const descriptions: Record<string, { primary: string; secondary?: string }> = {};
+    const allKeys = getAllSettingKeys();
+
+    for (const key of allKeys) {
+      const bilingual = getSettingDescriptionBilingual(
+        key,
+        this.currentLanguage,
+        this.languageConfig.secondary,
+        this.languageConfig.fallbackList || []
+      );
+      descriptions[key] = bilingual;
+    }
+
+    return descriptions;
   }
 
   private setupMessageHandler(): void {
