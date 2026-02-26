@@ -572,7 +572,7 @@ export class SettingsSyncPanel {
 
   <script>
     const vscode = acquireVsCodeApi();
-    let ideList = ${JSON.stringify(ideList)};
+    let ideList = ${JSON.stringify(this.ideProvider.getIDEListToWebviewContent())};
     let currentLanguage = '${this.currentLanguage}';
 
     const settingDescriptions = {

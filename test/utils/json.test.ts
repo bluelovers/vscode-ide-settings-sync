@@ -65,7 +65,7 @@ describe('JsonHandler', () =>
 		{
 			const handler = createHandler('{"a": 1}');
 			handler.set(['b'], 2);
-			expect(handler.getOriginalText()).toBe('{"a": 1}');
+			expect(handler.getSourceText()).toBe('{"a": 1}');
 		});
 	});
 

@@ -1,4 +1,4 @@
-import { JsonHandler } from "./utils/json";
+import { IdeSettingProvider } from "./providers/ideSettingProvider";
 
 // 語言代碼類型
 export type ILanguageCode = 'en' | 'zh-tw' | 'zh-cn' | 'ja' | 'de' | 'fr';
@@ -17,12 +17,15 @@ export const enum EnumLanguageOptionSource
   ide = 'ide',
 }
 
+export const enum EnumGlobalStateName
+{
+  customIDEs = 'customIDEs',
+  languageConfig = 'languageConfig',
+}
+
 // IDE 信息接口
 export interface IIDEInfo {
   name: string;
-  settingsPath: string;
-  settingsJsonPath: string;
-  settings: ISettingsData;
   type: EnumIDEInfoType;
   // 是否已檢測到
   available: boolean;
@@ -32,8 +35,8 @@ export interface IIDEInfo {
   languageId?: string;
   // i18n 資源路徑
   i18nPath?: string;
-  // JsonHandler 實例，用於讀寫 settings.json
-  jsonHandler: JsonHandler;
+  // IDE 設定供應商，用於讀寫設定
+  settingProvider: IdeSettingProvider;
 }
 
 // 未檢測到的 IDE 信息（灰顯用）

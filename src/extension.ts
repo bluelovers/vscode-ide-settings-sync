@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IDEProvider } from './providers/ideProvider';
 import { SettingsSyncPanel } from './webview/settingsSyncPanel';
-import { ILanguageConfig, ILanguageSourceInfo, ILanguageCode } from './types';
+import { ILanguageConfig, ILanguageSourceInfo, ILanguageCode, EnumGlobalStateName } from './types';
 import { isValidLanguageCode, getDefaultFallbackList } from './utils/settingsDescriptions';
 
 let ideProvider: IDEProvider;
@@ -75,7 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
  * 載入語言配置
  */
 function loadLanguageConfig(context: vscode.ExtensionContext): ILanguageConfig {
-  const saved = context.globalState.get<ILanguageConfig>('languageConfig');
+  const saved = context.globalState.get<ILanguageConfig>(EnumGlobalStateName.languageConfig);
 
   if (saved && isValidLanguageCode(saved.primary)) {
     return saved;
@@ -96,7 +96,7 @@ function loadLanguageConfig(context: vscode.ExtensionContext): ILanguageConfig {
  * 保存語言配置
  */
 function saveLanguageConfig(context: vscode.ExtensionContext, config: ILanguageConfig): void {
-  context.globalState.update('languageConfig', config);
+  context.globalState.update(EnumGlobalStateName.languageConfig, config);
   languageConfig = config;
   console.log('[Language Config] 已保存:', config);
 }

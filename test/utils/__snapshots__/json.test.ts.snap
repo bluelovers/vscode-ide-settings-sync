@@ -19,15 +19,6 @@ JsonHandler {
     "keepLines": true,
     "tabSize": 2,
   },
-  "originalText": "{
-	"terminal.integrated.profiles.windows": {
-		"Git Bash": {
-			"path": "G:\\\\msys64\\\\bin\\\\bash.exe"
-		}
-	},
-	"editor.tabSize": 2,
-	"editor.formatOnSave": true
-}",
   "parseErrors": [],
   "parseOptions": {
     "allowEmptyContent": false,
@@ -43,6 +34,15 @@ JsonHandler {
       },
     },
   },
+  "sourceText": "{
+	"terminal.integrated.profiles.windows": {
+		"Git Bash": {
+			"path": "G:\\\\msys64\\\\bin\\\\bash.exe"
+		}
+	},
+	"editor.tabSize": 2,
+	"editor.formatOnSave": true
+}",
   "staging": Map {},
 }
 `;
@@ -76,10 +76,6 @@ JsonHandler {
     "keepLines": true,
     "tabSize": 2,
   },
-  "originalText": "{
-	"editor.tabSize": 2,
-	"editor.formatOnSave": true
-}",
   "parseErrors": [],
   "parseOptions": {
     "allowEmptyContent": false,
@@ -90,6 +86,10 @@ JsonHandler {
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
   },
+  "sourceText": "{
+	"editor.tabSize": 2,
+	"editor.formatOnSave": true
+}",
   "staging": Map {
     "["editor.fontSize"]" => 14,
     "["editor","fontSize"]" => 14,

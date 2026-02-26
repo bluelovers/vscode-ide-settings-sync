@@ -6,7 +6,7 @@ export class IdeSettingProvider
 {
 	// @ts-ignore
 	protected jsonHandler: JsonHandler;
-	protected _loaded?: boolean;
+	protected _loaded: boolean = false;
 
 	constructor(protected settingsPath: string, protected settingsJsonPath: string)
 	{
@@ -60,7 +60,7 @@ export class IdeSettingProvider
 			this.jsonHandler = jsonHandler;
 			this._loaded = true;
 		}
-		return this.jsonHandler;
+		return this;
 	}
 
 	save()
@@ -68,10 +68,16 @@ export class IdeSettingProvider
 		if (this._loaded)
 		{
 			const staging = this.jsonHandler.getStagedChanges();
+			// Re-load to get fresh handler, then apply staging
+			const freshHandler = this._loadCore(this.readSettingsRaw());
+			for (const [key, value] of staging)
+			{
+				const path = JSON.parse(key);
+				freshHandler.set(path, value);
+			}
+			const out = freshHandler.stringify();
 
-			const out = this.load(true).overwriteStaged(staging).stringify();
-
-			writeFileSync(this.settingsJsonPath, out);
+			writeFileSync(this.settingsJsonPath, out, 'utf-8');
 
 			this.jsonHandler = this._loadCore(out);
 		}
@@ -84,14 +90,14 @@ export class IdeSettingProvider
 		return this.jsonHandler?.getData();
 	}
 
-	get sourceText()
+	getSourceText()
 	{
 		return this.jsonHandler?.getSourceText();
 	}
 
-	changed()
+	isStagedChanged()
 	{
-		return this.jsonHandler?.isStagedChanged()
+		return this.jsonHandler?.getStagedChanges().size > 0;
 	}
 
 	get<T = any>(path: IJSONPath): T
@@ -102,6 +108,16 @@ export class IdeSettingProvider
 	set<T = any>(path: IJSONPath, value: T)
 	{
 		this.jsonHandler.set(path, value);
+		return this;
 	}
 
+	delete(path: IJSONPath): boolean
+	{
+		return this.jsonHandler.delete(path);
+	}
+
+	getData()
+	{
+		return this.jsonHandler?.getData();
+	}
 }

@@ -1,14 +1,15 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { EnumIDEInfoType, IIDEInfo, ISettingsData, IUnavailableIDE } from '../types';
-import { JsonHandler, _keyToPath } from '../utils/json';
+import { EnumGlobalStateName, EnumIDEInfoType, IIDEInfo, IUnavailableIDE } from '../types';
+import { _keyToPath } from '../utils/json';
+import { IdeSettingProvider } from './ideSettingProvider';
 
 
 /**
  * IDE 設定供應商
  * Provides IDE detection, settings I/O, and management functionality
- * 
+ *
  * 此類負責：
  * - 偵測系統中安裝的已知 IDE（VS Code、VS Code Insiders、Antigravity 等）
  * - 管理自訂 IDE 路徑
@@ -35,7 +36,7 @@ export class IDEProvider {
   /**
    * 重新整理 IDE 列表
    * Refresh the IDE detection list
-   * 
+   *
    * 此方法會：
    * 1. 清空現有的 IDE 列表
    * 2. 偵測所有已知的 IDE
@@ -149,8 +150,7 @@ export class IDEProvider {
             }
           }
         } else {
-          console.log(`[IDE Detection] ✗ 路徑不存在: ${testPath}`);
-          console.log(`[IDE Detection] ✗ Path not found: ${testPath}`);
+          console.log(`[IDE Detection] ✗ 路徑不存在 / Path not found: ${testPath}`);
         }
       }
 
@@ -161,34 +161,23 @@ export class IDEProvider {
         // Successfully found IDE, attempt to load settings
         const settingsJsonPath = path.join(foundPath, 'settings.json');
         try {
-          // 讀取並解析 settings.json
-          // Read and parse settings.json
-          const settingsContent = fs.readFileSync(settingsJsonPath, 'utf-8');
-          // 使用 JsonHandler 處理讀取與解析
-          // Use JsonHandler to manage read/parse
-          const handler = new JsonHandler(settingsContent);
-          const settings = handler.getData();
+          // 使用 IdeSettingProvider 處理讀取與解析
+          // Use IdeSettingProvider to manage read/parse
+          const settingProvider = new IdeSettingProvider(foundPath, settingsJsonPath);
+          settingProvider.load();
 
-          // 將 IDE 新增到可用列表，並附加 handler
-          // Add IDE to available list with handler
+          // 將 IDE 新增到可用列表，並附加 provider
+          // Add IDE to available list with provider
           this.ideList.push({
             name: ide.name,
-            settingsPath: foundPath,
-            settingsJsonPath,
-            settings,
             type: EnumIDEInfoType.known,
             available: true,
             nativePath: foundPath,
-            jsonHandler: handler,
+            settingProvider,
           });
 
           console.log(`[IDE Detection] ✓ 成功載入 ${ide.name} 的設定`);
           console.log(`[IDE Detection] ✓ Successfully loaded settings for ${ide.name}`);
-
-          if (handler.hasErrors())
-          {
-            //
-          }
 
         } catch (error) {
           // settings.json 檔案存在但無法解析（例如格式錯誤）
@@ -239,7 +228,7 @@ export class IDEProvider {
     // 從全域狀態讀取自訂 IDE 清單
     // Read custom IDE list from global state
     const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
-      'customIDEs',
+      EnumGlobalStateName.customIDEs,
       [] // 預設值：空陣列 / Default value: empty array
     );
 
@@ -258,23 +247,19 @@ export class IDEProvider {
       // Check if settings.json exists
       if (fs.existsSync(settingsJsonPath)) {
         try {
-          // 嘗試讀取和解析設定檔案
-          // Attempt to read and parse settings file
-          const settingsContent = fs.readFileSync(settingsJsonPath, 'utf-8');
-          const handler = new JsonHandler(settingsContent);
-          const settings = handler.getData();
+          // 使用 IdeSettingProvider 載入設定檔案
+          // Use IdeSettingProvider to load settings file
+          const settingProvider = new IdeSettingProvider(customIDE.path, settingsJsonPath);
+          settingProvider.load();
 
-          // 成功載入，新增到 IDE 列表並附加 handler
-          // Successfully loaded, add to IDE list with handler
+          // 成功載入，新增到 IDE 列表並附加 provider
+          // Successfully loaded, add to IDE list with provider
           this.ideList.push({
             name: customIDE.name,
-            settingsPath: customIDE.path,
-            settingsJsonPath,
-            settings,
             type: EnumIDEInfoType.custom,
             available: true,
             nativePath: customIDE.path,
-            jsonHandler: handler,
+            settingProvider,
           });
 
           console.log(`[Custom IDE] ✓ 成功載入自訂 IDE: ${customIDE.name}`);
@@ -365,6 +350,22 @@ export class IDEProvider {
   }
 
   /**
+   * 用於 WebviewContent
+   *
+   * @see src/webview/settingsSyncPanel.ts
+   * @example let ideList = ${JSON.stringify(this.ideProvider.getIDEListToWebviewContent())};
+   */
+  getIDEListToWebviewContent()
+  {
+    return this.ideList.map(ide => {
+      return {
+        ...ide,
+        settings: ide.settingProvider.load().valueOf(),
+      }
+    })
+  }
+
+  /**
    * 取得不可用的 IDE 列表
    * Get list of unavailable IDEs
    *
@@ -388,6 +389,17 @@ export class IDEProvider {
     return this.ideList.length;
   }
 
+  getIdeByIndex(ideIndex: number, isCustomIDE?: boolean)
+  {
+    // 驗證索引有效性 / Validate index is within bounds
+    if (ideIndex >= 0 || ideIndex < this.ideList.length)
+    {
+      return this.ideList[ideIndex];
+    }
+
+    console.warn(`[${isCustomIDE ? 'Custom ' : ''}IDE] 無效的索引 / Invalid index: ${ideIndex}`);
+  }
+
   /**
    * 取得 IDE 的設定值
    * Get setting value from an IDE
@@ -400,12 +412,9 @@ export class IDEProvider {
    * @returns 設定值，如果不存在返回 undefined / Setting value or undefined if not found
    */
   async getSettingValue(ideIndex: number, settingKey: string): Promise<any> {
-    if (ideIndex < 0 || ideIndex >= this.ideList.length) {
-      return undefined;
-    }
-    const ide = this.ideList[ideIndex];
+    const ide = this.getIdeByIndex(ideIndex);
 
-    return ide.jsonHandler.get([settingKey]);
+    return ide?.settingProvider.load().get([settingKey]);
   }
 
   /**
@@ -422,21 +431,17 @@ export class IDEProvider {
    * @param value - 要設定的值 / Value to set
    */
   async setSetting(ideIndex: number, settingKey: string, value: any): Promise<void> {
-    if (ideIndex < 0 || ideIndex >= this.ideList.length) {
-      return;
+    const ide = this.getIdeByIndex(ideIndex);
+
+    if (ide)
+    {
+      ide.settingProvider.load().set([settingKey], value);
+      // ide?.settingProvider.save();
+
+      console.log(
+        `[Settings Update] 已更新 ${ide.name} 的設定: ${settingKey} = ${JSON.stringify(value)}`
+      );
     }
-    const ide = this.ideList[ideIndex];
-
-    ide.jsonHandler.set([settingKey], value);
-    const newText = ide.jsonHandler.stringify();
-    fs.writeFileSync(ide.settingsJsonPath, newText, 'utf-8');
-
-    // 更新快照以供顯示
-    ide.settings = ide.jsonHandler.getData();
-
-    console.log(
-      `[Settings Update] (JsonHandler) 已更新 ${ide.name} 的設定: ${settingKey} = ${JSON.stringify(value)}`
-    );
   }
 
   /**
@@ -447,17 +452,12 @@ export class IDEProvider {
    * @param settingKey - 設定鍵值，支援嵌套 / Setting key with dot notation
    */
   async deleteSetting(ideIndex: number, settingKey: string): Promise<void> {
-    if (ideIndex < 0 || ideIndex >= this.ideList.length) {
-      return;
-    }
-    const ide = this.ideList[ideIndex];
+    const ide = this.getIdeByIndex(ideIndex)!;
 
-    const deleted = ide.jsonHandler.delete([settingKey]);
+    const deleted = ide?.settingProvider.delete([settingKey]);
     if (deleted) {
-      const newText = ide.jsonHandler.stringify();
-      fs.writeFileSync(ide.settingsJsonPath, newText, 'utf-8');
-      ide.settings = ide.jsonHandler.getData();
-      console.log(`[Settings Delete] (JsonHandler) 已從 ${ide.name} 刪除: ${settingKey}`);
+      // ide.settingProvider.save();
+      console.log(`[Settings Delete] 已從 ${ide.name} 刪除: ${settingKey}`);
     }
   }
 
@@ -471,24 +471,22 @@ export class IDEProvider {
   async addCustomIDE(name: string, settingsPath: string): Promise<void> {
     // 從全域狀態讀取現有自訂 IDE 列表 / Read existing custom IDE list
     const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
-      'customIDEs',
+      EnumGlobalStateName.customIDEs,
       []
     );
-    
+
     // 檢查路徑是否已存在 / Check if path already exists
     const alreadyExists = customIDEs.some((ide) => ide.path === settingsPath);
     if (alreadyExists) {
-      console.warn(`[Custom IDE] 路徑已存在: ${settingsPath}`);
-      console.warn(`[Custom IDE] Path already exists: ${settingsPath}`);
+      console.warn(`[Custom IDE] 路徑已存在 / Path already exists: ${settingsPath}`);
       return;
     }
 
     // 添加新的自訂 IDE / Add new custom IDE
     customIDEs.push({ name, path: settingsPath });
-    await this.context.globalState.update('customIDEs', customIDEs);
-    
-    console.log(`[Custom IDE] 已添加: ${name} at ${settingsPath}`);
-    console.log(`[Custom IDE] Added: ${name} at ${settingsPath}`);
+    await this.context.globalState.update(EnumGlobalStateName.customIDEs, customIDEs);
+
+    console.log(`[Custom IDE] 已添加 / Added: ${name} at ${settingsPath}`);
 
     // 重新整理以驗證新路徑 / Refresh to validate new path
     await this.refreshIDEList();
@@ -501,35 +499,32 @@ export class IDEProvider {
    * @param ideIndex - IDE 在列表中的索引 / Index of IDE in list
    */
   async removeCustomIDE(ideIndex: number): Promise<void> {
-    // 驗證索引有效性 / Validate index is within bounds
-    if (ideIndex < 0 || ideIndex >= this.ideList.length) {
-      console.warn(`[Custom IDE] 無效的索引: ${ideIndex}`);
-      console.warn(`[Custom IDE] Invalid index: ${ideIndex}`);
+    const ide = this.getIdeByIndex(ideIndex, true);
+
+    if (!ide)
+    {
       return;
     }
-
-    const ide = this.ideList[ideIndex];
 
     // 只允許移除自訂 IDE，不能移除內建 IDE / Only allow removal of custom IDEs
     if (ide.type === EnumIDEInfoType.custom) {
       // 從全域狀態讀取自訂 IDE 列表 / Read custom IDE list from global state
       const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
-        'customIDEs',
+        EnumGlobalStateName.customIDEs,
         []
       );
-      
+
       // 過濾掉要移除的 IDE / Filter out the IDE to be removed
-      const filtered = customIDEs.filter((c) => c.path !== ide.settingsPath);
-      await this.context.globalState.update('customIDEs', filtered);
-      
+      const filtered = customIDEs.filter((c) => c.path !== ide.nativePath);
+      await this.context.globalState.update(EnumGlobalStateName.customIDEs, filtered);
+
       console.log(`[Custom IDE] 已移除 / Removed: ${ide.name}`);
 
       // 重新整理 IDE 列表 / Refresh IDE list
       await this.refreshIDEList();
     } else {
       // 試圖移除內建 IDE / Attempted to remove built-in IDE
-      console.warn(`[Custom IDE] 無法移除內建 IDE: ${ide.name}`);
-      console.warn(`[Custom IDE] Cannot remove built-in IDE: ${ide.name}`);
+      console.warn(`[Custom IDE] 無法移除內建 IDE / Cannot remove built-in IDE: ${ide.name}`);
     }
   }
 }
