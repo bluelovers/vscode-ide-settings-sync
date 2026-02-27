@@ -300,7 +300,10 @@ const languageFallbacks: Record<ILanguageCode, ILanguageCode[]> = {
 };
 
 /**
- * 獲取設定描述
+ * 獲取設定描述（使用系統預設回退順序）
+ * @param {string} key - 設定鍵值，例如 `editor.fontSize`
+ * @param {ILanguageCode} [language='en'] - 首選語言代碼
+ * @returns {string} 對應的設定描述，若無則回傳 `'No description available'`
  */
 export function getSettingDescription(key: string, language: ILanguageCode = 'en'): string {
   const fallbacks = languageFallbacks[language] || languageFallbacks['en'];
@@ -384,14 +387,16 @@ export function getSettingDescriptionBilingual(
 }
 
 /**
- * 獲取所有設定鍵值
+ * 獲取所有預設（英文）設定鍵值列表
+ * @returns {string[]} 所有支援的設定鍵字串陣列
  */
 export function getAllSettingKeys(): string[] {
   return Object.keys(enDescriptions);
 }
 
 /**
- * 獲取所有支援的語言
+ * 獲取所有支援的語言清單
+ * @returns {Array<{ code: ILanguageCode; name: string }>} 支援語言及其顯示名稱
  */
 export function getSupportedLanguages(): Array<{ code: ILanguageCode; name: string }> {
   return [
@@ -405,7 +410,9 @@ export function getSupportedLanguages(): Array<{ code: ILanguageCode; name: stri
 }
 
 /**
- * 驗證語言代碼是否有效
+ * 驗證語言代碼是否為本套件支援的代碼
+ * @param {string} code - 要驗證的語言代碼
+ * @returns {code is ILanguageCode} 若有效則回傳 true
  */
 export function isValidLanguageCode(code: string): code is ILanguageCode {
   return ['en', 'zh-tw', 'zh-cn', 'ja', 'de', 'fr'].includes(code);
@@ -413,6 +420,8 @@ export function isValidLanguageCode(code: string): code is ILanguageCode {
 
 /**
  * 獲取語言的系統 Fallback 清單
+ * @param {ILanguageCode} language - 語言代碼
+ * @returns {ILanguageCode[]} 依序的回退語言代碼清單
  */
 export function getDefaultFallbackList(language: ILanguageCode): ILanguageCode[] {
   return languageFallbacks[language] || ['en'];

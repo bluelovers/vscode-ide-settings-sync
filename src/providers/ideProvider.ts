@@ -28,7 +28,10 @@ export class IDEProvider {
   // VS Code 擴展上下文
   // VS Code extension context
   private context: vscode.ExtensionContext;
-
+  /**
+   * 建構子
+   * @param {vscode.ExtensionContext} context - VS Code 擴展上下文
+   */
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
   }
@@ -163,7 +166,7 @@ export class IDEProvider {
         try {
           // 使用 IdeSettingProvider 處理讀取與解析
           // Use IdeSettingProvider to manage read/parse
-          const settingProvider = new IdeSettingProvider(foundPath, settingsJsonPath);
+          const settingProvider = new IdeSettingProvider(settingsJsonPath, foundPath);
           settingProvider.load();
 
           // 將 IDE 新增到可用列表，並附加 provider
@@ -249,7 +252,7 @@ export class IDEProvider {
         try {
           // 使用 IdeSettingProvider 載入設定檔案
           // Use IdeSettingProvider to load settings file
-          const settingProvider = new IdeSettingProvider(customIDE.path, settingsJsonPath);
+          const settingProvider = new IdeSettingProvider(settingsJsonPath, customIDE.path);
           settingProvider.load();
 
           // 成功載入，新增到 IDE 列表並附加 provider
@@ -354,6 +357,7 @@ export class IDEProvider {
    *
    * @see src/webview/settingsSyncPanel.ts
    * @example let ideList = ${JSON.stringify(this.ideProvider.getIDEListToWebviewContent())};
+   * @returns Array<Object> - 用於 Webview 的 IDE 列表內容 (包含 settings)
    */
   getIDEListToWebviewContent()
   {
@@ -389,15 +393,22 @@ export class IDEProvider {
     return this.ideList.length;
   }
 
-  getIdeByIndex(ideIndex: number, isCustomIDE?: boolean)
+  /**
+   * 透過索引取得 IDE
+   * @param ideIndex - IDE 在列表中的索引 / Index of IDE in list
+   * @param isCustomIDE - 選填，若為 true 則表示為自訂 IDE
+   * @returns IIDEInfo | undefined - 找到則回傳該 IDE，否則回傳 undefined
+   */
+  getIdeByIndex(ideIndex: number, isCustomIDE?: boolean): IIDEInfo | undefined
   {
     // 驗證索引有效性 / Validate index is within bounds
-    if (ideIndex >= 0 || ideIndex < this.ideList.length)
+    if (ideIndex >= 0 && ideIndex < this.ideList.length)
     {
       return this.ideList[ideIndex];
     }
 
     console.warn(`[${isCustomIDE ? 'Custom ' : ''}IDE] 無效的索引 / Invalid index: ${ideIndex}`);
+    return undefined;
   }
 
   /**

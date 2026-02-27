@@ -243,7 +243,7 @@ describe('JsonHandler', () =>
 			const handler = createHandler('{"a": 1}');
 			handler.set(['b'], 2);
 			handler.set(['c'], { nested: true });
-			expect(handler.getData()).toMatchSnapshot({
+			expect(handler.valueOf()).toMatchSnapshot({
 				a: 1,
 				b: 2,
 				c: { nested: true },
@@ -310,7 +310,7 @@ describe('JsonHandler', () =>
 
 			expect(handler.stringify()).toMatchSnapshot();
 
-			expect(handler.getData()).toMatchSnapshot({
+			expect(handler.valueOf()).toMatchSnapshot({
 				"editor.fontSize": 14,
 				"editor": {
 					"fontSize": 14,

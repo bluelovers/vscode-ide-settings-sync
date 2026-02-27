@@ -35,14 +35,14 @@ describe('IdeSettingProvider', () => {
   describe('checkExists', () => {
     it('should return true when settings.json exists', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       expect(provider.checkExists()).toBe(true);
       expect(fs.existsSync).toHaveBeenCalledWith(testSettingsJsonPath);
     });
 
     it('should return false when settings.json does not exist', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       expect(provider.checkExists()).toBe(false);
     });
   });
@@ -52,7 +52,7 @@ describe('IdeSettingProvider', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readFileSync as jest.Mock).mockReturnValue(mockSettingsContent);
 
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       const handler = provider.load();
 
       expect(handler).toBeInstanceOf(IdeSettingProvider);
@@ -62,7 +62,7 @@ describe('IdeSettingProvider', () => {
     it('should throw error when settings.json does not exist', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       expect(() => provider.load()).toThrow(/沒有找到.*的設定檔案/);
     });
 
@@ -70,7 +70,7 @@ describe('IdeSettingProvider', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readFileSync as jest.Mock).mockReturnValue('{ invalid json }');
 
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       expect(() => provider.load()).toThrow();
     });
 
@@ -78,7 +78,7 @@ describe('IdeSettingProvider', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readFileSync as jest.Mock).mockReturnValue(mockSettingsContent);
 
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       // Change mock content
@@ -95,7 +95,7 @@ describe('IdeSettingProvider', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readFileSync as jest.Mock).mockReturnValue(mockSettingsContent);
 
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const readCallCount = (fs.readFileSync as jest.Mock).mock.calls.length;
@@ -113,7 +113,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should get simple property value', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const fontSize = provider.get(['editor', 'fontSize']);
@@ -121,7 +121,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should get nested property value', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const fontFamily = provider.get(['editor', 'fontFamily']);
@@ -129,7 +129,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should return undefined for non-existent property', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const value = provider.get(['nonexistent', 'property']);
@@ -137,7 +137,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should set new property in staging area', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.set(['new', 'property'], 'test value');
@@ -147,7 +147,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should update existing property in staging area', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       // Set new value
@@ -158,7 +158,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should support method chaining for set', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const result = provider.set(['editor', 'fontSize'], 16);
@@ -173,7 +173,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should delete existing property', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const deleted = provider.delete(['editor', 'fontSize']);
@@ -181,7 +181,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should return false when deleting non-existent property', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const deleted = provider.delete(['nonexistent', 'property']);
@@ -189,7 +189,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should mark as staged changed after delete', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.delete(['editor', 'fontSize']);
@@ -205,7 +205,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should write changes to file system', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.set(['editor', 'fontSize'], 18);
@@ -221,7 +221,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should support method chaining for save', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.set(['editor', 'fontSize'], 18);
@@ -230,7 +230,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should reload handler after save', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.set(['editor', 'fontSize'], 18);
@@ -244,7 +244,7 @@ describe('IdeSettingProvider', () => {
       (fs.readFileSync as jest.Mock).mockClear();
       (fs.writeFileSync as jest.Mock).mockClear();
 
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
 
       // Try to save without loading
       provider.save();
@@ -260,7 +260,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should return data via valueOf', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const data = provider.valueOf();
@@ -268,16 +268,16 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should return data via getData', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
-      const data = provider.getData();
+      const data = provider.valueOf();
       expect(data).toHaveProperty('editor');
       expect(data.editor.fontSize).toBe(14);
     });
 
     it('should return source text', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       const sourceText = provider.getSourceText();
@@ -285,10 +285,10 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should match JSON content in getData', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
-      const data = provider.getData();
+      const data = provider.valueOf();
       expect(data.editor.fontSize).toBe(14);
       expect(data.editor.fontFamily).toBe('Consolas');
       expect(data.workbench.colorTheme).toBe('One Dark Pro');
@@ -303,14 +303,14 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should report no staged changes initially', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       expect(provider.isStagedChanged()).toBe(false);
     });
 
     it('should report staged changes after set', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.set(['editor', 'fontSize'], 18);
@@ -318,7 +318,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should report staged changes after delete', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.delete(['editor', 'fontSize']);
@@ -326,7 +326,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should clear staged changes after save', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.set(['editor', 'fontSize'], 18);
@@ -344,18 +344,18 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should report not loaded initially', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       expect(provider.loaded()).toBe(false);
     });
 
     it('should report loaded after load', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
       expect(provider.loaded()).toBe(true);
     });
 
     it('should maintain loaded state after multiple operations', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
       provider.set(['editor', 'fontSize'], 18);
       expect(provider.loaded()).toBe(true);
@@ -370,7 +370,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should handle multiple set operations and save', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider
@@ -389,7 +389,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should handle set and delete in sequence', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.set(['editor', 'fontSize'], 18);
@@ -401,7 +401,7 @@ describe('IdeSettingProvider', () => {
     });
 
     it('should create new nested properties', () => {
-      const provider = new IdeSettingProvider(testSettingsPath, testSettingsJsonPath);
+      const provider = new IdeSettingProvider(testSettingsJsonPath, testSettingsPath);
       provider.load();
 
       provider.set(['new', 'nested', 'property'], 'value');

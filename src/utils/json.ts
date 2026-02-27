@@ -15,8 +15,12 @@ import {
 	Segment,
 } from 'jsonc-parser';
 
-// 安全上限 - 用於格式偵測的效能保護
-// Safety limits - performance protection for format detection
+/**
+ * 安全上限 - 用於格式偵測的效能保護
+ * Safety limits - performance protection for format detection
+ * 
+ * @type {number}
+ */
 const MAX_CHARS = 2000;
 const MAX_LINES = 30;
 
@@ -170,12 +174,21 @@ export function _printLogs(logs: any[], fnOrType?: keyof typeof console | typeof
  */
 export interface IJsonHandlerOptions
 {
-	/** 是否允許註解 (預設: true) */
+	/** 
+	 * 是否允許註解 (預設: true) 
+	 * @default true
+	 */
 	allowComments?: boolean;
-	/** 是否允許尾隨逗號 (預設: true) */
+	/** 
+	 * 是否允許尾隨逗號 (預設: true) 
+	 * @default true
+	 */
 	allowTrailingComma?: boolean;
 	/** 自訂格式化選項 */
 	formattingOptions?: IJsonHandlerFormattingOptions;
+
+	/** 暫存區 - 存放未提交的修改 (key: JSON path string, value: any) */
+	staging?: IStagingInput;
 }
 
 /**
@@ -367,6 +380,11 @@ export class JsonHandler
 		this.parseOptions = _handleJsonHandlerParseOptionsCore(options);
 
 		this.reset();
+
+		if (options.staging)
+		{
+			this.staging = _getStaging(options.staging);
+		}
 
 		// 偵測格式
 		this.formattingOptions = _handleJsonHandlerFormattingOptionsCore(text, options.formattingOptions);
@@ -605,7 +623,7 @@ export class JsonHandler
 	 * 將解析後的資料與暫存區的修改合併後回傳
 	 * @returns 合併後的完整 JSON 物件
 	 */
-	getData(): any
+	valueOf(): any
 	{
 		return parse(this.stringify());
 	}

@@ -1,6 +1,12 @@
+/**
+ * 專案共用型別定義
+ * 包含語言代碼、IDE 資訊介面與其他全域 enum 定義。
+ */
 import { IdeSettingProvider } from "./providers/ideSettingProvider";
 
-// 語言代碼類型
+/**
+ * 語言代碼
+ */
 export type ILanguageCode = 'en' | 'zh-tw' | 'zh-cn' | 'ja' | 'de' | 'fr';
 
 export const enum EnumIDEInfoType
@@ -26,23 +32,44 @@ export const enum EnumGlobalStateName
   selectedIDEs = 'selectedIDEs',
 }
 
-// IDE 信息接口
+/**
+ * IDE 資訊描述介面
+ */
 export interface IIDEInfo {
+  /**
+   * IDE 顯示名稱
+   */
   name: string;
+  /**
+   * IDE 類型（已知或自訂）
+   */
   type: EnumIDEInfoType;
-  // 是否已檢測到
+  /**
+   * 是否已偵測到並可用
+   */
   available: boolean;
-  // 實際路徑（用於顯示）
+  /**
+   * IDE 的實際資料夾路徑
+   */
   nativePath: string;
-  // IDE 的語言標識
+  /**
+   * IDE 本身的語言設定識別
+   */
   languageId?: string;
-  // i18n 資源路徑
+  /**
+   * i18n 資源路徑（若有）
+   */
   i18nPath?: string;
-  // IDE 設定供應商，用於讀寫設定
+  /**
+   * IDE 設定供應商，用於讀寫設定
+   * 用於讀寫設定的提供者實例
+   */
   settingProvider: IdeSettingProvider;
 }
 
-// 未檢測到的 IDE 信息（灰顯用）
+/**
+ * 未檢測到的 IDE 信息（灰顯用）
+ */
 export interface IUnavailableIDE {
   name: string;
   type: EnumIDEInfoType;
