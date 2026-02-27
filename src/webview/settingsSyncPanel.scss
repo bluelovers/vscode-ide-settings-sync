@@ -1,430 +1,585 @@
-    * {
-    	margin: 0;
-    	padding: 0;
-    	box-sizing: border-box;
-    }
+/**
+ * Settings Sync Panel - 優化後的 SCSS
+ * Optimized SCSS with variables, mixins, and nesting
+ */
 
-    body {
-    	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    	padding: 20px;
-    	color: var(--vscode-foreground);
-    	background-color: var(--vscode-editor-background);
-    	font-size: 14px;
-    }
+// ============================================
+// 1. 變數定義 (Variables)
+// ============================================
 
-    .container {
-    	max-width: 1000px;
-    	margin: 0 auto;
-    }
+// --- 間距變數 ---
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 10px;
+$spacing-lg: 12px;
+$spacing-xl: 15px;
+$spacing-xxl: 20px;
 
-    .header {
-    	display: flex;
-    	justify-content: space-between;
-    	align-items: center;
-    	margin-bottom: 20px;
-    }
+// --- 圓角變數 ---
+$radius-sm: 3px;
+$radius-md: 4px;
 
-    h1 {
-    	font-size: 24px;
-    	color: var(--vscode-editor-foreground);
-    }
+// --- 字體大小 ---
+$font-size-xs: 11px;
+$font-size-sm: 12px;
+$font-size-base: 14px;
+$font-size-md: 16px;
+$font-size-lg: 24px;
 
-    .header-actions {
-    	display: flex;
-    	gap: 10px;
-    }
+// --- 間隙變數 ---
+$gap-xs: 6px;
+$gap-sm: 8px;
+$gap-md: 10px;
+$gap-lg: 12px;
 
-    h2 {
-    	font-size: 16px;
-    	margin-top: 15px;
-    	margin-bottom: 10px;
-    	color: var(--vscode-textBlockQuote-border);
-    	border-bottom: 1px solid var(--vscode-editorGroup-border);
-    	padding-bottom: 8px;
-    }
+// ============================================
+// 2. Mixins
+// ============================================
 
-    .section {
-    	margin-bottom: 25px;
-    	padding: 15px;
-    	background-color: var(--vscode-editor-lineHighlightBackground);
-    	border: 1px solid var(--vscode-editorGroup-border);
-    	border-radius: 4px;
-    }
+/**
+ * 按鈕基礎樣式
+ * Button base style
+ */
+@mixin btn-base {
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+  font-size: $font-size-base;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
 
-    .ide-list {
-    	display: flex;
-    	flex-direction: column;
-    	gap: 8px;
-    }
+/**
+ * 表單元素基礎樣式
+ * Form element base style
+ */
+@mixin form-element {
+  padding: 6px $spacing-sm;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-textBlockQuote-border);
+  border-radius: $radius-md;
+  cursor: pointer;
+}
 
-    .ide-item {
-    	display: flex;
-    	align-items: center;
-    	gap: 8px;
-    	padding: 10px;
-    	background-color: var(--vscode-list-hoverBackground);
-    	border-radius: 4px;
-    	border-left: 3px solid var(--vscode-textBlockQuote-border);
-    }
+/**
+ * 文字省略顯示
+ * Text ellipsis
+ */
+@mixin text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-    .ide-item.unavailable {
-    	opacity: 0.5;
-    	background-color: var(--vscode-editor-background);
-    	border-left-color: var(--vscode-inputValidation-errorBorder);
-    }
+/**
+ * 區塊容器樣式
+ * Section container style
+ */
+@mixin section-container {
+  padding: $spacing-xl;
+  background-color: var(--vscode-editor-lineHighlightBackground);
+  border: 1px solid var(--vscode-editorGroup-border);
+  border-radius: $radius-md;
+}
 
-    .ide-item.unavailable label {
-    	text-decoration: line-through;
+/**
+ * 列表項目基礎樣式
+ * List item base style
+ */
+@mixin list-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: var(--vscode-list-hoverBackground);
+  border-radius: $radius-md;
+  border-left: 3px solid var(--vscode-textBlockQuote-border);
+}
+
+/**
+ * 錯誤狀態樣式
+ * Error state style
+ */
+@mixin error-state {
+  background-color: var(--vscode-inputValidation-errorBackground);
+  color: var(--vscode-inputValidation-errorForeground);
+}
+
+/**
+ * 資訊狀態樣式
+ * Info state style
+ */
+@mixin info-state {
+  background-color: var(--vscode-inputValidation-infoBackground);
+  border: 1px solid var(--vscode-inputValidation-infoBorder);
+}
+
+/**
+ * Flex 工具類
+ * Flex utilities
+ */
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// ============================================
+// 3. 全域重置 (Global Reset)
+// ============================================
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// ============================================
+// 4. 主體樣式 (Body)
+// ============================================
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  padding: $spacing-xxl;
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editor-background);
+  font-size: $font-size-base;
+}
+
+// ============================================
+// 5. 佈局 (Layout)
+// ============================================
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  @include flex-between;
+  margin-bottom: $spacing-xxl;
+}
+
+.header-actions {
+  display: flex;
+  gap: $spacing-md;
+}
+
+// ============================================
+// 6. 標題 (Headings)
+// ============================================
+
+h1 {
+  font-size: $font-size-lg;
+  color: var(--vscode-editor-foreground);
+}
+
+h2 {
+  font-size: $font-size-md;
+  margin-top: $spacing-xl;
+  margin-bottom: $spacing-sm;
+  color: var(--vscode-textBlockQuote-border);
+  border-bottom: 1px solid var(--vscode-editorGroup-border);
+  padding-bottom: $spacing-sm;
+}
+
+// ============================================
+// 7. 區塊 (Sections)
+// ============================================
+
+.section {
+  margin-bottom: 25px;
+  @include section-container;
+}
+
+// ============================================
+// 8. IDE 清單 (IDE List)
+// ============================================
+
+.ide-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.ide-item {
+  @include list-item;
+
+  label {
+    cursor: pointer;
+    flex: 1;
+    word-break: break-word;
+  }
+
+  &.unavailable {
+    opacity: 0.5;
+    background-color: var(--vscode-editor-background);
+    border-left-color: var(--vscode-inputValidation-errorBorder);
+
+    label {
+      text-decoration: line-through;
     }
 
     .ide-checkbox {
-    	cursor: pointer;
-    	width: 16px;
-    	height: 16px;
-    	flex-shrink: 0;
+      cursor: not-allowed;
     }
+  }
 
-    .ide-item.unavailable .ide-checkbox {
-    	cursor: not-allowed;
-    }
+  &.current {
+    @include info-state;
+    border-left-color: var(--vscode-inputValidation-infoBorder);
+  }
+}
 
-    .ide-item label {
-    	cursor: pointer;
-    	flex: 1;
-    	word-break: break-word;
-    }
+.ide-checkbox {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
 
-    .ide-path {
-    	font-size: 12px;
-    	color: var(--vscode-descriptionForeground);
-    	flex: 1;
-    	word-break: break-all;
-    	margin-right: auto;
-    	max-width: 300px;
-    	white-space: nowrap;
-    	overflow: hidden;
-    	text-overflow: ellipsis;
-    }
+.ide-path {
+  font-size: $font-size-sm;
+  color: var(--vscode-descriptionForeground);
+  flex: 1;
+  word-break: break-all;
+  margin-right: auto;
+  max-width: 300px;
+  @include text-ellipsis;
+}
 
-    .language-selector {
-    	display: flex;
-    	gap: 8px;
-    	align-items: center;
-    	margin-bottom: 15px;
-    }
+// ============================================
+// 9. 語言選擇器 (Language Selector)
+// ============================================
 
-    .language-selector label {
-    	font-weight: 500;
-    }
+.language-selector {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+  margin-bottom: $spacing-xl;
 
-    .language-selector select {
-    	padding: 6px 10px;
-    	background-color: var(--vscode-input-background);
-    	color: var(--vscode-input-foreground);
-    	border: 1px solid var(--vscode-textBlockQuote-border);
-    	border-radius: 4px;
-    	cursor: pointer;
-    }
+  label {
+    font-weight: 500;
+  }
 
-    .language-config {
-    	display: flex;
-    	flex-direction: column;
-    	gap: 12px;
-    }
+  select {
+    @include form-element;
+  }
+}
 
-    .config-row {
-    	display: flex;
-    	align-items: center;
-    	gap: 8px;
-    	padding: 8px;
-    	background-color: var(--vscode-editor-background);
-    	border-radius: 4px;
-    }
+.language-config {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
 
-    .config-row label {
-    	font-weight: 500;
-    	flex: 0 0 150px;
-    }
+// ============================================
+// 10. 設定項目 (Settings)
+// ============================================
 
-    .config-row select {
-    	flex: 1;
-    	padding: 6px 8px;
-    	background-color: var(--vscode-input-background);
-    	color: var(--vscode-input-foreground);
-    	border: 1px solid var(--vscode-inputValidation-infoBorder);
-    	border-radius: 4px;
-    	cursor: pointer;
-    }
+.config-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  background-color: var(--vscode-editor-background);
+  border-radius: $radius-md;
 
-    .fallback-list {
-    	display: flex;
-    	gap: 6px;
-    	flex-wrap: wrap;
-    	flex: 1;
-    }
+  label {
+    font-weight: 500;
+    flex: 0 0 150px;
+  }
 
-    .fallback-tag {
-    	display: inline-block;
-    	padding: 4px 8px;
-    	background-color: var(--vscode-textBlockQuote-border);
-    	color: var(--vscode-editor-background);
-    	border-radius: 4px;
-    	font-size: 12px;
-    	font-weight: 500;
-    }
+  select {
+    flex: 1;
+    @include form-element;
+    border-color: var(--vscode-inputValidation-infoBorder);
+  }
+}
 
-    .secondary-lang {
-    	padding: 4px 8px;
-    	background-color: var(--vscode-inputValidation-infoBorder);
-    	color: var(--vscode-editor-background);
-    	border-radius: 4px;
-    	font-size: 12px;
-    	font-weight: 500;
-    }
+// ============================================
+// 11. Fallback 標籤 (Fallback Tags)
+// ============================================
 
-    .search-container {
-    	margin-bottom: 15px;
-    	display: flex;
-    	gap: 10px;
-    	flex-wrap: wrap;
-    }
+.fallback-list {
+  display: flex;
+  gap: $gap-xs;
+  flex-wrap: wrap;
+  flex: 1;
+}
 
-    .search-input {
-    	flex: 1;
-    	min-width: 200px;
-    	padding: 8px 12px;
-    	background-color: var(--vscode-input-background);
-    	color: var(--vscode-input-foreground);
-    	border: 1px solid var(--vscode-inputValidation-infoBorder);
-    	border-radius: 4px;
-    	font-size: 14px;
-    }
+.fallback-tag {
+  display: inline-block;
+  padding: $spacing-xs $spacing-sm;
+  background-color: var(--vscode-textBlockQuote-border);
+  color: var(--vscode-editor-background);
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: 500;
+}
 
-    .search-input::placeholder {
-    	color: var(--vscode-input-placeholderForeground);
-    }
+.secondary-lang {
+  padding: $spacing-xs $spacing-sm;
+  background-color: var(--vscode-inputValidation-infoBorder);
+  color: var(--vscode-editor-background);
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: 500;
+}
 
-    .btn {
-    	padding: 8px 16px;
-    	background-color: var(--vscode-button-background);
-    	color: var(--vscode-button-foreground);
-    	border: none;
-    	border-radius: 4px;
-    	cursor: pointer;
-    	font-size: 14px;
-    	font-weight: 500;
-    	transition: background-color 0.2s;
-    }
+// ============================================
+// 12. 搜尋 (Search)
+// ============================================
 
-    .btn:hover {
-    	background-color: var(--vscode-button-hoverBackground);
-    }
+.search-container {
+  margin-bottom: $spacing-xl;
+  display: flex;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+}
 
-    .btn-small {
-    	padding: 4px 8px;
-    	font-size: 12px;
-    	background-color: var(--vscode-button-background);
-    	color: var(--vscode-button-foreground);
-    }
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: $spacing-sm $spacing-md;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-inputValidation-infoBorder);
+  border-radius: $radius-md;
+  font-size: $font-size-base;
 
-    .btn-small.btn-remove {
-    	background-color: var(--vscode-inputValidation-errorBackground);
-    	color: var(--vscode-inputValidation-errorForeground);
-    }
+  &::placeholder {
+    color: var(--vscode-input-placeholderForeground);
+  }
+}
 
-    .btn-small.btn-remove:hover {
-    	background-color: var(--vscode-inputValidation-errorBorder);
-    }
+// ============================================
+// 13. 按鈕 (Buttons)
+// ============================================
 
-    .btn.secondary {
-    	background-color: var(--vscode-button-secondaryBackground);
-    	color: var(--vscode-button-secondaryForeground);
-    }
+.btn {
+  @include btn-base;
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
 
-    .btn.secondary:hover {
-    	background-color: var(--vscode-button-secondaryHoverBackground);
-    }
+  &:hover {
+    background-color: var(--vscode-button-hoverBackground);
+  }
 
-    .settings-list {
-    	display: flex;
-    	flex-direction: column;
-    	gap: 10px;
-    	max-height: 500px;
-    	overflow-y: auto;
-    }
+  &.secondary {
+    background-color: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
 
-    .setting-item {
-    	padding: 12px;
-    	background-color: var(--vscode-list-hoverBackground);
-    	border-left: 3px solid var(--vscode-textBlockQuote-border);
-    	border-radius: 4px;
+    &:hover {
+      background-color: var(--vscode-button-secondaryHoverBackground);
     }
+  }
 
-    .setting-key {
-    	font-weight: bold;
-    	color: var(--vscode-symbolIcon-fieldForeground);
-    	margin-bottom: 4px;
-    	display: flex;
-    	align-items: center;
-    	gap: 8px;
-    }
+  &.btn-small {
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-sm;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+  }
 
-    .setting-checkbox {
-    	margin-right: 0;
-    	cursor: pointer;
-    	width: 16px;
-    	height: 16px;
-    }
+  &.btn-sync {
+    background-color: #0fbf5a;
+    color: #ffffff;
 
-    .setting-description {
-    	font-size: 12px;
-    	color: var(--vscode-descriptionForeground);
-    	margin-bottom: 8px;
-    	font-style: italic;
+    &:hover {
+      background-color: #0aa34f;
     }
+  }
 
-    .setting-values {
-    	display: grid;
-    	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    	gap: 8px;
-    	font-size: 12px;
-    }
+  &.btn-delete {
+    @include error-state;
+    margin-left: auto;
 
-    .ide-value {
-    	padding: 8px;
-    	background-color: var(--vscode-editor-background);
-    	border: 1px solid var(--vscode-editorGroup-border);
-    	border-radius: 3px;
-    	word-break: break-word;
+    &:hover {
+      background-color: var(--vscode-inputValidation-errorBorder);
     }
+  }
+}
 
-    .ide-value-label {
-    	color: var(--vscode-symbolIcon-fieldForeground);
-    	font-size: 11px;
-    	font-weight: bold;
-    	margin-bottom: 4px;
-    }
+// ============================================
+// 14. 設定清單 (Settings List)
+// ============================================
 
-    .ide-value-content {
-    	color: var(--vscode-descriptionForeground);
-    	word-break: break-all;
-    	max-height: 60px;
-    	overflow-y: auto;
-    }
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  max-height: 500px;
+  overflow-y: auto;
+}
 
-    /* highlight when a particular IDE is the one running this extension */
-    .ide-value.current {
-    	background-color: var(--vscode-inputValidation-infoBackground);
-    	border: 1px solid var(--vscode-inputValidation-infoBorder);
-    }
+.setting-item {
+  padding: $spacing-lg;
+  background-color: var(--vscode-list-hoverBackground);
+  border-left: 3px solid var(--vscode-textBlockQuote-border);
+  border-radius: $radius-md;
+}
 
-    /* missing values get greyed out/red tinted */
-    .ide-value-missing {
-    	background-color: var(--vscode-inputValidation-errorBackground);
-    	color: var(--vscode-inputValidation-errorForeground);
-    }
+.setting-key {
+  font-weight: bold;
+  color: var(--vscode-symbolIcon-fieldForeground);
+  margin-bottom: $spacing-xs;
+  @include flex-center;
+  gap: $spacing-sm;
+}
 
-    /* mark the current IDE in the IDE list */
-    .ide-item.current {
-    	background-color: var(--vscode-inputValidation-infoBackground);
-    	border-left-color: var(--vscode-inputValidation-infoBorder);
-    }
+.setting-checkbox {
+  margin-right: 0;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
 
-    /* colored action buttons */
-    .btn-sync {
-    	background-color: #0fbf5a;
-    	color: #ffffff;
-    }
+.setting-description {
+  font-size: $font-size-sm;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: $spacing-sm;
+  font-style: italic;
+}
 
-    .btn-sync:hover {
-    	background-color: #0aa34f;
-    }
+.setting-values {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: $spacing-sm;
+  font-size: $font-size-sm;
+}
 
-    .btn-delete {
-    	background-color: var(--vscode-inputValidation-errorBackground);
-    	color: var(--vscode-inputValidation-errorForeground);
-    	margin-left: auto;
-    }
+// ============================================
+// 15. IDE 值 (IDE Values)
+// ============================================
 
-    .btn-delete:hover {
-    	background-color: var(--vscode-inputValidation-errorBorder);
-    }
+.ide-value {
+  padding: $spacing-sm;
+  background-color: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-editorGroup-border);
+  border-radius: $radius-sm;
+  word-break: break-word;
 
-    .actions {
-    	display: flex;
-    	gap: 10px;
-    	margin-top: 15px;
-    	flex-wrap: wrap;
-    }
+  &.current {
+    @include info-state;
+  }
 
-    .message {
-    	padding: 12px 15px;
-    	margin-top: 15px;
-    	border-radius: 4px;
-    	display: none;
-    	border-left: 4px solid;
-    }
+  &-missing {
+    @include error-state;
+  }
+}
 
-    .message.success {
-    	background-color: var(--vscode-gitDecoration-addedResourceForeground);
-    	color: var(--vscode-editor-background);
-    	border-left-color: var(--vscode-gitDecoration-addedResourceForeground);
-    	display: block;
-    }
+.ide-value-label {
+  color: var(--vscode-symbolIcon-fieldForeground);
+  font-size: $font-size-xs;
+  font-weight: bold;
+  margin-bottom: $spacing-xs;
+}
 
-    .message.error {
-    	background-color: var(--vscode-inputValidation-errorBackground);
-    	color: var(--vscode-inputValidation-errorForeground);
-    	border-left-color: var(--vscode-inputValidation-errorBorder);
-    	display: block;
-    }
+.ide-value-content {
+  color: var(--vscode-descriptionForeground);
+  word-break: break-all;
+  max-height: 60px;
+  overflow-y: auto;
+}
 
-    .message.info {
-    	background-color: var(--vscode-inputValidation-infoBorder);
-    	color: var(--vscode-editor-background);
-    	border-left-color: var(--vscode-inputValidation-infoBorder);
-    	display: block;
-    }
+// ============================================
+// 16. 動作區域 (Actions)
+// ============================================
 
-    .tabs {
-    	display: flex;
-    	gap: 0;
-    	border-bottom: 1px solid var(--vscode-editorGroup-border);
-    	margin-bottom: 15px;
-    }
+.actions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-xl;
+  flex-wrap: wrap;
+}
 
-    .tab {
-    	padding: 10px 15px;
-    	cursor: pointer;
-    	border: none;
-    	background: none;
-    	color: var(--vscode-foreground);
-    	border-bottom: 2px solid transparent;
-    	transition: border-color 0.2s;
-    }
+// ============================================
+// 17. 訊息提示 (Messages)
+// ============================================
 
-    .tab:hover {
-    	background-color: var(--vscode-list-hoverBackground);
-    }
+.message {
+  padding: $spacing-lg $spacing-xl;
+  margin-top: $spacing-xl;
+  border-radius: $radius-md;
+  display: none;
+  border-left: 4px solid;
 
-    .tab.active {
-    	border-bottom-color: var(--vscode-textBlockQuote-border);
-    	color: var(--vscode-textBlockQuote-border);
-    	font-weight: 500;
-    }
+  &.success {
+    background-color: var(--vscode-gitDecoration-addedResourceForeground);
+    color: var(--vscode-editor-background);
+    border-left-color: var(--vscode-gitDecoration-addedResourceForeground);
+    display: block;
+  }
 
-    .tab-content {
-    	display: none;
-    }
+  &.error {
+    @include error-state;
+    border-left-color: var(--vscode-inputValidation-errorBorder);
+    display: block;
+  }
 
-    .tab-content.active {
-    	display: block;
-    }
+  &.info {
+    background-color: var(--vscode-inputValidation-infoBorder);
+    color: var(--vscode-editor-background);
+    border-left-color: var(--vscode-inputValidation-infoBorder);
+    display: block;
+  }
+}
 
-    .stats {
-    	font-size: 12px;
-    	color: var(--vscode-descriptionForeground);
-    	margin-top: 8px;
-    	padding-top: 8px;
-    	border-top: 1px solid var(--vscode-editorGroup-border);
-    }
+// ============================================
+// 18. 分頁籤 (Tabs)
+// ============================================
+
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--vscode-editorGroup-border);
+  margin-bottom: $spacing-xl;
+}
+
+.tab {
+  padding: $spacing-sm $spacing-xl;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--vscode-foreground);
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+
+  &:hover {
+    background-color: var(--vscode-list-hoverBackground);
+  }
+
+  &.active {
+    border-bottom-color: var(--vscode-textBlockQuote-border);
+    color: var(--vscode-textBlockQuote-border);
+    font-weight: 500;
+  }
+}
+
+.tab-content {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+}
+
+// ============================================
+// 19. 統計資料 (Stats)
+// ============================================
+
+.stats {
+  font-size: $font-size-sm;
+  color: var(--vscode-descriptionForeground);
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1px solid var(--vscode-editorGroup-border);
+}
