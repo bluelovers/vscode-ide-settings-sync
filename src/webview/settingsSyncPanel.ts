@@ -70,6 +70,8 @@ export class SettingsSyncPanel {
     const ideList = this.ideProvider.getIDEList();
     const unavailableIDEs = this.ideProvider.getUnavailableIDEs();
     const supportedLanguages = getSupportedLanguages();
+    // determine which IDE corresponds to the running host (by name)
+    const currentIDEName = vscode.env.appName; // e.g. "Visual Studio Code" or "Visual Studio Code - Insiders"
 
     // 👇 從 globalState 中獲取已保存的值
     const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
@@ -80,11 +82,11 @@ export class SettingsSyncPanel {
     const availableIDEsHTML = ideList
       .map(
         (ide, index) =>
-          `<div class="ide-item available">
+          `<div class="ide-item available${ide.name === currentIDEName ? ' current' : ''}">
         <input type="checkbox" id="ide-${index}" class="ide-checkbox" data-index="${index}" data-name="${ide.name}">
         <label for="ide-${index}"><strong>${ide.name}</strong></label>
         <span class="ide-path" title="${ide.nativePath}">${this.formatPath(ide.nativePath)}</span>
-        ${ide.type === EnumIDEInfoType.custom ? `<button class="btn-small btn-remove" onclick="removeCustomIDE(${index})">Remove</button>` : ''}
+        ${ide.type === EnumIDEInfoType.custom ? `<button class="btn-small btn-remove" onclick="removeCustomIDE(${index})" title="Remove this custom IDE">Remove</button>` : ''}
       </div>`
       )
       .join('');
@@ -425,6 +427,41 @@ export class SettingsSyncPanel {
       overflow-y: auto;
     }
 
+    /* highlight when a particular IDE is the one running this extension */
+    .ide-value.current {
+      background-color: var(--vscode-inputValidation-infoBackground);
+      border: 1px solid var(--vscode-inputValidation-infoBorder);
+    }
+
+    /* missing values get greyed out/red tinted */
+    .ide-value-missing {
+      background-color: var(--vscode-inputValidation-errorBackground);
+      color: var(--vscode-inputValidation-errorForeground);
+    }
+
+    /* mark the current IDE in the IDE list */
+    .ide-item.current {
+      background-color: var(--vscode-inputValidation-infoBackground);
+      border-left-color: var(--vscode-inputValidation-infoBorder);
+    }
+
+    /* colored action buttons */
+    .btn-sync {
+      background-color: #0fbf5a;
+      color: #ffffff;
+    }
+    .btn-sync:hover {
+      background-color: #0aa34f;
+    }
+    .btn-delete {
+      background-color: var(--vscode-inputValidation-errorBackground);
+      color: var(--vscode-inputValidation-errorForeground);
+      margin-left: auto;
+    }
+    .btn-delete:hover {
+      background-color: var(--vscode-inputValidation-errorBorder);
+    }
+
     .actions {
       display: flex;
       gap: 10px;
@@ -520,7 +557,7 @@ export class SettingsSyncPanel {
         ${availableIDEsHTML}
         ${unavailableIDEsHTML}
       </div>
-      <button class="btn" onclick="addCustomIDE()" style="margin-top: 10px;">+ Add Custom IDE Path</button>
+      <button class="btn" onclick="addCustomIDE()" style="margin-top: 10px;" title="Manually specify an IDE/settings folder">+ Add Custom IDE Path</button>
     </div>
 
     <div class="section">
@@ -570,16 +607,16 @@ export class SettingsSyncPanel {
             placeholder="e.g., editor.fontFamily, editor.fontSize..."
             onkeyup="searchSettings();saveSearchHistory()"
           >
-          <button class="btn" onclick="clearSearch()">Clear</button>
+          <button class="btn" onclick="clearSearch()" title="Clear search field">Clear</button>
         </div>
 
         <div id="searchResults" class="settings-list"></div>
         <div class="actions">
           <!-- refresh button added so users can manually reload settings from disk -->
-          <button class="btn" onclick="refreshSettings()">↻ Refresh Settings</button>
-          <button class="btn" onclick="saveSearchSelectedSettings()">💾 Save Selected Settings List</button>
-          <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
-          <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
+          <button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
+          <button class="btn" onclick="saveSearchSelectedSettings()" title="Save checked settings">💾 Save Selected Settings List</button>
+          <button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
+          <button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
         </div>
         <div id="message" class="message"></div>
       </div>
@@ -591,10 +628,10 @@ export class SettingsSyncPanel {
         <div id="allSettings" class="settings-list"></div>
         <div class="actions">
           <!-- allow refreshing settings without touching IDE list -->
-          <button class="btn" onclick="refreshSettings()">↻ Refresh Settings</button>
-          <button class="btn" onclick="saveAllSelectedSettings()">💾 Save Selected Settings</button>
-          <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
-          <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
+          <button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
+          <button class="btn" onclick="saveAllSelectedSettings()" title="Save checked settings">💾 Save Selected Settings</button>
+          <button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
+          <button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
         </div>
       </div>
     </div>
@@ -608,10 +645,10 @@ export class SettingsSyncPanel {
         <div id="selectedSettingsList" class="settings-list"></div>
         <div class="actions">
           <!-- user may want to refresh latest values while inspecting selected list -->
-          <button class="btn" onclick="refreshSettings()">↻ Refresh Settings</button>
-          <button class="btn" onclick="clearAllSelectedSettings()">🗑️ Clear All Selected</button>
-          <button class="btn" onclick="syncSettings()">✓ Sync Selected</button>
-          <button class="btn secondary" onclick="deleteSettings()">✗ Delete Selected</button>
+          <button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
+          <button class="btn" onclick="clearAllSelectedSettings()" title="Remove all saved selections">🗑️ Clear All Selected</button>
+          <button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
+          <button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
         </div>
       </div>
     </div>
@@ -622,6 +659,7 @@ export class SettingsSyncPanel {
     let ideList = ${JSON.stringify(this.ideProvider.getIDEListToWebviewContent())};
     let currentLanguage = '${this.currentLanguage}';
     let languageConfig = ${JSON.stringify(this.languageConfig)};
+    let currentIDEName = '${currentIDEName.replace(/'/g, "\\'")}';
 
     // 👇 已保存的狀態值（從 globalState 恢復）
     const savedSearchHistory = '${savedSearchHistory.replace(/'/g, "\\'")}';
@@ -762,7 +800,11 @@ export class SettingsSyncPanel {
           displayValue = String(value);
         }
         
-        const valueClass = value === undefined ? 'ide-value-missing' : '';
+        const isCurrent = ideName === currentIDEName;
+        let valueClass = value === undefined ? 'ide-value-missing' : '';
+        if (!valueClass && isCurrent) {
+          valueClass = 'current';
+        }
         valuesHTML += \`<div class="ide-value \${valueClass}">
           <div class="ide-value-label">\${ideName}</div>
           <div class="ide-value-content">\${displayValue}</div>
@@ -823,7 +865,11 @@ export class SettingsSyncPanel {
               displayValue = String(value);
             }
 
-            const valueClass = value === undefined ? 'ide-value-missing' : '';
+            const isCurrent = ide.name === currentIDEName;
+            let valueClass = value === undefined ? 'ide-value-missing' : '';
+            if (!valueClass && isCurrent) {
+              valueClass = 'current';
+            }
             valuesHTML += \`<div class="ide-value \${valueClass}">
               <div class="ide-value-label">\${ide.name}</div>
               <div class="ide-value-content">\${displayValue}</div>
