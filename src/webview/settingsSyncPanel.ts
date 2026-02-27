@@ -7,6 +7,7 @@ import {
   getSettingDescriptionBilingual,
   getAllSettingKeys,
 } from '../utils/settingsDescriptions';
+// @ts-ignore
 import cssContent from './settingsSyncPanel.scss';
 
 export class SettingsSyncPanel {
