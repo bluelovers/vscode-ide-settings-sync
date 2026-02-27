@@ -29,6 +29,9 @@ A Visual Studio Code extension that synchronizes IDE settings across multiple VS
 pnpm install
 ```
 
+> **Quick Start:** For a quick start guide, see [QUICKSTART.md](./QUICKSTART.md)
+> **Copilot Instructions:** For AI coding assistance, see [.github/copilot-instructions.md](./.github/copilot-instructions.md)
+
 ## Usage
 
 1. Open the Command Palette (Ctrl+Shift+P on Windows/Linux, Cmd+Shift+P on macOS)
@@ -59,6 +62,28 @@ pnpm run esbuild-watch
 ### Run Extension
 
 - Press `F5` in VS Code to launch the extension in a new window
+
+### Testing
+
+Run unit tests with Jest:
+
+```bash
+# Run all tests
+pnpm run test:unit
+
+# Run tests in watch mode
+pnpm run test:unit:watch
+
+# Run tests with coverage
+pnpm run test:unit:coverage
+```
+
+### Keybindings
+
+| Command | Windows/Linux | macOS | Description |
+|---------|---------------|-------|-------------|
+| Open IDE Settings Sync Panel | `Ctrl+Shift+Alt+S` | `Cmd+Shift+Alt+S` | Open the settings sync panel |
+| Refresh IDE List | `Ctrl+Shift+Alt+R` | `Cmd+Shift+Alt+R` | Refresh the detected IDE list |
 
 ## Project Structure
 
@@ -115,6 +140,24 @@ Settings are stored in each IDE's `settings.json` file located at:
 
 Click the **"Remove"** button next to any custom IDE entry
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for a detailed list of changes.
+
+## FAQ
+
+### Q: Why are some settings not syncing?
+A: Some settings may not be visible if they use special characters or are in nested objects. Also, workspace-specific settings are not synced (only user settings are supported).
+
+### Q: Can I sync settings between different types of IDEs?
+A: Yes, but some IDE-specific settings may not be compatible across different IDE types. The extension will attempt to sync all selected settings.
+
+### Q: Are comments in settings.json preserved?
+A: Yes, comments are preserved during sync. The extension uses `jsonc-parser` which supports preserving comments in JSON files.
+
+### Q: How do I report a bug or request a feature?
+A: Please open an issue on the GitHub repository.
+
 ## Troubleshooting
 
 - **Settings not syncing**: Ensure the target IDE's `settings.json` file is writable
@@ -123,7 +166,6 @@ Click the **"Remove"** button next to any custom IDE entry
 
 ## Known Limitations
 
-- Settings in `settings.json` comments are not preserved during sync
 - Workspace-specific settings are not synced (only user settings)
 - Some IDE-specific settings may not be compatible across different IDE types
 

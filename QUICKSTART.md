@@ -4,6 +4,8 @@
 - Visual Studio Code 1.85.0 or higher
 - Node.js and pnpm
 
+> **Note:** For detailed documentation, see [README.md](./README.md)
+
 ## Running in Development Mode
 
 1. **Build the extension**:
@@ -62,3 +64,12 @@ pnpm run esbuild-watch
 - `src/webview/settingsSyncPanel.ts` - UI panel
 - `src/utils/settingsDescriptions.ts` - Setting descriptions
 - `dist/extension.js` - Compiled extension
+
+## Testing
+
+Run unit tests:
+```bash
+pnpm run test:unit
+```
+
+For more testing options, see [README.md](./README.md)

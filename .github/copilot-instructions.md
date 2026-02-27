@@ -3,6 +3,13 @@
 ## Project Overview
 A VS Code Extension for syncing IDE settings across multiple VS Code-based IDEs (Antigravity, VS Code Insiders, CodeBuddy CN, custom paths).
 
+## Build & Requirements
+- **Package Manager**: pnpm
+- **Language**: TypeScript
+- **Build Tool**: esbuild
+- **Min VS Code**: 1.85.0
+- **Extension Type**: Command-based with WebView UI
+
 ## Features Implemented
 
 ### Core Features
@@ -20,22 +27,18 @@ src/
 ├── extension.ts              # Main extension entry point
 ├── types.ts                  # TypeScript type definitions
 ├── providers/
-│   └── ideProvider.ts       # IDE detection and settings management
+│   ├── ideProvider.ts       # IDE detection and settings management
+│   └── ideSettingProvider.ts # IDE settings provider
 ├── webview/
 │   └── settingsSyncPanel.ts # WebView UI component
-└── utils/
-    └── settingsDescriptions.ts  # Settings descriptions mapping
+├── utils/
+│   ├── json.ts              # JSON utility functions
+│   └── settingsDescriptions.ts  # Settings descriptions mapping
+└── test/                    # Unit tests (Jest)
 ```
 
-## Build Configuration
-- **Package Manager**: pnpm
-- **Language**: TypeScript
-- **Extension Type**: Command-based with WebView UI
-- **Build Tool**: esbuild
-- **Min VS Code version**: 1.85.0
-
 ## Build Artifacts
-- `dist/extension.js` - Bundled extension (~30KB)
+- `dist/extension.js` - Bundled extension
 - `dist/extension.js.map` - Source map for debugging
 
 ## How to Run
@@ -63,4 +66,18 @@ pnpm run vscode:prepublish
    - Display a WebView panel with sync interface
    - Allow searching and syncing settings
 
+### Testing Unit
+```bash
+# Run unit tests
+pnpm run test:unit
+
+# Run tests with coverage
+pnpm run test:unit:coverage
+```
+
+## Keybindings
+| Command | Windows/Linux | macOS |
+|---------|---------------|-------|
+| Open IDE Settings Sync Panel | `Ctrl+Shift+Alt+S` | `Cmd+Shift+Alt+S` |
+| Refresh IDE List | `Ctrl+Shift+Alt+R` | `Cmd+Shift+Alt+R` |
 

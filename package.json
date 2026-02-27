@@ -69,10 +69,10 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "node --run compile",
-    "test": "node ./out/test/runTest.js",
+    "test": "node --run test:unit",
     "test:unit": "jest",
-    "test:unit:watch": "jest --watch",
-    "test:unit:coverage": "jest --coverage"
+    "test:unit:watch": "node --run test:unit -- --watch",
+    "test:unit:coverage": "node --run test:unit -- --coverage"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
