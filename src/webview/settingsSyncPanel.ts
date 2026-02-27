@@ -30,6 +30,9 @@ export class SettingsSyncPanel {
     };
     this.currentLanguage = this.languageConfig.primary;
 
+    const extensionUri = context.extensionUri;
+    const distUri = vscode.Uri.joinPath(extensionUri, 'dist');
+
     this.panel = vscode.window.createWebviewPanel(
       'settingsSyncPanel',
       'IDE Settings Sync',
@@ -37,6 +40,8 @@ export class SettingsSyncPanel {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
+        // 必須明確授權 Webview 存取 dist 資料夾
+        localResourceRoots: [distUri],
       }
     );
 
@@ -105,7 +110,7 @@ export class SettingsSyncPanel {
       )
       .join('');
 
-    const csp = `default-src 'none'; img-src ${this.panel.webview.cspSource} https:; style-src ${this.panel.webview.cspSource} 'unsafe-inline'; script-src ${this.panel.webview.cspSource} 'unsafe-inline' 'unsafe-eval';`;
+    const csp = `default-src 'none'; img-src ${this.panel.webview.cspSource} https:; style-src ${this.panel.webview.cspSource} 'unsafe-inline'; script-src ${this.panel.webview.cspSource} 'unsafe-inline' 'unsafe-eval'; connect-src ${this.panel.webview.cspSource};`;
 
     return `<!DOCTYPE html>
 <html>

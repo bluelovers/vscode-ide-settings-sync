@@ -66,6 +66,7 @@
     "esbuild-base": "tsx esbuild.config",
     "esbuild": "node --run esbuild-base",
     "esbuild-watch": "node --run esbuild-base -- --watch",
+    "build": "node --run esbuild-base",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "node --run compile",

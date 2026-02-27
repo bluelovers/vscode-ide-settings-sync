@@ -28,7 +28,7 @@ const config: BuildOptions = {
 	format: 'cjs',
 	platform: 'node',
 	target: 'node18',
-	sourcemap: true,
+	sourcemap: 'both',
 	plugins: [
 		sassPlugin({
 			// 關鍵設定：將 scss 轉換為 css 字串
