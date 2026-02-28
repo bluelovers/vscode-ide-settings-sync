@@ -121,4 +121,5 @@ vsce publish
 
 - [完整 README](./README.md) - 使用者文件
 - [Copilot 指令](./.github/copilot-instructions.md) - AI 開發規範
+- [已支援的 IDE 清單](./docs/supported-ides.md) - 支援的 IDE 與路徑
 - [VS Code 擴充功能開發文件](https://code.visualstudio.com/api)

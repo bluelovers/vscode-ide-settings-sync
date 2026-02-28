@@ -44,6 +44,8 @@ code --install-extension bluelovers.vscode-ide-settings-sync
 3. 為 IDE 設定顯示名稱
 4. IDE 會被新增至同步清單
 
+> 💡 **提示**：如需了解各系統的設定檔路徑，請參考[已支援的 IDE 清單](./docs/supported-ides.md)。
+
 ## 移除自訂 IDE
 
 點擊自訂 IDE 項目旁的 **"Remove"** 按鈕

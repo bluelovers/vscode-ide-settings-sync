@@ -93,7 +93,8 @@ export class SettingsSyncPanel {
         <input type="checkbox" id="ide-${index}" class="ide-checkbox" data-index="${index}" data-name="${ide.name}">
         <label for="ide-${index}"><strong>${ide.name}</strong></label>
         <span class="ide-path" title="${ide.nativePath}">${this.formatPath(ide.nativePath)}</span>
-        ${ide.type === EnumIDEInfoType.custom ? `<button class="btn-small btn-remove" onclick="removeCustomIDE(${index})" title="Remove this custom IDE">Remove</button>` : ''}
+        <button class="btn btn-small" onclick="openIDEFolder('${ide.nativePath.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Open IDE folder">📂</button>
+        ${ide.type === EnumIDEInfoType.custom ? `<button class="btn btn-small btn-remove" onclick="removeCustomIDE(${index})" title="Remove this custom IDE">Remove</button>` : ''}
       </div>`
       )
       .join('');
@@ -101,12 +102,17 @@ export class SettingsSyncPanel {
     // Generate unavailable IDEs HTML (grayed out)
     const unavailableIDEsHTML = unavailableIDEs
       .map(
-        (ide) =>
-          `<div class="ide-item unavailable" title="Not detected: ${ide.expectedPath}">
-        <input type="checkbox" id="ide-unavail-${ide.name}" class="ide-checkbox" disabled>
-        <label for="ide-unavail-${ide.name}"><strong>${ide.name}</strong></label>
-        <span class="ide-path">❌ Not detected</span>
-      </div>`
+        (ide) => {
+          const reasonHtml = ide.reason ? `<div class="ide-item unavailable-reason">${ide.reason.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : '';
+
+          return `<div class="ide-item unavailable" title="Not detected: ${ide.expectedPath}">
+          <input type="checkbox" id="ide-unavail-${ide.name}" class="ide-checkbox" disabled>
+          <label for="ide-unavail-${ide.name}"><strong>${ide.name}</strong></label>
+          <span class="ide-path">❌ Not detected: ${ide.expectedPath}</span>
+        </div>
+        ${reasonHtml}
+      </div>`;
+        }
       )
       .join('');
 
@@ -149,7 +155,7 @@ export class SettingsSyncPanel {
           <select id="primaryLang" onchange="changePrimaryLanguage()">
             ${supportedLanguages.map((lang) => `<option value="${lang.code}" ${lang.code === this.languageConfig.primary ? 'selected' : ''}>${lang.name}</option>`).join('')}
           </select>
-          <button class="btn-small" onclick="openLanguageConfig()" title="Configure language settings">⚙ Config</button>
+          <button class="btn btn-small" onclick="openLanguageConfig()" title="Configure language settings">⚙ Config</button>
         </div>
 
         <div class="config-row">
@@ -462,7 +468,7 @@ export class SettingsSyncPanel {
           <div class="setting-key">
             <input type="checkbox" class="setting-checkbox" id="\${settingId}" data-key="\${key}" checked>
             <label for="\${settingId}">\${key}</label>
-            <button class="btn-small" onclick="removeFromSelectedSettings('\${key}')" style="margin-left: auto;">✕ Remove</button>
+            <button class="btn btn-small" onclick="removeFromSelectedSettings('\${key}')" style="margin-left: auto;">✕ Remove</button>
           </div>
           <div class="setting-description">\${description}</div>
           <div class="setting-values">\${valuesHTML}</div>
@@ -492,19 +498,19 @@ export class SettingsSyncPanel {
     }
 
     function addCustomIDE() {
-      const path = prompt('Enter the path to the IDE settings folder (containing settings.json):');
-      if (path) {
-        const name = prompt('Enter a name for this IDE:');
-        if (name) {
-          vscode.postMessage({ command: 'addCustomIDE', name, path });
-        }
-      }
+      // 使用 VS Code 的輸入框來取得路徑和名稱
+      // Use VS Code's input box to get path and name
+      vscode.postMessage({ command: 'requestAddCustomIDE' });
     }
 
     function removeCustomIDE(index) {
       if (confirm('Remove this custom IDE?')) {
         vscode.postMessage({ command: 'removeCustomIDE', index });
       }
+    }
+
+    function openIDEFolder(folderPath) {
+      vscode.postMessage({ command: 'openIDEFolder', path: folderPath });
     }
 
     /**
@@ -691,6 +697,8 @@ export class SettingsSyncPanel {
       } else if (message.command === 'deleteComplete') {
         showMessage('Settings deleted successfully!', 'success');
         vscode.postMessage({ command: 'refreshData' });
+      } else if (message.command === 'addCustomIDEComplete') {
+        showMessage('Custom IDE added successfully!', 'success');
       }
     });
 
@@ -771,9 +779,34 @@ export class SettingsSyncPanel {
     this.panel.webview.onDidReceiveMessage(
       async (message) => {
         switch (message.command) {
+          case 'requestAddCustomIDE':
+            // 使用 VS Code 的輸入框來取得路徑
+            // Use VS Code's input box to get path
+            const path = await vscode.window.showInputBox({
+              prompt: 'Enter the path to the IDE settings folder (containing settings.json)',
+              placeHolder: 'e.g., C:\\Users\\User\\AppData\\Roaming\\Code\\User',
+            });
+            if (!path) break;
+
+            // 取得名稱
+            // Get name
+            const name = await vscode.window.showInputBox({
+              prompt: 'Enter a name for this IDE',
+              placeHolder: 'e.g., My VS Code',
+            });
+            if (!name) break;
+
+            // 新增 IDE
+            // Add IDE
+            await this.ideProvider.addCustomIDE(name, path);
+            await this.updateWebview();
+            this.panel.webview.postMessage({ command: 'addCustomIDEComplete', name });
+            break;
+
           case 'addCustomIDE':
             await this.ideProvider.addCustomIDE(message.name, message.path);
             await this.updateWebview();
+            this.panel.webview.postMessage({ command: 'addCustomIDEComplete', name: message.name });
             break;
 
           case 'removeCustomIDE':
@@ -812,6 +845,12 @@ export class SettingsSyncPanel {
 
           case 'openLanguageConfig':
             vscode.commands.executeCommand('vscode-ide-settings-sync.configLanguage');
+            break;
+
+          case 'openIDEFolder':
+            if (message.path) {
+              vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(message.path));
+            }
             break;
 
           case 'saveSearchHistory':

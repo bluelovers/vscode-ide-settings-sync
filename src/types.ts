@@ -74,6 +74,7 @@ export interface IUnavailableIDE {
   name: string;
   type: EnumIDEInfoType;
   expectedPath: string;
+  reason?: string;
 }
 
 // 設定資料

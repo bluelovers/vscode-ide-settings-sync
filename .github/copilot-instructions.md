@@ -22,6 +22,8 @@
 - CodeBuddy CN
 - 自訂 IDE 路徑
 
+> 💡 詳細資訊請參考 [已支援的 IDE 清單](../docs/supported-ides.md)
+
 ### 設定管理
 - **自訂 IDE 支援**：透過 UI 新增自訂 IDE 路徑
 - **設定搜尋**：搜尋特定 VS Code 設定
