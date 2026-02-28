@@ -1,4 +1,3 @@
-
 import { kMaxLength } from 'buffer';
 import {
 	applyEdits,
@@ -18,7 +17,7 @@ import {
 /**
  * 安全上限 - 用於格式偵測的效能保護
  * Safety limits - performance protection for format detection
- * 
+ *
  * @type {number}
  */
 const MAX_CHARS = 2000;
@@ -99,7 +98,7 @@ export class JsonHandlerError extends Error
 	constructor(
 		message: string,
 		public readonly errors: IParseError[],
-		public readonly originalText: string
+		public readonly originalText: string,
 	)
 	{
 		super(message);
@@ -140,8 +139,8 @@ export function _handleJsonHandlerParseErrorsToLogs(parseErrors: IParseError[])
 		logs.push(
 			`[JsonHandler] 解析 JSON 時發現 ${parseErrors.length} 個問題：\n` +
 			parseErrors.map(err =>
-				`  - ${printParseErrorCode(err.error)} (位置: ${err.offset})`
-			).join('\n')
+				`  - ${printParseErrorCode(err.error)} (位置: ${err.offset})`,
+			).join('\n'),
 		);
 	}
 
@@ -159,7 +158,8 @@ export function _printLogs(logs: any[], fnOrType?: keyof typeof console | typeof
 {
 	const fn = typeof fnOrType === 'function' ? fnOrType : (log: any) => console[fnOrType as 'log'](log);
 
-	logs.every((log, i) => {
+	logs.every((log, i) =>
+	{
 		fn(log);
 		return i < 5
 	});
@@ -174,13 +174,13 @@ export function _printLogs(logs: any[], fnOrType?: keyof typeof console | typeof
  */
 export interface IJsonHandlerOptions
 {
-	/** 
-	 * 是否允許註解 (預設: true) 
+	/**
+	 * 是否允許註解 (預設: true)
 	 * @default true
 	 */
 	allowComments?: boolean;
-	/** 
-	 * 是否允許尾隨逗號 (預設: true) 
+	/**
+	 * 是否允許尾隨逗號 (預設: true)
 	 * @default true
 	 */
 	allowTrailingComma?: boolean;
@@ -233,7 +233,9 @@ export function _handleJsonHandlerParseOptionsCore(options: IJsonHandlerOptions 
  * @param formattingOptions - 使用者提供的格式化選項
  * @returns 合併後的格式化選項
  */
-export function _handleJsonHandlerFormattingOptionsCore(text: string, formattingOptions: IJsonHandlerFormattingOptions = {})
+export function _handleJsonHandlerFormattingOptionsCore(text: string,
+	formattingOptions: IJsonHandlerFormattingOptions = {},
+)
 {
 	const detect = detectFormat(text);
 
@@ -297,7 +299,7 @@ export function _keyToPath(key: string): IJSONPath
  * @param staging - 暫存區 Map
  * @yield { key, value, path } - 每次迭代回傳鍵、值和路徑
  */
-export function *_eachStaging(staging: Map<string, any>)
+export function* _eachStaging(staging: Map<string, any>)
 {
 	for (const [key, value] of staging)
 	{
@@ -538,7 +540,8 @@ export class JsonHandler
 
 	applyStaged(staging: IStagingInput)
 	{
-		_getStaging(staging).forEach((v, k) => {
+		_getStaging(staging).forEach((v, k) =>
+		{
 			this.staging.set(k, v);
 		});
 

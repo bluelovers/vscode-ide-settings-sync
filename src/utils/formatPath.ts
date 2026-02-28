@@ -5,9 +5,11 @@
  * @param fullPath - 完整檔案路徑
  * @returns 格式化後的縮短路徑
  */
-export function formatPath(fullPath: string): string {
+export function formatPath(fullPath: string): string
+{
 	const parts = fullPath.replace(/\\/g, '/').split('/');
-	if (parts.length > 3) {
+	if (parts.length > 3)
+	{
 		return '...' + parts.slice(-3).join('/');
 	}
 	return fullPath;

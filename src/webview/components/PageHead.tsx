@@ -8,7 +8,8 @@ import { IContentSecurityPolicyProps, ISettingsSyncPanelPagePropsRuntime } from 
  * @param props - CSP 配置屬性，需至少提供 panel 或 cspSource 其中之一
  * @returns 渲染 CSP meta 標籤
  */
-export const ContentSecurityPolicy = (props: IContentSecurityPolicyProps) => {
+export const ContentSecurityPolicy = (props: IContentSecurityPolicyProps) =>
+{
 	/**
 	 * 取得 CSP 來源網址
 	 * 優先使用直接傳入的 cspSource，若未提供則從 panel 的 webview 屬性取得
@@ -44,7 +45,8 @@ export const ContentSecurityPolicy = (props: IContentSecurityPolicyProps) => {
  * @param props - 頁面屬性，包含 settingsSyncPanel 實例和 CSS 內容
  * @returns 渲染完整的 head 元素
  */
-export const PageHead = (props: ISettingsSyncPanelPagePropsRuntime) => {
+export const PageHead = (props: ISettingsSyncPanelPagePropsRuntime) =>
+{
 	/**
 	 * SettingsSyncPanel 實例引用
 	 * 使用非空斷言確保面板實例已正確初始化

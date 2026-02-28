@@ -50,11 +50,11 @@ function AvailableIDEItem(props: {
 
 	return (<>
 		<div key={props.index} className={className}>
-			<input type="checkbox" id={id} className="ide-checkbox" data-index={props.index} data-name={props.ide.name}/>
+			<input type="checkbox" id={id} className="ide-checkbox" data-index={props.index} data-name={props.ide.name} />
 			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
 			<span className="ide-path" title={props.ide.nativePath}>{formatPath(props.ide.nativePath)}</span>
-			<BtnOpenIDEFolder path={props.ide.nativePath}/>
-			{props.ide.type === 'custom' ? <BtnRemoveCustomIDE index={props.index} ide={props.ide}/> : null}
+			<BtnOpenIDEFolder path={props.ide.nativePath} />
+			{props.ide.type === 'custom' ? <BtnRemoveCustomIDE index={props.index} ide={props.ide} /> : null}
 		</div>
 	</>)
 
@@ -75,7 +75,9 @@ function BtnRemoveCustomIDE(props: {
 })
 {
 	// @ts-ignore
-	return (<button class="btn btn-small btn-remove" onclick={`removeCustomIDE(${props.index}, ${JSON.stringify(props.ide.name)})`} title="Remove this custom IDE">Remove</button>)
+	return (<button class="btn btn-small btn-remove"
+	                onclick={`removeCustomIDE(${props.index}, ${JSON.stringify(props.ide.name)})`}
+	                title="Remove this custom IDE">Remove</button>)
 }
 
 function BtnOpenIDEFolder(props: {
@@ -83,7 +85,8 @@ function BtnOpenIDEFolder(props: {
 })
 {
 	// @ts-ignore
-	return (<button class="btn btn-small" onclick={`openIDEFolder(${JSON.stringify(props.path)})`} title="Open IDE folder">📂</button>)
+	return (<button class="btn btn-small" onclick={`openIDEFolder(${JSON.stringify(props.path)})`}
+	                title="Open IDE folder">📂</button>)
 }
 
 export function UnavailableIDEItemReason(props: ITSRequireAtLeastOne<{
@@ -120,10 +123,10 @@ function UnavailableIDEItem(props: {
 
 	return (<>
 		<div key={props.index} className="ide-item unavailable" title={`Not detected: ${props.ide.expectedPath}`}>
-			<input type="checkbox" id={id} className="ide-checkbox" disabled/>
+			<input type="checkbox" id={id} className="ide-checkbox" disabled />
 			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
 			<span className="ide-path">❌ Not detected: {props.ide.expectedPath}</span>
-			<BtnOpenIDEFolder path={props.ide.expectedPath}/>
+			<BtnOpenIDEFolder path={props.ide.expectedPath} />
 		</div>
 		<UnavailableIDEItemReason reason={props.ide.reason} ide={props.ide} />
 	</>)
@@ -189,7 +192,8 @@ export function IDEList({
 		<div
 			class="ide-list"
 		>
-			{availableIDEs.map((ide, index) => <AvailableIDEItem key={index} ide={ide} index={index} isCurrent={ide.name === currentIDEName} />)}
+			{availableIDEs.map((ide, index) => <AvailableIDEItem key={index} ide={ide} index={index}
+			                                                     isCurrent={ide.name === currentIDEName} />)}
 			{unavailableIDEs.map((ide, index) => <UnavailableIDEItem key={index} ide={ide} index={index} />)}
 		</div>
 	</>);
@@ -202,12 +206,14 @@ export function IDEListSection({
 }: IIDEListProps)
 {
 	return (<>
-		<IDEListScript/>
+		<IDEListScript />
 		<div className="section">
 			<h2>Select IDEs</h2>
 			<IDEList availableIDEs={availableIDEs} unavailableIDEs={unavailableIDEs} currentIDEName={currentIDEName} />
 			{/* @ts-ignore */}
-			<button className="btn" onclick={"addCustomIDE()"} style="margin-top: 10px;" title="Manually specify an IDE/settings folder">+ Add Custom IDE Path</button>
+			<button className="btn" onclick={"addCustomIDE()"} style="margin-top: 10px;"
+			        title="Manually specify an IDE/settings folder">+ Add Custom IDE Path
+			</button>
 			{/* @ts-ignore */}
 			<button className="btn secondary" onclick={"refreshIDEs()"} title="Refresh IDE list">🔄 Refresh</button>
 		</div>

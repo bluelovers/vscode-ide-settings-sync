@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import { IDEProvider } from '../providers/ideProvider';
 import { EnumIDEInfoType, ILanguageConfig, EnumGlobalStateName } from '../types';
 import {
-  getSupportedLanguages,
-  ILanguageCode,
-  getSettingDescriptionBilingual,
-  getAllSettingKeys,
+	getSupportedLanguages,
+	ILanguageCode,
+	getSettingDescriptionBilingual,
+	getAllSettingKeys,
 } from '../utils/settingsDescriptions';
 // @ts-ignore
 import cssContent from './settingsSyncPanel.scss';
@@ -16,98 +16,104 @@ import { IDEList, IDEListSection } from './components/IDEList';
 import { renderJsxToString } from '../utils/render-jsx';
 import { formatPath } from '../utils/formatPath';
 
-export class SettingsSyncPanel {
-  public readonly panel: vscode.WebviewPanel;
-  private disposables: vscode.Disposable[] = [];
-  private ideProvider: IDEProvider;
-  private context: vscode.ExtensionContext;
-  private onDisposeCallback?: () => void;
-  private languageConfig: ILanguageConfig;
-  private currentLanguage: ILanguageCode;
+export class SettingsSyncPanel
+{
+	public readonly panel: vscode.WebviewPanel;
+	private disposables: vscode.Disposable[] = [];
+	private ideProvider: IDEProvider;
+	private context: vscode.ExtensionContext;
+	private onDisposeCallback?: () => void;
+	private languageConfig: ILanguageConfig;
+	private currentLanguage: ILanguageCode;
 
-  constructor(context: vscode.ExtensionContext, ideProvider: IDEProvider, languageConfig?: ILanguageConfig) {
-    this.context = context;
-    this.ideProvider = ideProvider;
-    this.languageConfig = languageConfig || {
-      primary: 'en' as ILanguageCode,
-      fallbackList: ['zh-tw', 'en'],
-      secondary: undefined,
-      showSecondary: false,
-    };
-    this.currentLanguage = this.languageConfig.primary;
+	constructor(context: vscode.ExtensionContext, ideProvider: IDEProvider, languageConfig?: ILanguageConfig)
+	{
+		this.context = context;
+		this.ideProvider = ideProvider;
+		this.languageConfig = languageConfig || {
+			primary: 'en' as ILanguageCode,
+			fallbackList: ['zh-tw', 'en'],
+			secondary: undefined,
+			showSecondary: false,
+		};
+		this.currentLanguage = this.languageConfig.primary;
 
-    const extensionUri = context.extensionUri;
-    const distUri = vscode.Uri.joinPath(extensionUri, 'dist');
+		const extensionUri = context.extensionUri;
+		const distUri = vscode.Uri.joinPath(extensionUri, 'dist');
 
-    this.panel = vscode.window.createWebviewPanel(
-      'settingsSyncPanel',
-      'IDE Settings Sync',
-      vscode.ViewColumn.One,
-      {
-        enableScripts: true,
-        retainContextWhenHidden: true,
-        // 必須明確授權 Webview 存取 dist 資料夾
-        localResourceRoots: [distUri],
-      }
-    );
+		this.panel = vscode.window.createWebviewPanel(
+			'settingsSyncPanel',
+			'IDE Settings Sync',
+			vscode.ViewColumn.One,
+			{
+				enableScripts: true,
+				retainContextWhenHidden: true,
+				// 必須明確授權 Webview 存取 dist 資料夾
+				localResourceRoots: [distUri],
+			},
+		);
 
-    this.panel.iconPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'icon.svg');
+		this.panel.iconPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'icon.svg');
 
-    this.updateWebview();
-    this.setupMessageHandler();
+		this.updateWebview();
+		this.setupMessageHandler();
 
-    this.panel.onDidDispose(() => {
-      this.dispose();
-      this.onDisposeCallback?.();
-    }, null, this.disposables);
-  }
+		this.panel.onDidDispose(() =>
+		{
+			this.dispose();
+			this.onDisposeCallback?.();
+		}, null, this.disposables);
+	}
 
-  /**
-   * Update the webview HTML. By default this will also refresh the IDE
-   * list from disk, but callers can opt-out if they only need to reload
-   * settings for the already-detected IDEs.
-   *
-   * / 更新 webview 的 HTML。預設會連同重新讀取 IDE 列表，但呼叫方
-   * 可以選擇只重新載入現有 IDE 的設定值。
-   *
-   * @param refreshIDEList whether to refresh the IDE list (default true)
-   */
-  private async updateWebview(refreshIDEList: boolean = true): Promise<void> {
-    if (refreshIDEList) {
-      await this.ideProvider.refreshIDEList();
-    }
-    this.panel.webview.html = this.getWebviewContent();
-  }
+	/**
+	 * Update the webview HTML. By default this will also refresh the IDE
+	 * list from disk, but callers can opt-out if they only need to reload
+	 * settings for the already-detected IDEs.
+	 *
+	 * / 更新 webview 的 HTML。預設會連同重新讀取 IDE 列表，但呼叫方
+	 * 可以選擇只重新載入現有 IDE 的設定值。
+	 *
+	 * @param refreshIDEList whether to refresh the IDE list (default true)
+	 */
+	private async updateWebview(refreshIDEList: boolean = true): Promise<void>
+	{
+		if (refreshIDEList)
+		{
+			await this.ideProvider.refreshIDEList();
+		}
+		this.panel.webview.html = this.getWebviewContent();
+	}
 
-  private getWebviewContent(): string {
-    const ideList = this.ideProvider.getIDEList();
-    const unavailableIDEs = this.ideProvider.getUnavailableIDEs();
-    const supportedLanguages = getSupportedLanguages();
-    // determine which IDE corresponds to the running host (by name)
-    const currentIDEName = vscode.env.appName; // e.g. "Visual Studio Code" or "Visual Studio Code - Insiders"
+	private getWebviewContent(): string
+	{
+		const ideList = this.ideProvider.getIDEList();
+		const unavailableIDEs = this.ideProvider.getUnavailableIDEs();
+		const supportedLanguages = getSupportedLanguages();
+		// determine which IDE corresponds to the running host (by name)
+		const currentIDEName = vscode.env.appName; // e.g. "Visual Studio Code" or "Visual Studio Code - Insiders"
 
-    // 👇 從 globalState 中獲取已保存的值
-    const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
-    const savedSelectedSettings = this.context.globalState.get<string[]>(EnumGlobalStateName.selectedSettings) || [];
-    const savedSelectedIDEs = this.context.globalState.get<number[]>(EnumGlobalStateName.selectedIDEs) || [];
+		// 👇 從 globalState 中獲取已保存的值
+		const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
+		const savedSelectedSettings = this.context.globalState.get<string[]>(EnumGlobalStateName.selectedSettings) || [];
+		const savedSelectedIDEs = this.context.globalState.get<number[]>(EnumGlobalStateName.selectedIDEs) || [];
 
-    /**
-     * 生成 IDE 列表 HTML
-     * 使用 IDEList 組件渲染可用和不可用的 IDE 列表
-     */
-    const ideListHTML = renderJsxToString(IDEListSection, {
-      availableIDEs: ideList,
-      unavailableIDEs: unavailableIDEs,
-      currentIDEName,
-    });
+		/**
+		 * 生成 IDE 列表 HTML
+		 * 使用 IDEList 組件渲染可用和不可用的 IDE 列表
+		 */
+		const ideListHTML = renderJsxToString(IDEListSection, {
+			availableIDEs: ideList,
+			unavailableIDEs: unavailableIDEs,
+			currentIDEName,
+		});
 
-    return `<!DOCTYPE html>
+		return `<!DOCTYPE html>
 <html>
 <head>
   ${renderJsxToString(PageHead, {
-    settingsSyncPanel: this,
-    cssContent,
-  })}
+			settingsSyncPanel: this,
+			cssContent,
+		})}
 </head>
 <body>
   <div class="container">
@@ -125,7 +131,9 @@ export class SettingsSyncPanel {
         <div class="config-row">
           <label for="primaryLang">Primary Language:</label>
           <select id="primaryLang" onchange="changePrimaryLanguage()">
-            ${supportedLanguages.map((lang) => `<option value="${lang.code}" ${lang.code === this.languageConfig.primary ? 'selected' : ''}>${lang.name}</option>`).join('')}
+            ${supportedLanguages.map((lang) => `<option value="${lang.code}" ${lang.code === this.languageConfig.primary
+			? 'selected'
+			: ''}>${lang.name}</option>`).join('')}
           </select>
           <button class="btn btn-small" onclick="openLanguageConfig()" title="Configure language settings">⚙ Config</button>
         </div>
@@ -133,19 +141,20 @@ export class SettingsSyncPanel {
         <div class="config-row">
           <label>Fallback Languages:</label>
           <div class="fallback-list" id="fallbackList">
-            ${this.languageConfig.fallbackList.map((lang) => {
-              const langInfo = supportedLanguages.find(l => l.code === lang);
-              return `<span class="fallback-tag">${langInfo?.name || lang}</span>`;
-            }).join('')}
+            ${this.languageConfig.fallbackList.map((lang) =>
+		{
+			const langInfo = supportedLanguages.find(l => l.code === lang);
+			return `<span class="fallback-tag">${langInfo?.name || lang}</span>`;
+		}).join('')}
           </div>
         </div>
 
         ${this.languageConfig.showSecondary && this.languageConfig.secondary
-          ? `<div class="config-row">
+			? `<div class="config-row">
               <label>Secondary Language:</label>
               <span class="secondary-lang">${supportedLanguages.find(l => l.code === this.languageConfig.secondary)?.name || this.languageConfig.secondary}</span>
             </div>`
-          : ''}
+			: ''}
       </div>
     </div>
 
@@ -701,184 +710,202 @@ export class SettingsSyncPanel {
   </script>
 </body>
 </html>`;
-  }
+	}
 
-  /**
-   * 生成多語言設定描述對象
-   * Generate multi-language setting descriptions object for WebView injection
-   */
-  private generateMultilingualDescriptions(): Record<string, { primary: string; secondary?: string }> {
-    const descriptions: Record<string, { primary: string; secondary?: string }> = {};
-    const allKeys = getAllSettingKeys();
+	/**
+	 * 生成多語言設定描述對象
+	 * Generate multi-language setting descriptions object for WebView injection
+	 */
+	private generateMultilingualDescriptions(): Record<string, { primary: string; secondary?: string }>
+	{
+		const descriptions: Record<string, { primary: string; secondary?: string }> = {};
+		const allKeys = getAllSettingKeys();
 
-    for (const key of allKeys) {
-      const bilingual = getSettingDescriptionBilingual(
-        key,
-        this.currentLanguage,
-        this.languageConfig.secondary,
-        this.languageConfig.fallbackList || []
-      );
-      descriptions[key] = bilingual;
-    }
+		for (const key of allKeys)
+		{
+			const bilingual = getSettingDescriptionBilingual(
+				key,
+				this.currentLanguage,
+				this.languageConfig.secondary,
+				this.languageConfig.fallbackList || [],
+			);
+			descriptions[key] = bilingual;
+		}
 
-    return descriptions;
-  }
+		return descriptions;
+	}
 
-  private setupMessageHandler(): void {
-    this.panel.webview.onDidReceiveMessage(
-      async (message) => {
-        switch (message.command) {
-          case 'requestAddCustomIDE':
-            // 使用 VS Code 的輸入框來取得路徑
-            // Use VS Code's input box to get path
-            const path = await vscode.window.showInputBox({
-              prompt: 'Enter the path to the IDE settings folder (containing settings.json)',
-              placeHolder: 'e.g., C:\\Users\\User\\AppData\\Roaming\\Code\\User',
-            });
-            if (!path) break;
+	private setupMessageHandler(): void
+	{
+		this.panel.webview.onDidReceiveMessage(
+			async (message) =>
+			{
+				switch (message.command)
+				{
+					case 'requestAddCustomIDE':
+						// 使用 VS Code 的輸入框來取得路徑
+						// Use VS Code's input box to get path
+						const path = await vscode.window.showInputBox({
+							prompt: 'Enter the path to the IDE settings folder (containing settings.json)',
+							placeHolder: 'e.g., C:\\Users\\User\\AppData\\Roaming\\Code\\User',
+						});
+						if (!path) break;
 
-            // 取得名稱
-            // Get name
-            const name = await vscode.window.showInputBox({
-              prompt: 'Enter a name for this IDE',
-              placeHolder: 'e.g., My VS Code',
-            });
-            if (!name) break;
+						// 取得名稱
+						// Get name
+						const name = await vscode.window.showInputBox({
+							prompt: 'Enter a name for this IDE',
+							placeHolder: 'e.g., My VS Code',
+						});
+						if (!name) break;
 
-            // 新增 IDE
-            // Add IDE
-            try
-            {
-              await this.ideProvider.addCustomIDE(name, path);
-              await this.updateWebview();
-              this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: true, name });
-            }
-            catch (error)
-            {
-              const errorMessage = error instanceof Error ? error.message : String(error);
-              this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: false, error: errorMessage });
-            }
-            break;
+						// 新增 IDE
+						// Add IDE
+						try
+						{
+							await this.ideProvider.addCustomIDE(name, path);
+							await this.updateWebview();
+							this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: true, name });
+						}
+						catch (error)
+						{
+							const errorMessage = error instanceof Error ? error.message : String(error);
+							this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: false, error: errorMessage });
+						}
+						break;
 
-          case 'addCustomIDE':
-            try
-            {
-              await this.ideProvider.addCustomIDE(message.name, message.path);
-              await this.updateWebview();
-              this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: true, name: message.name });
-            }
-            catch (error)
-            {
-              const errorMessage = error instanceof Error ? error.message : String(error);
-              this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: false, error: errorMessage });
-            }
-            break;
+					case 'addCustomIDE':
+						try
+						{
+							await this.ideProvider.addCustomIDE(message.name, message.path);
+							await this.updateWebview();
+							this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: true, name: message.name });
+						}
+						catch (error)
+						{
+							const errorMessage = error instanceof Error ? error.message : String(error);
+							this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: false, error: errorMessage });
+						}
+						break;
 
-          case 'removeCustomIDE':
-            await this.ideProvider.removeCustomIDE(message.index, message.name);
-            await this.updateWebview();
-            break;
+					case 'removeCustomIDE':
+						await this.ideProvider.removeCustomIDE(message.index, message.name);
+						await this.updateWebview();
+						break;
 
-          case 'syncSettings':
-            await this.performSync(message.sourceIDE, message.targetIDEs, message.settings);
-            this.panel.webview.postMessage({ command: 'syncComplete' });
-            await this.updateWebview();
-            break;
+					case 'syncSettings':
+						await this.performSync(message.sourceIDE, message.targetIDEs, message.settings);
+						this.panel.webview.postMessage({ command: 'syncComplete' });
+						await this.updateWebview();
+						break;
 
-          case 'deleteSettings':
-            await this.performDelete(message.ideIndices, message.settings);
-            this.panel.webview.postMessage({ command: 'deleteComplete' });
-            await this.updateWebview();
-            break;
+					case 'deleteSettings':
+						await this.performDelete(message.ideIndices, message.settings);
+						this.panel.webview.postMessage({ command: 'deleteComplete' });
+						await this.updateWebview();
+						break;
 
-          case 'refreshIDEs':
-            // full refresh: re-scan for IDE installations
-            await this.updateWebview(true);
-            break;
+					case 'refreshIDEs':
+						// full refresh: re-scan for IDE installations
+						await this.updateWebview(true);
+						break;
 
-          case 'refreshData':
-            // data-only refresh: reload settings from existing IDEs
-            await this.updateWebview(false);
-            break;
+					case 'refreshData':
+						// data-only refresh: reload settings from existing IDEs
+						await this.updateWebview(false);
+						break;
 
-          case 'changePrimaryLanguage':
-            if (message.language) {
-              this.languageConfig.primary = message.language as ILanguageCode;
-              this.currentLanguage = message.language as ILanguageCode;
-            }
-            break;
+					case 'changePrimaryLanguage':
+						if (message.language)
+						{
+							this.languageConfig.primary = message.language as ILanguageCode;
+							this.currentLanguage = message.language as ILanguageCode;
+						}
+						break;
 
-          case 'openLanguageConfig':
-            vscode.commands.executeCommand('vscode-ide-settings-sync.configLanguage');
-            break;
+					case 'openLanguageConfig':
+						vscode.commands.executeCommand('vscode-ide-settings-sync.configLanguage');
+						break;
 
-          case 'openIDEFolder':
-            if (message.path) {
-              vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(message.path));
-            }
-            break;
+					case 'openIDEFolder':
+						if (message.path)
+						{
+							vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(message.path));
+						}
+						break;
 
-          case 'saveSearchHistory':
-            this.context.globalState.update(EnumGlobalStateName.searchHistory, message.searchText);
-            break;
+					case 'saveSearchHistory':
+						this.context.globalState.update(EnumGlobalStateName.searchHistory, message.searchText);
+						break;
 
-          case 'saveSelectedSettings':
-            this.context.globalState.update(EnumGlobalStateName.selectedSettings, message.selectedSettings);
-            break;
+					case 'saveSelectedSettings':
+						this.context.globalState.update(EnumGlobalStateName.selectedSettings, message.selectedSettings);
+						break;
 
-          case 'saveSelectedIDEs':
-            this.context.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
-            break;
-        }
-      },
-      undefined,
-      this.disposables
-    );
-  }
+					case 'saveSelectedIDEs':
+						this.context.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
+						break;
+				}
+			},
+			undefined,
+			this.disposables,
+		);
+	}
 
-  private async performSync(
-    sourceIDEIndex: number,
-    targetIDEIndices: number[],
-    settingKeys: string[]
-  ): Promise<void> {
-    for (const settingKey of settingKeys) {
-      const value = await this.ideProvider.getSettingValue(sourceIDEIndex, settingKey);
+	private async performSync(
+		sourceIDEIndex: number,
+		targetIDEIndices: number[],
+		settingKeys: string[],
+	): Promise<void>
+	{
+		for (const settingKey of settingKeys)
+		{
+			const value = await this.ideProvider.getSettingValue(sourceIDEIndex, settingKey);
 
-      for (const targetIDEIndex of targetIDEIndices) {
-        await this.ideProvider.setSetting(targetIDEIndex, settingKey, value);
-      }
-    }
+			for (const targetIDEIndex of targetIDEIndices)
+			{
+				await this.ideProvider.setSetting(targetIDEIndex, settingKey, value);
+			}
+		}
 
-    this.ideProvider.saveSync(sourceIDEIndex, targetIDEIndices);
-  }
+		this.ideProvider.saveSync(sourceIDEIndex, targetIDEIndices);
+	}
 
-  private async performDelete(ideIndices: number[], settingKeys: string[]): Promise<void> {
-    for (const settingKey of settingKeys) {
-      for (const ideIndex of ideIndices) {
-        await this.ideProvider.deleteSetting(ideIndex, settingKey);
-      }
-    }
-  }
+	private async performDelete(ideIndices: number[], settingKeys: string[]): Promise<void>
+	{
+		for (const settingKey of settingKeys)
+		{
+			for (const ideIndex of ideIndices)
+			{
+				await this.ideProvider.deleteSetting(ideIndex, settingKey);
+			}
+		}
+	}
 
-  refreshData(): void {
-    this.updateWebview();
-  }
+	refreshData(): void
+	{
+		this.updateWebview();
+	}
 
-  reveal(): void {
-    this.panel.reveal();
-  }
+	reveal(): void
+	{
+		this.panel.reveal();
+	}
 
-  dispose(): void {
-    this.panel.dispose();
-    this.disposables.forEach((d) => d.dispose());
-  }
+	dispose(): void
+	{
+		this.panel.dispose();
+		this.disposables.forEach((d) => d.dispose());
+	}
 
-  onDispose(callback: () => void): void {
-    this.onDisposeCallback = callback;
-  }
+	onDispose(callback: () => void): void
+	{
+		this.onDisposeCallback = callback;
+	}
 
-  async syncSelectedSettings(): Promise<void> {
-    // This would be called by the extension when user clicks sync
-    // The actual sync is handled by the WebView message handler
-  }
+	async syncSelectedSettings(): Promise<void>
+	{
+		// This would be called by the extension when user clicks sync
+		// The actual sync is handled by the WebView message handler
+	}
 }

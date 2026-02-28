@@ -9,15 +9,15 @@
 
 import {
 	/** Preact 核心函數和類型 */
-	h, Fragment,
+		h, Fragment,
 	/** DOM 屬性和類型定義 */
-	DOMAttributes, ClassAttributes, Attributes,
+		DOMAttributes, ClassAttributes, Attributes,
 	/** 組件相關類型 */
-	ComponentChildren, ComponentType, ComponentProps,
+		ComponentChildren, ComponentType, ComponentProps,
 	/** HTML/SVG 屬性類型 */
-	HTMLAttributes, SVGAttributes,
+		HTMLAttributes, SVGAttributes,
 	/** VNode 虛擬節點類型 */
-	VNode,
+		VNode,
 } from 'preact';
 import { JSX as JSXInternal } from 'preact/jsx-runtime';
 import { render } from 'preact-render-to-string';
@@ -49,7 +49,7 @@ export function renderJsxToString(
 	type: 'input',
 	props:
 		| (DOMAttributes<HTMLInputElement> &
-				ClassAttributes<HTMLInputElement>)
+		ClassAttributes<HTMLInputElement>)
 		| null,
 	...children: ComponentChildren[]
 ): string;
@@ -102,8 +102,8 @@ export function renderJsxToString<T extends HTMLElement>(
 	type: string,
 	props:
 		| (ClassAttributes<T> &
-				HTMLAttributes &
-				SVGAttributes)
+		HTMLAttributes &
+		SVGAttributes)
 		| null,
 	...children: ComponentChildren[]
 ): string;

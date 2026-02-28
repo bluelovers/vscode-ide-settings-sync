@@ -11,125 +11,133 @@ export type ILanguageCode = 'en' | 'zh-tw' | 'zh-cn' | 'ja' | 'de' | 'fr';
 
 export const enum EnumIDEInfoType
 {
-  known = 'known',
-  custom = 'custom',
+	known = 'known',
+	custom = 'custom',
 }
 
 export const enum EnumLanguageOptionSource
 {
-  builtin = 'builtin',
-  extension = 'extension',
-  custom = 'custom',
-  ide = 'ide',
+	builtin = 'builtin',
+	extension = 'extension',
+	custom = 'custom',
+	ide = 'ide',
 }
 
 export const enum EnumGlobalStateName
 {
-  customIDEs = 'customIDEs',
-  languageConfig = 'languageConfig',
-  searchHistory = 'searchHistory',
-  selectedSettings = 'selectedSettings',
-  selectedIDEs = 'selectedIDEs',
+	customIDEs = 'customIDEs',
+	languageConfig = 'languageConfig',
+	searchHistory = 'searchHistory',
+	selectedSettings = 'selectedSettings',
+	selectedIDEs = 'selectedIDEs',
 }
 
 /**
  * IDE 資訊描述介面
  */
-export interface IIDEInfo {
-  /**
-   * IDE 顯示名稱
-   */
-  name: string;
-  /**
-   * IDE 類型（已知或自訂）
-   */
-  type: EnumIDEInfoType;
-  /**
-   * 是否已偵測到並可用
-   */
-  available: boolean;
-  /**
-   * IDE 的實際資料夾路徑
-   */
-  nativePath: string;
-  /**
-   * IDE 本身的語言設定識別
-   */
-  languageId?: string;
-  /**
-   * i18n 資源路徑（若有）
-   */
-  i18nPath?: string;
-  /**
-   * IDE 設定供應商，用於讀寫設定
-   * 用於讀寫設定的提供者實例
-   */
-  settingProvider: IdeSettingProvider;
+export interface IIDEInfo
+{
+	/**
+	 * IDE 顯示名稱
+	 */
+	name: string;
+	/**
+	 * IDE 類型（已知或自訂）
+	 */
+	type: EnumIDEInfoType;
+	/**
+	 * 是否已偵測到並可用
+	 */
+	available: boolean;
+	/**
+	 * IDE 的實際資料夾路徑
+	 */
+	nativePath: string;
+	/**
+	 * IDE 本身的語言設定識別
+	 */
+	languageId?: string;
+	/**
+	 * i18n 資源路徑（若有）
+	 */
+	i18nPath?: string;
+	/**
+	 * IDE 設定供應商，用於讀寫設定
+	 * 用於讀寫設定的提供者實例
+	 */
+	settingProvider: IdeSettingProvider;
 }
 
 /**
  * 未檢測到的 IDE 信息（灰顯用）
  */
-export interface IUnavailableIDE {
-  name: string;
-  type: EnumIDEInfoType;
-  expectedPath: string;
-  reason?: string;
+export interface IUnavailableIDE
+{
+	name: string;
+	type: EnumIDEInfoType;
+	expectedPath: string;
+	reason?: string;
 }
 
 // 設定資料
-export interface ISettingsData {
-  [key: string]: any;
+export interface ISettingsData
+{
+	[key: string]: any;
 }
 
 // 設定項目
-export interface ISettingEntry {
-  key: string;
-  display: string;
-  description: string;
-  // 當前 IDE 的設定值
-  currentIDEValue?: any;
-  // IDE name -> value
-  values: Map<string, any>;
+export interface ISettingEntry
+{
+	key: string;
+	display: string;
+	description: string;
+	// 當前 IDE 的設定值
+	currentIDEValue?: any;
+	// IDE name -> value
+	values: Map<string, any>;
 }
 
 // 同步操作
-export interface ISyncAction {
-  settingKey: string;
-  targetIDEs: number[];
-  sourceIDE: number;
-  action: 'sync' | 'delete';
+export interface ISyncAction
+{
+	settingKey: string;
+	targetIDEs: number[];
+	sourceIDE: number;
+	action: 'sync' | 'delete';
 }
 
 // 語言選項
-export interface ILanguageOption {
-  id: string;
-  name: string;
-  source: EnumLanguageOptionSource;
-  // 回退語言列表
-  fallbacks?: string[];
+export interface ILanguageOption
+{
+	id: string;
+	name: string;
+	source: EnumLanguageOptionSource;
+	// 回退語言列表
+	fallbacks?: string[];
 }
 
 // 語言配置
-export interface ILanguageConfig {
-  // 主顯示語言
-  primary: ILanguageCode;
-  // Fallback 語言列表（依序查找）
-  fallbackList: ILanguageCode[];
-  // 副顯示語言（可選）
-  secondary?: ILanguageCode;
-  // 是否顯示副語言描述
-  showSecondary: boolean;
+export interface ILanguageConfig
+{
+	// 主顯示語言
+	primary: ILanguageCode;
+	// Fallback 語言列表（依序查找）
+	fallbackList: ILanguageCode[];
+	// 副顯示語言（可選）
+	secondary?: ILanguageCode;
+	// 是否顯示副語言描述
+	showSecondary: boolean;
 }
 
 // 語言源系統
-export interface ILanguageSourceInfo {
-  code: string;
-  name: string;
-  nativeName?: string;
-  locale?: string;
-  available: boolean;
-  source: EnumLanguageOptionSource;
-  // 如果來自IDE，記錄是哪一個IDE
-  ideIndex?: number;
+export interface ILanguageSourceInfo
+{
+	code: string;
+	name: string;
+	nativeName?: string;
+	locale?: string;
+	available: boolean;
+	source: EnumLanguageOptionSource;
+	// 如果來自IDE，記錄是哪一個IDE
+	ideIndex?: number;
 }
