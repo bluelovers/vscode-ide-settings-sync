@@ -4,6 +4,11 @@
     "rootDir": "..",
     "types": ["node", "jest"]
   },
-  "include": ["./**/*.ts", "../src/**/*.ts"],
+  "include": [
+    "./**/*.ts", 
+    "../src/**/*.ts",
+    "./**/*.tsx",
+    "../src/**/*.tsx"
+  ],
   "exclude": ["../node_modules"]
 }

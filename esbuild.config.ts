@@ -29,11 +29,13 @@ const config: BuildOptions = {
 	platform: 'node',
 	target: 'node18',
 	sourcemap: 'both',
+	jsxFactory: 'h',
+  jsxFragment: 'Fragment',
 	plugins: [
 		sassPlugin({
 			// 關鍵設定：將 scss 轉換為 css 字串
 			type: "css-text",
-		})
+		}),
 	],
 };
 

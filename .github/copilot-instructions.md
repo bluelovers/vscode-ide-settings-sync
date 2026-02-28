@@ -103,7 +103,7 @@ pnpm run vscode:prepublish
 ## 開發規範
 
 - 使用 TypeScript 嚴格模式
-- 所有公開 API 需有 JSDoc 註解
+- 所有 API 需有 JSDoc 註解
 - 測試檔案使用 Jest
 - 優先使用 snapshot 測試
 - 遵循現有程式碼風格

@@ -9,6 +9,9 @@ import {
 } from '../utils/settingsDescriptions';
 // @ts-ignore
 import cssContent from './settingsSyncPanel.scss';
+import { h, Fragment } from 'preact';
+import { render } from 'preact-render-to-string';
+import { PageHead } from './components/PageHead';
 
 export class SettingsSyncPanel {
   public readonly panel: vscode.WebviewPanel;
@@ -121,13 +124,10 @@ export class SettingsSyncPanel {
     return `<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="${csp}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IDE Settings Sync</title>
-  <style>
-      ${cssContent}
-  </style>
+  ${render(h(PageHead, {
+    settingsSyncPanel: this,
+    cssContent,
+  }))}
 </head>
 <body>
   <div class="container">
@@ -255,7 +255,7 @@ export class SettingsSyncPanel {
 
     // 👇 Multi-language setting descriptions
     const settingDescriptions = ${JSON.stringify(this.generateMultilingualDescriptions())};
-    
+
     // 👇 Description lookup function with language fallback
     function getSettingDescription(key) {
       if (settingDescriptions[key]) {
@@ -386,7 +386,7 @@ export class SettingsSyncPanel {
         } else {
           displayValue = String(value);
         }
-        
+
         const isCurrent = ideName === currentIDEName;
         let valueClass = value === undefined ? 'ide-value-missing' : '';
         if (!valueClass && isCurrent) {
@@ -433,7 +433,7 @@ export class SettingsSyncPanel {
       sortedSelectedSettings.forEach(key => {
         const description = getSettingDescription(key);
         const settingId = 'setting-' + key.replace(/\\./g, '_');
-        
+
         // 查找該設定值是否在 ideList 中
         let valuesHTML = '';
         let settingExists = false;
