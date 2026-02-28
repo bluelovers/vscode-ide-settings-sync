@@ -12,7 +12,9 @@ import cssContent from './settingsSyncPanel.scss';
 import { h, Fragment } from 'preact';
 import { render } from 'preact-render-to-string';
 import { PageHead } from './components/PageHead';
+import { IDEList, IDEListSection } from './components/IDEList';
 import { renderJsxToString } from '../utils/render-jsx';
+import { formatPath } from '../utils/formatPath';
 
 export class SettingsSyncPanel {
   public readonly panel: vscode.WebviewPanel;
@@ -89,38 +91,15 @@ export class SettingsSyncPanel {
     const savedSelectedSettings = this.context.globalState.get<string[]>(EnumGlobalStateName.selectedSettings) || [];
     const savedSelectedIDEs = this.context.globalState.get<number[]>(EnumGlobalStateName.selectedIDEs) || [];
 
-    // Generate available IDEs HTML
-    const availableIDEsHTML = ideList
-      .map(
-        (ide, index) =>
-          `<div class="ide-item available${ide.name === currentIDEName ? ' current' : ''}">
-        <input type="checkbox" id="ide-${index}" class="ide-checkbox" data-index="${index}" data-name="${ide.name}">
-        <label for="ide-${index}"><strong>${ide.name}</strong></label>
-        <span class="ide-path" title="${ide.nativePath}">${this.formatPath(ide.nativePath)}</span>
-        <button class="btn btn-small" onclick="openIDEFolder('${ide.nativePath.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Open IDE folder">📂</button>
-        ${ide.type === EnumIDEInfoType.custom ? `<button class="btn btn-small btn-remove" onclick="removeCustomIDE(${index})" title="Remove this custom IDE">Remove</button>` : ''}
-      </div>`
-      )
-      .join('');
-
-    // Generate unavailable IDEs HTML (grayed out)
-    const unavailableIDEsHTML = unavailableIDEs
-      .map(
-        (ide) => {
-          const reasonHtml = ide.reason ? `<div class="ide-item unavailable-reason">${ide.reason.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : '';
-
-          return `<div class="ide-item unavailable" title="Not detected: ${ide.expectedPath}">
-          <input type="checkbox" id="ide-unavail-${ide.name}" class="ide-checkbox" disabled>
-          <label for="ide-unavail-${ide.name}"><strong>${ide.name}</strong></label>
-          <span class="ide-path">❌ Not detected: ${ide.expectedPath}</span>
-        </div>
-        ${reasonHtml}
-      </div>`;
-        }
-      )
-      .join('');
-
-    const csp = `default-src 'none'; img-src ${this.panel.webview.cspSource} https:; style-src ${this.panel.webview.cspSource} 'unsafe-inline'; script-src ${this.panel.webview.cspSource} 'unsafe-inline' 'unsafe-eval'; connect-src ${this.panel.webview.cspSource};`;
+    /**
+     * 生成 IDE 列表 HTML
+     * 使用 IDEList 組件渲染可用和不可用的 IDE 列表
+     */
+    const ideListHTML = renderJsxToString(IDEListSection, {
+      availableIDEs: ideList,
+      unavailableIDEs: unavailableIDEs,
+      currentIDEName,
+    });
 
     return `<!DOCTYPE html>
 <html>
@@ -135,18 +114,10 @@ export class SettingsSyncPanel {
     <div class="header">
       <h1>🔄 IDE Settings Sync</h1>
       <div class="header-actions">
-        <button class="btn secondary" onclick="refreshIDEs()" title="Refresh IDE list">🔄 Refresh</button>
       </div>
     </div>
 
-    <div class="section">
-      <h2>Select IDEs</h2>
-      <div class="ide-list">
-        ${availableIDEsHTML}
-        ${unavailableIDEsHTML}
-      </div>
-      <button class="btn" onclick="addCustomIDE()" style="margin-top: 10px;" title="Manually specify an IDE/settings folder">+ Add Custom IDE Path</button>
-    </div>
+    ${ideListHTML}
 
     <div class="section">
       <h2>Description Language Configuration</h2>
@@ -498,33 +469,6 @@ export class SettingsSyncPanel {
       }
     }
 
-    function addCustomIDE() {
-      // 使用 VS Code 的輸入框來取得路徑和名稱
-      // Use VS Code's input box to get path and name
-      vscode.postMessage({ command: 'requestAddCustomIDE' });
-    }
-
-    function removeCustomIDE(index) {
-      if (confirm('Remove this custom IDE?')) {
-        vscode.postMessage({ command: 'removeCustomIDE', index });
-      }
-    }
-
-    function openIDEFolder(folderPath) {
-      vscode.postMessage({ command: 'openIDEFolder', path: folderPath });
-    }
-
-    /**
-     * Ask the extension to re-scan the system for IDE installations.
-     * This will update the IDE list itself and then rebuild the webview.
-     * / 請求擴充套件重新掃描 IDE 安裝，更新 IDE 列表並重建視窗。
-     *
-     * @jsdoc
-     */
-    function refreshIDEs() {
-      vscode.postMessage({ command: 'refreshIDEs' });
-    }
-
     function syncSettings() {
       const selectedIDEs = [];
       document.querySelectorAll('.ide-checkbox:checked').forEach(checkbox => {
@@ -747,14 +691,6 @@ export class SettingsSyncPanel {
 </html>`;
   }
 
-  private formatPath(fullPath: string): string {
-    const parts = fullPath.replace(/\\\\/g, '/').split('/');
-    if (parts.length > 3) {
-      return '...' + parts.slice(-3).join('/');
-    }
-    return fullPath;
-  }
-
   /**
    * 生成多語言設定描述對象
    * Generate multi-language setting descriptions object for WebView injection
@@ -811,7 +747,7 @@ export class SettingsSyncPanel {
             break;
 
           case 'removeCustomIDE':
-            await this.ideProvider.removeCustomIDE(message.index);
+            await this.ideProvider.removeCustomIDE(message.index, message.name);
             await this.updateWebview();
             break;
 

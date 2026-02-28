@@ -22,7 +22,8 @@ export type IContentSecurityPolicyProps = ITSRequireAtLeastOne<{
  * Settings Sync 面板頁面屬性介面
  * 定義渲染 Webview 頁面所需的完整屬性集合
  */
-export interface ISettingsSyncPanelPageProps {
+export interface ISettingsSyncPanelPageProps
+{
 	/** SettingsSyncPanel 實例，提供面板操作和狀態存取能力 */
 	settingsSyncPanel: SettingsSyncPanel;
 	/** 編譯後的 CSS 內容字串，將直接注入頁面 style 標籤 */
@@ -35,3 +36,47 @@ export interface ISettingsSyncPanelPageProps {
  * 主要用於組件渲染時的屬性傳遞，允許部分屬性在初始階段未定義
  */
 export type ISettingsSyncPanelPagePropsRuntime = Partial<ISettingsSyncPanelPageProps>;
+
+/**
+ * IDE 資訊（用於 Webview 渲染）
+ * 精簡版的 IDE 資訊，用於傳遞給前端組件
+ */
+export interface IIDEInfoWebview
+{
+	/** IDE 顯示名稱 */
+	name: string;
+	/** IDE 類型（已知或自訂） */
+	type: string;
+	/** IDE 的實際資料夾路徑 */
+	nativePath: string;
+	/** IDE 設定值 */
+	settings?: Record<string, any>;
+}
+
+/**
+ * 不可用的 IDE 資訊（用於 Webview 渲染）
+ */
+export interface IUnavailableIDEInfoWebview
+{
+	/** IDE 顯示名稱 */
+	name: string;
+	/** IDE 類型 */
+	type: string;
+	/** 預期路徑 */
+	expectedPath: string;
+	/** 不可用原因 */
+	reason?: string;
+}
+
+/**
+ * IDE 列表組件屬性
+ */
+export interface IIDEListProps
+{
+	/** 可用的 IDE 列表 */
+	availableIDEs: IIDEInfoWebview[];
+	/** 不可用的 IDE 列表 */
+	unavailableIDEs: IUnavailableIDEInfoWebview[];
+	/** 當前 IDE 名稱 */
+	currentIDEName: string;
+}

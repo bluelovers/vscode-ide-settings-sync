@@ -571,16 +571,20 @@ export class IDEProvider {
    *
    * @param ideIndex - IDE 在列表中的索引 / Index of IDE in list
    */
-  async removeCustomIDE(ideIndex: number): Promise<void> {
+  async removeCustomIDE(ideIndex: number, name: string): Promise<void>
+  {
     const ide = this.getIdeByIndex(ideIndex, true);
 
-    if (!ide)
+    if (!ide || ide.type !== EnumIDEInfoType.custom || ide.name !== name)
     {
+      console.warn(`[${ide?.type !== EnumIDEInfoType.known ? `Custom ` : ''}IDE] 無法移除目標 IDE / Cannot remove target IDE: [${ideIndex}] ${name}`);
+
       return;
     }
 
     // 只允許移除自訂 IDE，不能移除內建 IDE / Only allow removal of custom IDEs
-    if (ide.type === EnumIDEInfoType.custom) {
+    if (ide.type === EnumIDEInfoType.custom)
+    {
       // 從全域狀態讀取自訂 IDE 列表 / Read custom IDE list from global state
       const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
         EnumGlobalStateName.customIDEs,
@@ -591,13 +595,15 @@ export class IDEProvider {
       const filtered = customIDEs.filter((c) => c.path !== ide.nativePath);
       await this.context.globalState.update(EnumGlobalStateName.customIDEs, filtered);
 
-      console.log(`[Custom IDE] 已移除 / Removed: ${ide.name}`);
+      console.log(`[Custom IDE] 已移除 / Removed: [${ideIndex}] ${ide.name}`);
 
       // 重新整理 IDE 列表 / Refresh IDE list
       await this.refreshIDEList();
-    } else {
+    }
+    else
+    {
       // 試圖移除內建 IDE / Attempted to remove built-in IDE
-      console.warn(`[Custom IDE] 無法移除內建 IDE / Cannot remove built-in IDE: ${ide.name}`);
+      console.warn(`[Custom IDE] 無法移除內建 IDE / Cannot remove built-in IDE: [${ideIndex}] ${ide.name}`);
     }
   }
 }
