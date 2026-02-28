@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { existsSync } from 'fs';
 import * as path from 'path';
+import { fsSameRealpath } from 'path-is-same';
 import { EnumGlobalStateName, EnumIDEInfoType, IIDEInfo, IUnavailableIDE } from '../types';
 import { _keyToPath } from '../utils/json';
 import { IdeSettingProvider } from './ideSettingProvider';
@@ -538,24 +539,84 @@ export class IDEProvider {
    * 添加自訂 IDE 路徑
    * Add a custom IDE path
    *
+   * 此方法會執行以下驗證：
+   * - 路徑必須是絕對路徑
+   * - 名稱不能與內建 IDE 名稱相同
+   * - 路徑不能與內建 IDE 路徑相同（使用 fsSameRealpath 比較實際路徑）
+   * - 名稱不能與已新增的自訂 IDE 名稱相同
+   * - 路徑不能與已新增的自訂 IDE 路徑相同（使用 fsSameRealpath 比較實際路徑）
+   *
    * @param name - 自訂 IDE 的顯示名稱 / Display name for custom IDE
    * @param settingsPath - IDE 設定資料夾的完整路徑 / Full path to IDE settings folder
+   * @returns 是否成功添加 / Whether the addition was successful
+   * @throws Error 當驗證失敗時拋出錯誤 / Throws error when validation fails
    */
-  async addCustomIDE(name: string, settingsPath: string): Promise<void> {
+  async addCustomIDE(name: string, settingsPath: string): Promise<boolean>
+  {
+    // 1. 檢查路徑是否為絕對路徑 / Check if path is absolute
+    if (!path.isAbsolute(settingsPath))
+    {
+      const errorMsg = `[Custom IDE] 路徑必須是絕對路徑 / Path must be absolute: ${settingsPath}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
     // 從全域狀態讀取現有自訂 IDE 列表 / Read existing custom IDE list
     const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
       EnumGlobalStateName.customIDEs,
       []
     );
 
-    // 檢查路徑是否已存在 / Check if path already exists
-    const alreadyExists = customIDEs.some((ide) => ide.path === settingsPath);
-    if (alreadyExists) {
-      console.warn(`[Custom IDE] 路徑已存在 / Path already exists: ${settingsPath}`);
-      return;
+    // 2. 檢查名稱是否與內建 IDE 名稱相同（忽略大小寫）/ Check if name matches built-in IDE name
+    const normalizedInputName = name.toLowerCase();
+    const builtInNameMatch = knownIDEs.find(
+      (ide) => ide.name.toLowerCase() === normalizedInputName
+    );
+    if (builtInNameMatch)
+    {
+      const errorMsg = `[Custom IDE] 名稱與內建 IDE "${builtInNameMatch.name}" 相同 / Name matches built-in IDE: ${name}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
-    // 添加新的自訂 IDE / Add new custom IDE
+    // 3. 檢查路徑是否與內建 IDE 路徑相同（使用 fsSameRealpath）/ Check if path matches built-in IDE path
+    for (const ide of knownIDEs)
+    {
+      for (const folderName of ide.appFolderNames)
+      {
+        const builtInPath = this.getUserDataPath(folderName, 'User');
+        if (await fsSameRealpath(settingsPath, builtInPath))
+        {
+          const errorMsg = `[Custom IDE] 路徑與內建 IDE "${ide.name}" 相同 / Path matches built-in IDE: ${settingsPath}`;
+          console.error(errorMsg);
+          throw new Error(errorMsg);
+        }
+      }
+    }
+
+    // 4. 檢查名稱是否與已新增的自訂 IDE 名稱相同（忽略大小寫）/ Check if name matches existing custom IDE name
+    const existingCustomNameMatch = customIDEs.find(
+      (ide) => ide.name.toLowerCase() === normalizedInputName
+    );
+    if (existingCustomNameMatch)
+    {
+      const errorMsg = `[Custom IDE] 名稱與已存在的自訂 IDE "${existingCustomNameMatch.name}" 相同 / Name matches existing custom IDE: ${name}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    // 5. 檢查路徑是否與已新增的自訂 IDE 路徑相同（使用 fsSameRealpath）/ Check if path matches existing custom IDE path
+    for (const ide of customIDEs)
+    {
+      if (await fsSameRealpath(settingsPath, ide.path))
+      {
+        const errorMsg = `[Custom IDE] 路徑與已存在的自訂 IDE "${ide.name}" 相同 / Path matches existing custom IDE: ${settingsPath}`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+      }
+    }
+
+    // 所有驗證通過，添加新的自訂 IDE / All validations passed, add new custom IDE
     customIDEs.push({ name, path: settingsPath });
     await this.context.globalState.update(EnumGlobalStateName.customIDEs, customIDEs);
 
@@ -563,6 +624,8 @@ export class IDEProvider {
 
     // 重新整理以驗證新路徑 / Refresh to validate new path
     await this.refreshIDEList();
+
+    return true;
   }
 
   /**

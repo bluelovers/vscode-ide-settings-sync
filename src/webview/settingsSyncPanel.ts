@@ -636,14 +636,26 @@ export class SettingsSyncPanel {
 
     window.addEventListener('message', event => {
       const message = event.data;
-      if (message.command === 'syncComplete') {
+      if (message.command === 'syncComplete')
+      {
         showMessage('Settings synced successfully!', 'success');
         vscode.postMessage({ command: 'refreshData' });
-      } else if (message.command === 'deleteComplete') {
+      }
+      else if (message.command === 'deleteComplete')
+      {
         showMessage('Settings deleted successfully!', 'success');
         vscode.postMessage({ command: 'refreshData' });
-      } else if (message.command === 'addCustomIDEComplete') {
-        showMessage('Custom IDE added successfully!', 'success');
+      }
+      else if (message.command === 'addCustomIDEComplete')
+      {
+        if (message.success)
+        {
+          showMessage(\`✓ Custom IDE "\${message.name}" added successfully!\`, 'success');
+        }
+        else
+        {
+          showMessage(\`✗ Failed to add IDE: \${message.error}\`, 'error');
+        }
       }
     });
 
@@ -735,15 +747,31 @@ export class SettingsSyncPanel {
 
             // 新增 IDE
             // Add IDE
-            await this.ideProvider.addCustomIDE(name, path);
-            await this.updateWebview();
-            this.panel.webview.postMessage({ command: 'addCustomIDEComplete', name });
+            try
+            {
+              await this.ideProvider.addCustomIDE(name, path);
+              await this.updateWebview();
+              this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: true, name });
+            }
+            catch (error)
+            {
+              const errorMessage = error instanceof Error ? error.message : String(error);
+              this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: false, error: errorMessage });
+            }
             break;
 
           case 'addCustomIDE':
-            await this.ideProvider.addCustomIDE(message.name, message.path);
-            await this.updateWebview();
-            this.panel.webview.postMessage({ command: 'addCustomIDEComplete', name: message.name });
+            try
+            {
+              await this.ideProvider.addCustomIDE(message.name, message.path);
+              await this.updateWebview();
+              this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: true, name: message.name });
+            }
+            catch (error)
+            {
+              const errorMessage = error instanceof Error ? error.message : String(error);
+              this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: false, error: errorMessage });
+            }
             break;
 
           case 'removeCustomIDE':
