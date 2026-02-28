@@ -74,10 +74,11 @@ function BtnRemoveCustomIDE(props: {
 	ide: Pick<IIDEInfo, 'name'>,
 })
 {
-	// @ts-ignore
+
 	return (<button class="btn btn-small btn-remove"
-	                onclick={`removeCustomIDE(${props.index}, ${JSON.stringify(props.ide.name)})`}
-	                title="Remove this custom IDE">Remove</button>)
+		// @ts-ignore
+		              onclick={`removeCustomIDE(${props.index}, ${JSON.stringify(props.ide.name)})`}
+		              title="Remove this custom IDE">Remove</button>)
 }
 
 function BtnOpenIDEFolder(props: {
