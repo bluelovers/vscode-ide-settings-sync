@@ -12,6 +12,7 @@ import cssContent from './settingsSyncPanel.scss';
 import { h, Fragment } from 'preact';
 import { render } from 'preact-render-to-string';
 import { PageHead } from './components/PageHead';
+import { renderJsxToString } from '../utils/render-jsx';
 
 export class SettingsSyncPanel {
   public readonly panel: vscode.WebviewPanel;
@@ -124,10 +125,10 @@ export class SettingsSyncPanel {
     return `<!DOCTYPE html>
 <html>
 <head>
-  ${render(h(PageHead, {
+  ${renderJsxToString(PageHead, {
     settingsSyncPanel: this,
     cssContent,
-  }))}
+  })}
 </head>
 <body>
   <div class="container">
