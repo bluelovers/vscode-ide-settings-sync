@@ -34,6 +34,12 @@ export const knownIDEs = [
     // CodeBuddy CN may use spaces or hyphens
     appFolderNames: ['CodeBuddy CN', 'CodeBuddy-CN', 'CodeBuddyCN'],
   },
+  {
+    name: 'Windsurf',
+    // Windsurf 可能的資料夾名稱變化
+    // Possible Windsurf folder name variations
+    appFolderNames: ['Windsurf'],
+  },
 ] as const;
 
 /**

@@ -12,6 +12,7 @@
 | Visual Studio Code - Insiders | `Code - Insiders`<br>`Code-Insiders`<br>`CodeInsiders` | VS Code 測試版 |
 | Antigravity | `Antigravity` | Antigravity IDE |
 | CodeBuddy CN | `CodeBuddy CN`<br>`CodeBuddy-CN`<br>`CodeBuddyCN` | CodeBuddy 中文版 |
+| Windsurf | `Windsurf` | Windsurf IDE |
 
 ---
 
@@ -33,6 +34,7 @@
 | Visual Studio Code - Insiders | `%APPDATA%\Code - Insiders\User\settings.json` |
 | Antigravity | `%APPDATA%\Antigravity\User\settings.json` |
 | CodeBuddy CN | `%APPDATA%\CodeBuddy CN\User\settings.json` |
+| Windsurf | `%APPDATA%\Windsurf\User\settings.json` |
 
 **常見實際路徑：**
 
@@ -59,6 +61,7 @@ C:\Users\{UserName}\AppData\Roaming\Code - Insiders\User\settings.json
 | Visual Studio Code - Insiders | `~/.config/Code - Insiders/User/settings.json` |
 | Antigravity | `~/.config/Antigravity/User/settings.json` |
 | CodeBuddy CN | `~/.config/CodeBuddy CN/User/settings.json` |
+| Windsurf | `~/.config/Windsurf/User/settings.json` |
 
 **常見實際路徑：**
 
@@ -87,6 +90,7 @@ C:\Users\{UserName}\AppData\Roaming\Code - Insiders\User\settings.json
 | Visual Studio Code - Insiders | `~/.config/Code - Insiders/User/settings.json` |
 | Antigravity | `~/.config/Antigravity/User/settings.json` |
 | CodeBuddy CN | `~/.config/CodeBuddy CN/User/settings.json` |
+| Windsurf | `~/.config/Windsurf/User/settings.json` |
 
 **常見實際路徑：**
 

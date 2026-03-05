@@ -4,7 +4,7 @@ A Visual Studio Code extension that synchronizes IDE settings across multiple VS
 
 ## 功能特色
 
-- **多 IDE 支援**：可同步設定至 Visual Studio Code、VS Code Insiders、Antigravity、CodeBuddy CN 或自訂 IDE 路徑
+- **多 IDE 支援**：可同步設定至 Visual Studio Code、VS Code Insiders、Antigravity、CodeBuddy CN、Windsurf 或自訂 IDE 路徑
 - **搜尋與探索**：輕鬆搜尋設定並檢視所有偵測到的 IDE 中的目前值
 - **同步前預覽**：在同步前查看每個 IDE 中的設定值
 - **精選同步**：選擇要同步的設定和目標 IDE
