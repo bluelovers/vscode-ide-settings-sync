@@ -64,16 +64,18 @@
   "scripts": {
     "vscode:prepublish": "node --run esbuild-base -- --minify",
     "esbuild-base": "tsx esbuild.config",
-    "esbuild": "node --run esbuild-base",
+    "esbuild": "node --run esbuild-base --",
     "esbuild-watch": "node --run esbuild-base -- --watch",
+    "prebuild": "node --run test:unit:snapshot",
     "build": "node --run esbuild-base",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "node --run compile",
-    "test": "node --run test:unit",
-    "test:unit": "jest",
+    "test": "node --run test:unit --",
+    "test:unit": "jest --passWithNoTests",
     "test:unit:watch": "node --run test:unit -- --watch",
-    "test:unit:coverage": "node --run test:unit -- --coverage"
+    "test:unit:coverage": "node --run test:unit -- --coverage",
+    "test:unit:snapshot": "node --run test:unit -- --u"
   },
   "devDependencies": {
     "@testing-library/preact": "^3.2.4",
