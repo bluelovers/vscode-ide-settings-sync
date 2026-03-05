@@ -30,6 +30,26 @@
         "command": "vscode-ide-settings-sync.syncSettings",
         "title": "Sync Selected Settings",
         "category": "IDE Settings Sync"
+      },
+      {
+        "command": "ide-sync.exportCustomIDEs",
+        "title": "Export Custom IDEs",
+        "category": "IDE Settings Sync"
+      },
+      {
+        "command": "ide-sync.exportSelectedSettings",
+        "title": "Export Selected Settings",
+        "category": "IDE Settings Sync"
+      },
+      {
+        "command": "ide-sync.exportAll",
+        "title": "Export All (Custom IDEs + Settings)",
+        "category": "IDE Settings Sync"
+      },
+      {
+        "command": "ide-sync.import",
+        "title": "Import Settings",
+        "category": "IDE Settings Sync"
       }
     ],
     "menus": {

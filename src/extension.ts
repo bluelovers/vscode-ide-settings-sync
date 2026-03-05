@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { IDEProvider } from './providers/ideProvider';
 import { SettingsSyncPanel } from './webview/settingsSyncPanel';
+import { ExportImportCommands } from './commands/exportImportCommands';
 import { ILanguageConfig, ILanguageSourceInfo, ILanguageCode, EnumGlobalStateName } from './types';
 import { isValidLanguageCode, getDefaultFallbackList } from './utils/settingsDescriptions';
 
@@ -19,6 +20,9 @@ export async function activate(context: vscode.ExtensionContext)
 	// Initialize language configuration
 	languageConfig = loadLanguageConfig(context);
 	console.log('[Language Config] 載入配置:', languageConfig);
+
+	// Initialize export/import commands
+	const exportImportCommands = new ExportImportCommands(context);
 
 	// Register commands
 	let disposable = vscode.commands.registerCommand(

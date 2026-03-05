@@ -50,8 +50,13 @@ $gap-lg: 12px;
   border-radius: $radius-md;
   cursor: pointer;
   font-size: $font-size-base;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-family: inherit;
+  transition: all 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 /**
@@ -60,6 +65,198 @@ $gap-lg: 12px;
  */
 @mixin form-element {
   padding: 6px $spacing-sm;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-textBlockQuote-border);
+  border-radius: $radius-md;
+  cursor: pointer;
+}
+
+/**
+ * ============================================
+ * 3. Export/Import 樣式
+ * ============================================
+ */
+
+.export-import-section {
+  .section {
+    margin-bottom: $spacing-xxl;
+    padding: $spacing-xxl;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: $radius-md;
+    
+    h2 {
+      margin: 0 0 $spacing-xl 0;
+      color: var(--vscode-foreground);
+    }
+  }
+
+  .export-section,
+  .import-section {
+    margin-bottom: $spacing-xxl;
+    padding: $spacing-xxl;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: $radius-md;
+
+    h3 {
+      margin: 0 0 $spacing-xl 0;
+      color: var(--vscode-foreground);
+    }
+  }
+
+  .path-selection {
+    margin-bottom: $spacing-xxl;
+    padding: $spacing-xl;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: $radius-md;
+
+    h4 {
+      margin: 0 0 $spacing-md 0;
+      font-size: $font-size-base;
+    }
+
+    .path-input-group {
+      display: flex;
+      gap: $gap-md;
+      align-items: center;
+      margin-bottom: $spacing-md;
+
+      .path-input {
+        flex: 1;
+        padding: $spacing-sm;
+        border: 1px solid var(--vscode-input-border);
+        background: var(--vscode-input-background);
+        color: var(--vscode-input-foreground);
+        border-radius: $radius-md;
+        font-size: $font-size-base;
+
+        &::placeholder {
+          color: var(--vscode-input-placeholderForeground);
+        }
+
+        &:focus {
+          outline: 1px solid var(--vscode-focusBorder);
+          outline-offset: -1px;
+        }
+      }
+
+      .browse-btn {
+        @include btn-base;
+        background: var(--vscode-button-secondaryBackground);
+        color: var(--vscode-button-secondaryForeground);
+        white-space: nowrap;
+
+        &:hover:not(:disabled) {
+          background: var(--vscode-button-secondaryHoverBackground);
+        }
+      }
+    }
+  }
+
+  .options {
+    margin-bottom: $spacing-xxl;
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: $gap-sm;
+      cursor: pointer;
+
+      .checkbox-input {
+        margin: 0;
+      }
+
+      .checkbox-label {
+        font-size: $font-size-base;
+      }
+    }
+  }
+
+  .actions {
+    .action-btn {
+      @include btn-base;
+      background: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+      font-weight: 500;
+
+      &:hover:not(:disabled) {
+        background: var(--vscode-button-hoverBackground);
+      }
+
+      &.processing {
+        opacity: 0.7;
+        cursor: wait;
+      }
+    }
+  }
+
+  .import-result {
+    padding: $spacing-xl;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: $radius-md;
+    background: var(--vscode-editor-background);
+
+    h4 {
+      margin: 0 0 $spacing-md 0;
+      color: var(--vscode-foreground);
+    }
+
+    .result-message {
+      &.success {
+        color: var(--vscode-testing-iconPassed);
+      }
+
+      &.error {
+        color: var(--vscode-errorForeground);
+      }
+    }
+
+    .result-summary {
+      margin-top: $spacing-md;
+
+      .summary-title {
+        font-weight: 600;
+        margin-bottom: $spacing-sm;
+      }
+
+      .summary-list {
+        margin: $spacing-sm 0;
+        padding-left: $spacing-xl;
+
+        li {
+          margin-bottom: $spacing-xs;
+        }
+      }
+    }
+
+    .result-details {
+      margin-top: $spacing-md;
+
+      .details-title {
+        font-weight: 600;
+        margin-bottom: $spacing-sm;
+      }
+
+      .details-list {
+        margin: $spacing-sm 0;
+        padding-left: $spacing-xl;
+
+        li {
+          margin-bottom: $spacing-xs;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * ============================================
+ * 4. 原有樣式繼續...
+ * ============================================
+ */
+
+.btn {
+  @include btn-base;
   background-color: var(--vscode-input-background);
   color: var(--vscode-input-foreground);
   border: 1px solid var(--vscode-textBlockQuote-border);

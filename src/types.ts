@@ -33,6 +33,71 @@ export const enum EnumGlobalStateName
 }
 
 /**
+ * 匯出匯入相關型別定義
+ * Export/Import related type definitions
+ */
+
+export const enum ExportImportType
+{
+	customIDEs = 'customIDEs',
+	selectedSettings = 'selectedSettings',
+	both = 'both',
+}
+
+export interface ICustomIDEExport
+{
+	name: string;
+	path: string;
+	exportedAt: string;
+	detected?: boolean;
+}
+
+export interface ISelectedSettingExport
+{
+	key: string;
+	display: string;
+	description: string;
+	values: Record<string, any>;
+	exportedAt: string;
+}
+
+export interface IExportImportData
+{
+	version: string;
+	exportedAt: string;
+	exportedBy: string;
+	type: ExportImportType;
+	customIDEs?: ICustomIDEExport[];
+	selectedSettings?: ISelectedSettingExport[];
+	metadata?: {
+		totalCustomIDEs: number;
+		totalSelectedSettings: number;
+		knownIDEsExcluded: string[];
+	};
+}
+
+export interface IImportOptions
+{
+	includeCustomIDEs: boolean;
+	includeSelectedSettings: boolean;
+	excludeKnownIDEs: boolean;
+	selectedSettingKeys?: string[];
+	overwriteExisting: boolean;
+	knownIDEsExcluded?: string[];
+}
+
+export interface IImportResult
+{
+	success: boolean;
+	importedCustomIDEs: number;
+	importedSelectedSettings: number;
+	skippedCustomIDEs: number;
+	skippedSelectedSettings: number;
+	errors: string[];
+	warnings: string[];
+}
+
+/**
  * IDE 資訊描述介面
  */
 export interface IIDEInfo

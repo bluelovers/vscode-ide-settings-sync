@@ -13,6 +13,7 @@ import { h, Fragment } from 'preact';
 import { render } from 'preact-render-to-string';
 import { PageHead } from './components/PageHead';
 import { IDEList, IDEListSection } from './components/IDEList';
+import { ExportImportPanel } from './components/ExportImportPanel';
 import { renderJsxToString } from '../utils/render-jsx';
 import { formatPath } from '../utils/formatPath';
 
@@ -162,6 +163,7 @@ export class SettingsSyncPanel
       <button class="tab active" onclick="switchTab('sync')">Sync Settings</button>
       <button class="tab" onclick="switchTab('values')">View All Settings</button>
       <button class="tab" onclick="switchTab('selected')">Selected Settings</button>
+      <button class="tab" onclick="switchTab('export-import')">Export/Import</button>
     </div>
 
     <div id="sync" class="tab-content active">
@@ -220,6 +222,13 @@ export class SettingsSyncPanel
         </div>
       </div>
     </div>
+
+    <div id="export-import" class="tab-content">
+      ${renderJsxToString(ExportImportPanel, {
+        importResult: undefined,
+        isProcessing: false
+      })}
+    </div>
   </div>
 
   <script>
@@ -257,7 +266,7 @@ export class SettingsSyncPanel
       if (content) content.classList.add('active');
 
       // Safely activate the corresponding tab button by index
-      const tabIndexMap = { sync: 0, values: 1, selected: 2 };
+      const tabIndexMap = { sync: 0, values: 1, selected: 2, 'export-import': 3 };
       const tabs = Array.from(document.querySelectorAll('.tab'));
       const btn = tabs[tabIndexMap[tabName]];
       if (btn) btn.classList.add('active');
@@ -844,6 +853,93 @@ export class SettingsSyncPanel
 
 					case 'saveSelectedIDEs':
 						this.context.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
+						break;
+
+					case 'browseExportPath':
+						const exportPath = await vscode.window.showOpenDialog({
+							canSelectFiles: false,
+							canSelectFolders: true,
+							canSelectMany: false,
+							openLabel: 'Select Export Folder',
+							title: 'Select folder to save export file'
+						});
+						if (exportPath && exportPath[0]) {
+							this.panel.webview.postMessage({ 
+								command: 'exportPathSelected', 
+								path: exportPath[0].fsPath 
+							});
+						}
+						break;
+
+					case 'browseImportPath':
+						const importPath = await vscode.window.showOpenDialog({
+							canSelectFiles: true,
+							canSelectFolders: false,
+							canSelectMany: false,
+							filters: {
+								'JSON Files': ['json']
+							},
+							openLabel: 'Select Import File',
+							title: 'Select file to import'
+						});
+						if (importPath && importPath[0]) {
+							this.panel.webview.postMessage({ 
+								command: 'importPathSelected', 
+								path: importPath[0].fsPath 
+							});
+						}
+						break;
+
+					case 'exportCustomIDEs':
+						try {
+							await vscode.commands.executeCommand('ide-sync.exportCustomIDEs');
+							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
+						} catch (error) {
+							this.panel.webview.postMessage({ 
+								command: 'exportComplete', 
+								success: false, 
+								error: error instanceof Error ? error.message : String(error) 
+							});
+						}
+						break;
+
+					case 'exportSelectedSettings':
+						try {
+							await vscode.commands.executeCommand('ide-sync.exportSelectedSettings');
+							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
+						} catch (error) {
+							this.panel.webview.postMessage({ 
+								command: 'exportComplete', 
+								success: false, 
+								error: error instanceof Error ? error.message : String(error) 
+							});
+						}
+						break;
+
+					case 'exportAll':
+						try {
+							await vscode.commands.executeCommand('ide-sync.exportAll');
+							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
+						} catch (error) {
+							this.panel.webview.postMessage({ 
+								command: 'exportComplete', 
+								success: false, 
+								error: error instanceof Error ? error.message : String(error) 
+							});
+						}
+						break;
+
+					case 'import':
+						try {
+							await vscode.commands.executeCommand('ide-sync.import');
+							this.panel.webview.postMessage({ command: 'importComplete', success: true });
+						} catch (error) {
+							this.panel.webview.postMessage({ 
+								command: 'importComplete', 
+								success: false, 
+								error: error instanceof Error ? error.message : String(error) 
+							});
+						}
 						break;
 				}
 			},

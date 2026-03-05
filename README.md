@@ -21,6 +21,12 @@ A Visual Studio Code extension that synchronizes IDE settings across multiple VS
 - **精選同步**：選擇要同步的設定和目標 IDE
 - **刪除設定**：從特定 IDE 移除設定
 - **自訂 IDE**：新增自訂 IDE 路徑以支援不受支援的 IDE
+- **匯出匯入**：匯出和匯入 IDE 設定，支援備份和跨機器同步
+  - 📤 匯出自訂 IDE 設定
+  - 📤 匯出選擇的設定
+  - 📤 匯出所有設定（包含已知 IDE）
+  - 📥 匯入設定檔案
+  - 📁 自訂匯出/匯入路徑
 
 ## 安裝
 
@@ -47,6 +53,20 @@ code --install-extension bluelovers.vscode-ide-settings-sync
    - 選擇要同步的設定
    - 選擇來源 IDE（第一個選擇的 IDE）
    - 點擊 **"Sync Selected"** 執行同步
+
+### 匯出匯入功能
+
+1. 開啟 **Export/Import** 選項卡
+2. **匯出功能**：
+   - 選擇匯出類型（自訂 IDE / 選擇的設定 / 所有設定）
+   - 設定匯出路徑（可留空使用檔案對話框）
+   - 點擊 📁 Browse 選擇資料夾
+   - 點擊對應的匯出按鈕
+3. **匯入功能**：
+   - 選擇匯入檔案路徑
+   - 點擊 📁 Browse 選擇 JSON 檔案
+   - 點擊 📥 Import Settings 執行匯入
+   - 查看匯入結果和詳細資訊
 
 ## 新增自訂 IDE
 
