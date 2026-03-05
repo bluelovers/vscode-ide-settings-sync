@@ -6,6 +6,7 @@ import { EnumGlobalStateName, EnumIDEInfoType, IIDEInfo, IUnavailableIDE } from 
 import { _keyToPath } from '../utils/json';
 import { IdeSettingProvider } from './ideSettingProvider';
 import { knownIDEs } from '../data/knownIDEs';
+import { IDEDetector, IDetectionResult } from '../utils/ideDetector';
 
 /**
  * IDE 設定供應商
@@ -31,6 +32,10 @@ export class IDEProvider
 	// VS Code extension context
 	private context: vscode.ExtensionContext;
 
+	// 獨立 IDE 偵測器
+	// Standalone IDE detector
+	private ideDetector: IDEDetector;
+
 	/**
 	 * 建構子
 	 * @param {vscode.ExtensionContext} context - VS Code 擴展上下文
@@ -38,6 +43,10 @@ export class IDEProvider
 	constructor(context: vscode.ExtensionContext)
 	{
 		this.context = context;
+		this.ideDetector = new IDEDetector({
+			verbose: true,
+			logger: (message: string) => console.log(message),
+		});
 	}
 
 	/**
@@ -67,109 +76,36 @@ export class IDEProvider
 	 * 偵測已知的 IDE
 	 * Detect known IDEs installed on the system
 	 *
-	 * 此方法會嘗試在以下位置查找 IDE：
-	 * - Windows: %APPDATA%\{IDEName}\User\settings.json
-	 * - macOS/Linux: ~/.{IDEName}/User/settings.json
-	 *
-	 * 支援的 IDE：
-	 * - Visual Studio Code (Code)
-	 * - Visual Studio Code - Insiders (Code - Insiders, Code-Insiders)
-	 * - Antigravity
-	 * - CodeBuddy CN
-	 *
-	 * @see knownIDEs.ts
+	 * 使用獨立的 IDE 偵測器進行偵測，然後將結果轉換為 VSCode 擴展格式
+	 * Uses standalone IDE detector for detection, then converts results to VSCode extension format
 	 */
 	private async detectKnownIDEs(): Promise<void>
 	{
-		// 逐個 IDE 進行偵測
-		// Perform detection for each IDE
-		for (const ide of knownIDEs)
+		// 使用獨立偵測器偵測所有已知 IDE
+		// Use standalone detector to detect all known IDEs
+		const detectionResults = this.ideDetector.detectIDEs([...knownIDEs]);
+
+		// 處理偵測結果
+		// Process detection results
+		for (const result of detectionResults)
 		{
-			let foundPath: string | null = null;
-			let detectedPath: string | null = null;
-
-			// 嘗試多個可能的資料夾名稱
-			// Try multiple possible folder name variations
-			for (const appFolderName of ide.appFolderNames)
-			{
-				// 根據作業系統環境變量構造可能的路徑
-				// Construct possible path based on OS environment variables
-				const testPath = this.getUserDataPath(appFolderName, 'User');
-				const settingsJsonPath = path.join(testPath, 'settings.json');
-
-				console.log(`[IDE Detection] 嘗試檢測 ${ide.name} at ${testPath}`);
-				console.log(`[IDE Detection] Attempting to detect ${ide.name} at ${testPath}`);
-
-				// 步驟 1：檢查主資料夾是否存在
-				// Step 1: Check if the main folder exists
-				if (existsSync(testPath))
-				{
-					detectedPath = testPath;
-					console.log(`[IDE Detection] ✓ 找到資料夾 ${ide.name} at ${testPath}`);
-					console.log(`[IDE Detection] ✓ Found folder for ${ide.name} at ${testPath}`);
-
-					// 步驟 2：檢查 settings.json 檔案是否存在
-					// Step 2: Check if settings.json file exists
-					if (existsSync(settingsJsonPath))
-					{
-						foundPath = testPath;
-						console.log(`[IDE Detection] ✓✓ 成功偵測到 ${ide.name}，settings.json 已找到`);
-						console.log(`[IDE Detection] ✓✓ Successfully detected ${ide.name}, settings.json found`);
-						// 成功找到，退出迴圈
-						// Found successfully, exit loop
-						break;
-					}
-					else
-					{
-						// 資料夾存在但缺少 settings.json 檔案
-						// Folder exists but settings.json is missing
-						console.log(
-							`[IDE Detection] ⚠ 資料夾存在但找不到 settings.json: ${settingsJsonPath}`,
-						);
-						console.log(
-							`[IDE Detection] ⚠ Folder exists but settings.json not found: ${settingsJsonPath}`,
-						);
-						// 如果這是最後一個嘗試，記錄此路徑供後續使用
-						// If this is the last attempt, record this path for later use
-						if (!detectedPath)
-						{
-							detectedPath = testPath;
-						}
-					}
-				}
-				else
-				{
-					console.log(`[IDE Detection] ✗ 路徑不存在 / Path not found: ${testPath}`);
-				}
-			}
-
-			// 步驟 3：根據偵測結果進行相應處理
-			// Step 3: Handle the detection result
-			if (foundPath)
+			if (result.detected && result.path && result.settingsPath)
 			{
 				// 成功找到 IDE，嘗試載入設定
 				// Successfully found IDE, attempt to load settings
-				const settingsJsonPath = path.join(foundPath, 'settings.json');
-				this.processIDE(ide.name, EnumIDEInfoType.known, settingsJsonPath, foundPath);
+				this.processIDE(result.name, EnumIDEInfoType.known, result.settingsPath, result.path);
 			}
 			else
 			{
-				// 未能找到任何可用的 IDE 路徑
-				// Failed to find any available IDE path
-				const defaultPath = this.getUserDataPath(ide.appFolderNames[0], 'User');
-				const triedPaths = ide.appFolderNames.map(name => this.getUserDataPath(name, 'User')).join('\n- ');
-				const reason = `IDE not found. Tried paths:\n- ${triedPaths}`;
-
-				console.log(`[IDE Detection] ✗ 未偵測到 ${ide.name}`);
-				console.log(`[IDE Detection] ✗ ${ide.name} not detected`);
-
-				// 將 IDE 標記為不可用
-				// Mark IDE as unavailable
+				// 未能找到 IDE，標記為不可用
+				// Failed to find IDE, mark as unavailable
+				const defaultPath = this.getUserDataPath(knownIDEs.find(ide => ide.name === result.name)?.appFolderNames[0] || result.name, 'User');
+				
 				this.addUnavailableIDE(
-					ide.name,
+					result.name,
 					EnumIDEInfoType.known,
-					detectedPath || defaultPath,
-					`[IDE Detection] ✗ ${reason}`,
+					result.path || defaultPath,
+					result.reason || `[IDE Detection] ✗ ${result.name} not detected`,
 				);
 			}
 		}
@@ -180,7 +116,9 @@ export class IDEProvider
 	 * Load custom IDE paths from extension settings
 	 *
 	 * 此方法讀取用戶先前新增的自訂 IDE 路徑，
-	 * 並嘗試驗證這些路徑和載入它們的設定檔案。
+	 * 並使用獨立偵測器進行偵測。
+	 * This method reads custom IDE paths added by users previously,
+	 * and uses the standalone detector for detection.
 	 */
 	private async loadCustomIDEs(): Promise<void>
 	{
@@ -194,73 +132,29 @@ export class IDEProvider
 		console.log(`[Custom IDE] 載入 ${customIDEs.length} 個自訂 IDE`);
 		console.log(`[Custom IDE] Loading ${customIDEs.length} custom IDEs`);
 
-		// 逐個處理自訂 IDE
-		// Process each custom IDE
-		for (const customIDE of customIDEs)
+		// 使用獨立偵測器偵測自訂 IDE
+		// Use standalone detector to detect custom IDEs
+		const customResults = this.ideDetector.detectCustomIDEs(customIDEs);
+
+		// 處理偵測結果
+		// Process detection results
+		for (const result of customResults)
 		{
-			// 嘗試多個可能的 settings.json 路徑
-			// Try multiple possible settings.json paths
-			let settingsJsonPath: string | null = null;
-			let foundPath: string | null = null;
-
-			// 選項 1: 直接在提供的路徑下尋找
-			// Option 1: Look directly in the provided path
-			const directPath = path.join(customIDE.path, 'settings.json');
-			if (existsSync(directPath))
+			if (result.detected && result.path && result.settingsPath)
 			{
-				settingsJsonPath = directPath;
-				foundPath = customIDE.path;
-				console.log(`[Custom IDE] 直接路徑找到 settings.json: ${directPath}`);
-			}
-
-			// 選項 2: 在 User 子資料夾中尋找
-			// Option 2: Look in User subfolder
-			if (!settingsJsonPath)
-			{
-				const userSubfolderPath = path.join(customIDE.path, 'User', 'settings.json');
-				if (existsSync(userSubfolderPath))
-				{
-					settingsJsonPath = userSubfolderPath;
-					foundPath = path.join(customIDE.path, 'User');
-					console.log(`[Custom IDE] User 子資料夾找到 settings.json: ${userSubfolderPath}`);
-				}
-			}
-
-			console.log(`[Custom IDE] 檢查自訂 IDE: ${customIDE.name} at ${customIDE.path}`);
-			console.log(`[Custom IDE] Checking custom IDE: ${customIDE.name} at ${customIDE.path}`);
-
-			// 檢查 settings.json 是否存在
-			// Check if settings.json exists
-			if (settingsJsonPath && foundPath)
-			{
-				// 使用共用方法處理 IDE 載入
-				// Use shared method to process IDE loading
-				this.processIDE(customIDE.name, EnumIDEInfoType.custom, settingsJsonPath, foundPath);
+				// 成功找到自訂 IDE，嘗試載入設定
+				// Successfully found custom IDE, attempt to load settings
+				this.processIDE(result.name, EnumIDEInfoType.custom, result.settingsPath, result.path);
 			}
 			else
 			{
-				// settings.json 檔案不存在
-				// settings.json file does not exist
-				const directCheck = existsSync(directPath);
-				const userCheck = existsSync(path.join(customIDE.path, 'User', 'settings.json'));
-
-				let reason = 'settings.json not found';
-				if (!directCheck && !userCheck)
-				{
-					reason = `settings.json not found in:\n- ${directPath}\n- ${path.join(customIDE.path, 'User', 'settings.json')}`;
-				}
-
-				console.log(
-					`[Custom IDE] ✗ ${reason}`,
-				);
-
-				// 標記為不可用
-				// Mark as unavailable
+				// 未能找到自訂 IDE，標記為不可用
+				// Failed to find custom IDE, mark as unavailable
 				this.addUnavailableIDE(
-					customIDE.name,
+					result.name,
 					EnumIDEInfoType.custom,
-					customIDE.path,
-					`[Custom IDE] ✗ ${reason}`,
+					result.path || customIDEs.find(ide => ide.name === result.name)?.path || '',
+					result.reason || `[Custom IDE] ✗ ${result.name} not detected`,
 				);
 			}
 		}
