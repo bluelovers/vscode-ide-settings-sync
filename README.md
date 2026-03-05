@@ -2,6 +2,17 @@
 
 A Visual Studio Code extension that synchronizes IDE settings across multiple VS Code-based IDEs.
 
+## 🚨 開發者注意事項
+
+**WebView 開發關鍵規則：`<script>` 標籤內只能使用純 JavaScript！**
+
+- ❌ 禁止：`(element as HTMLElement).value = 'test'`
+- ✅ 正確：`element.value = 'test'`
+
+詳細說明請參考：[WebView 開發指南](docs/webview-development-guidelines.md)
+
+---
+
 ## 功能特色
 
 - **多 IDE 支援**：可同步設定至 Visual Studio Code、VS Code Insiders、Antigravity、CodeBuddy CN、Windsurf 或自訂 IDE 路徑
