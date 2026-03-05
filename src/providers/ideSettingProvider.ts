@@ -163,7 +163,7 @@ export class IdeSettingProvider
 	 *
 	 * @returns {any} 設定檔的物件值 / Object value of settings
 	 */
-	valueOf()
+	valueOf(): Record<string, any>
 	{
 		return this.jsonHandler?.valueOf();
 	}

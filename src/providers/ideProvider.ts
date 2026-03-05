@@ -7,6 +7,7 @@ import { _keyToPath } from '../utils/json';
 import { IdeSettingProvider } from './ideSettingProvider';
 import { knownIDEs } from '../data/knownIDEs';
 import { IDEDetector, IDetectionResult } from '../utils/ideDetector';
+import { transformIDEListForWebview } from '../utils/ideListToWebviewContent';
 
 /**
  * IDE 設定供應商
@@ -216,13 +217,7 @@ export class IDEProvider
 	 */
 	getIDEListToWebviewContent()
 	{
-		return this.ideList.map(ide =>
-		{
-			return {
-				...ide,
-				settings: ide.settingProvider.load().valueOf(),
-			}
-		})
+		return transformIDEListForWebview(this.ideList);
 	}
 
 	/**
