@@ -2,6 +2,15 @@
 
 本指南適用於想要開發或貢獻此擴充功能的開發者。
 
+## 🚨 開發者注意事項
+
+**WebView 開發關鍵規則：`<script>` 標籤內只能使用純 JavaScript！**
+
+- ❌ 禁止：`(element as HTMLElement).value = 'test'`
+- ✅ 正確：`element.value = 'test'`
+
+詳細說明請參考：[WebView 開發指南](docs/webview-development-guidelines.md)
+
 ## 前置需求
 
 - Visual Studio Code 1.85.0 或更高版本
