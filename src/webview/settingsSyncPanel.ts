@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IDEProvider } from '../providers/ideProvider';
-import { EnumIDEInfoType, ILanguageConfig, EnumGlobalStateName } from '../types';
+import { EnumIDEInfoType, ILanguageConfig, EnumGlobalStateName, IIDEInfo } from '../types';
 import {
 	getSupportedLanguages,
 	ILanguageCode,
@@ -18,6 +18,7 @@ import { ExportImportPanel } from './components/ExportImportPanel';
 import { renderJsxToString } from '../utils/render-jsx';
 import { formatPath } from '../utils/formatPath';
 import { saveIDECache, loadIDECache, exportIDECache, importIDECache } from '../utils/ideCache';
+import { _handleIDEListByIndexList, _performSyncCore, _syncSettingsCore } from '../utils/settingsSync';
 import { SettingsNav } from './components/settings/SettingsPanel';
 import { SourceIdeIndicator } from './components/ide/SourceIdeIndicator';
 
@@ -1029,23 +1030,7 @@ export class SettingsSyncPanel
 		settingKeys: string[],
 	): Promise<void>
 	{
-		for (const settingKey of settingKeys)
-		{
-			const value = await this.ideProvider.getSettingValue(sourceIDEIndex, settingKey);
-
-			for (const targetIDEIndex of targetIDEIndices)
-			{
-				const targetIDE = this.ideProvider.getIdeByIndex(targetIDEIndex);
-
-				const oldValue = await this.ideProvider.getSettingValue(targetIDEIndex, settingKey);
-
-				// console.log('Setting', settingKey, 'from', oldValue, 'to', value, 'on IDE', targetIDE?.name, 'index', targetIDEIndex);
-
-				await this.ideProvider.setSetting(targetIDEIndex, settingKey, value);
-			}
-		}
-
-		this.ideProvider.saveSync(sourceIDEIndex, targetIDEIndices);
+		return _performSyncCore(this.ideProvider, sourceIDEIndex, targetIDEIndices, settingKeys);
 	}
 
 	private async performDelete(ideIndices: number[], settingKeys: string[]): Promise<void>
