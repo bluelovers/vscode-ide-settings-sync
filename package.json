@@ -17,13 +17,13 @@
     "test:unit:watch": "node --run test:unit -- --watch",
     "prebuild": "node --run test:unit:snapshot",
     "build": "node --run esbuild-base",
+    "publish:vscode": "node --run vscode:prepublish && node --run vscode:publish",
     "compile": "tsc -p ./",
     "esbuild": "node --run esbuild-base --",
     "esbuild-base": "tsx esbuild.config",
     "esbuild-watch": "node --run esbuild-base -- --watch",
     "vscode:prepublish": "node --run esbuild-base -- --minify",
     "vscode:publish": "ynpx @vscode/vsce publish",
-    "publish:vscode": "node --run vscode:prepublish && node --run vscode:publish",
     "watch": "tsc -watch -p ./"
   },
   "contributes": {
