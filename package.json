@@ -6,6 +6,19 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "code-settings-sync",
+    "keybindings",
+    "multi-root ready",
+    "settings-sync",
+    "vscode-settings-sync",
+    "vscode-sync",
+    "workspace-sync",
+    "Insiders",
+    "Antigravity",
+    "CodeBuddy CN",
+    "Windsurf"
+  ],
   "homepage": "https://github.com/bluelovers/vscode-ide-settings-sync#readme",
   "bugs": {
     "url": "https://github.com/bluelovers/vscode-ide-settings-sync/issues"

@@ -28,7 +28,7 @@ Install on Visual Studio Code Marketplace
 
 1. 開啟 VS Code
 2. 開啟擴充功能 Marketplace
-3. 搜尋 "IDE Settings Sync"
+3. 搜尋 "VSCode IDE Settings Sync"
 4. 點擊安裝
 
 或從命令列安裝：
@@ -47,7 +47,7 @@ code --install-extension bluelovers.vscode-ide-settings-sync
    - 選擇要同步的 IDE（可多選）
    - 搜尋特定設定或瀏覽所有設定
    - 選擇要同步的設定
-   - 選擇來源 IDE（第一個選擇的 IDE）
+   - 選擇同步來源的 IDE（預設為使用中的 IDE）
    - 點擊 **"Sync Selected"** 執行同步
 
 ### 匯出匯入功能
@@ -99,7 +99,7 @@ A: 請在 GitHub 存放庫中開啟 Issue。
 
 ## 已知限制
 
-- `settings.json` 中的註解在同步時會被保留
+- ~~`settings.json` 中的註解在同步時會被保留~~
 - 不會同步工作區特定設定（僅同步使用者設定）
 - 某些 IDE 特有的設定可能無法跨不同 IDE 類型相容
 
