@@ -18,6 +18,8 @@ import { ExportImportPanel } from './components/ExportImportPanel';
 import { renderJsxToString } from '../utils/render-jsx';
 import { formatPath } from '../utils/formatPath';
 import { saveIDECache, loadIDECache, exportIDECache, importIDECache } from '../utils/ideCache';
+import { SettingsNav } from './components/settings/SettingsPanel';
+import { SourceIdeIndicator } from './components/ide/SourceIdeIndicator';
 
 export class SettingsSyncPanel
 {
@@ -111,8 +113,12 @@ export class SettingsSyncPanel
 		const ideList = this.ideProvider.getIDEList();
 		const unavailableIDEs = this.ideProvider.getUnavailableIDEs();
 		const supportedLanguages = getSupportedLanguages();
-		// determine which IDE corresponds to the running host (by name)
-		const currentIDEName = vscode.env.appName; // e.g. "Visual Studio Code" or "Visual Studio Code - Insiders"
+		/**
+		 * Determine which IDE corresponds to the running host (by name)
+		 * e.g. "Visual Studio Code" or "Visual Studio Code - Insiders"
+		 */
+		const currentIDEName = vscode.env.appName;
+		const currentIDEUuid = ideList.find(ide => ide.name === currentIDEName)?.uuid;
 
 		// 👇 從 globalState 中獲取已保存的值
 		const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
@@ -131,615 +137,629 @@ export class SettingsSyncPanel
 			sourceIDEUuid: savedSourceIDEUuid,
 		});
 
+		const sourceIdeIndicatorHTML = renderJsxToString(SourceIdeIndicator, {
+			sourceIDEName: currentIDEName,
+			sourceIDEUuid: savedSourceIDEUuid,
+		});
+
+		const settingsNavHTML = renderJsxToString(SettingsNav, {});
+
 		return `<!DOCTYPE html>
 <html>
 <head>
-  ${renderJsxToString(PageHead, {
+	${renderJsxToString(PageHead, {
 			settingsSyncPanel: this,
 			cssContent,
 		})}
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🔄 IDE Settings Sync</h1>
-      <div class="header-actions">
-      </div>
-    </div>
+	<div class="container">
+		<div class="header">
+			<h1>🔄 IDE Settings Sync</h1>
+			<div class="header-actions">
+			</div>
+		</div>
 
-    ${ideListHTML}
+		${ideListHTML}
 
-    <div class="section">
-      <h2>Description Language Configuration</h2>
-      <div class="language-config">
-        <div class="config-row">
-          <label for="primaryLang">Primary Language:</label>
-          <select id="primaryLang" onchange="changePrimaryLanguage()">
-            ${supportedLanguages.map((lang) => `<option value="${lang.code}" ${lang.code === this.languageConfig.primary
+		<div class="section">
+			<h2>Description Language Configuration</h2>
+			<div class="language-config">
+				<div class="config-row">
+					<label for="primaryLang">Primary Language:</label>
+					<select id="primaryLang" onchange="changePrimaryLanguage()">
+						${supportedLanguages.map((lang) => `<option value="${lang.code}" ${lang.code === this.languageConfig.primary
 			? 'selected'
 			: ''}>${lang.name}</option>`).join('')}
-          </select>
-          <button class="btn btn-small" onclick="openLanguageConfig()" title="Configure language settings">⚙ Config</button>
-        </div>
+					</select>
+					<button class="btn btn-small" onclick="openLanguageConfig()" title="Configure language settings">⚙ Config</button>
+				</div>
 
-        <div class="config-row">
-          <label>Fallback Languages:</label>
-          <div class="fallback-list" id="fallbackList">
-            ${this.languageConfig.fallbackList.map((lang) =>
+				<div class="config-row">
+					<label>Fallback Languages:</label>
+					<div class="fallback-list" id="fallbackList">
+						${this.languageConfig.fallbackList.map((lang) =>
 		{
 			const langInfo = supportedLanguages.find(l => l.code === lang);
 			return `<span class="fallback-tag">${langInfo?.name || lang}</span>`;
 		}).join('')}
-          </div>
-        </div>
+					</div>
+				</div>
 
-        ${this.languageConfig.showSecondary && this.languageConfig.secondary
+				${this.languageConfig.showSecondary && this.languageConfig.secondary
 			? `<div class="config-row">
-              <label>Secondary Language:</label>
-              <span class="secondary-lang">${supportedLanguages.find(l => l.code === this.languageConfig.secondary)?.name || this.languageConfig.secondary}</span>
-            </div>`
+							<label>Secondary Language:</label>
+							<span class="secondary-lang">${supportedLanguages.find(l => l.code === this.languageConfig.secondary)?.name || this.languageConfig.secondary}</span>
+						</div>`
 			: ''}
-      </div>
-    </div>
+			</div>
+		</div>
 
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('sync')">Sync Settings</button>
-      <button class="tab" onclick="switchTab('values')">View All Settings</button>
-      <button class="tab" onclick="switchTab('selected')">Selected Settings</button>
-      <button class="tab" onclick="switchTab('export-import')">Export/Import</button>
-    </div>
+		${sourceIdeIndicatorHTML}
+		${settingsNavHTML}
 
-    <div id="sync" class="tab-content active">
-      <div class="section">
-        <h2>Search & Sync Settings</h2>
-        <div class="search-container">
-          <input
-            type="text"
-            class="search-input"
-            id="searchInput"
-            placeholder="e.g., editor.fontFamily, editor.fontSize..."
-            onkeyup="searchSettings();saveSearchHistory()"
-          >
-          <button class="btn" onclick="clearSearch()" title="Clear search field">Clear</button>
-        </div>
+		<div id="sync" class="tab-content active">
+			<div class="section">
+				<h2>Search & Sync Settings</h2>
+				<div class="search-container">
+					<input
+						type="text"
+						class="search-input"
+						id="searchInput"
+						placeholder="e.g., editor.fontFamily, editor.fontSize..."
+						onkeyup="searchSettings();saveSearchHistory()"
+					>
+					<button class="btn" onclick="clearSearch()" title="Clear search field">Clear</button>
+				</div>
 
-        <div id="searchResults" class="settings-list"></div>
-        <div class="actions">
-          <!-- refresh button added so users can manually reload settings from disk -->
-          <button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
-          <button class="btn" onclick="saveSearchSelectedSettings()" title="Save checked settings">💾 Save Selected Settings List</button>
-          <button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
-          <button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
-        </div>
-        <div id="message" class="message"></div>
-      </div>
-    </div>
+				<div id="searchResults" class="settings-list"></div>
+				<div class="actions">
+					<!-- refresh button added so users can manually reload settings from disk -->
+					<button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
+					<button class="btn" onclick="saveSearchSelectedSettings()" title="Save checked settings">💾 Save Selected Settings List</button>
+					<button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
+					<button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
+				</div>
+				<div id="message" class="message"></div>
+			</div>
+		</div>
 
-    <div id="values" class="tab-content">
-      <div class="section">
-        <h2>All IDE Settings</h2>
-        <div id="allSettings" class="settings-list"></div>
-        <div class="actions">
-          <!-- allow refreshing settings without touching IDE list -->
-          <button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
-          <button class="btn" onclick="saveAllSelectedSettings()" title="Save checked settings">💾 Save Selected Settings</button>
-          <button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
-          <button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
-        </div>
-      </div>
-    </div>
+		<div id="values" class="tab-content">
+			<div class="section">
+				<h2>All IDE Settings</h2>
+				<div id="allSettings" class="settings-list"></div>
+				<div class="actions">
+					<!-- allow refreshing settings without touching IDE list -->
+					<button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
+					<button class="btn" onclick="saveAllSelectedSettings()" title="Save checked settings">💾 Save Selected Settings</button>
+					<button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
+					<button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
+				</div>
+			</div>
+		</div>
 
-    <div id="selected" class="tab-content">
-      <div class="section">
-        <h2>Selected Settings List</h2>
-        <p style="color: var(--vscode-descriptionForeground); margin-bottom: 15px; font-size: 13px;">
-          👇 All checked settings from both Search & Sync and View All sections
-        </p>
-        <div id="selectedSettingsList" class="settings-list"></div>
-        <div class="actions">
-          <!-- user may want to refresh latest values while inspecting selected list -->
-          <button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
-          <button class="btn" onclick="clearAllSelectedSettings()" title="Remove all saved selections">🗑️ Clear All Selected</button>
-          <button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
-          <button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
-        </div>
-      </div>
-    </div>
+		<div id="selected" class="tab-content">
+			<div class="section">
+				<h2>Selected Settings List</h2>
+				<p style="color: var(--vscode-descriptionForeground); margin-bottom: 15px; font-size: 13px;">
+					👇 All checked settings from both Search & Sync and View All sections
+				</p>
+				<div id="selectedSettingsList" class="settings-list"></div>
+				<div class="actions">
+					<!-- user may want to refresh latest values while inspecting selected list -->
+					<button class="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
+					<button class="btn" onclick="clearAllSelectedSettings()" title="Remove all saved selections">🗑️ Clear All Selected</button>
+					<button class="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
+					<button class="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
+				</div>
+			</div>
+		</div>
 
-    <div id="export-import" class="tab-content">
-      ${renderJsxToString(ExportImportPanel, {
+		<div id="export-import" class="tab-content">
+			${renderJsxToString(ExportImportPanel, {
 			importResult: undefined,
 			isProcessing: false,
 		})}
-    </div>
-  </div>
+		</div>
+	</div>
 
-  <script>
-    const vscode = acquireVsCodeApi();
-    let ideList = ${JSON.stringify(this.ideProvider.getIDEListToWebviewContent())};
-    let currentLanguage = '${this.currentLanguage}';
-    let languageConfig = ${JSON.stringify(this.languageConfig)};
-    let currentIDEName = '${currentIDEName.replace(/'/g, "\\'")}';
+	<script>
+		const vscode = acquireVsCodeApi();
+		let ideList = ${JSON.stringify(this.ideProvider.getIDEListToWebviewContent())};
+		let currentLanguage = '${this.currentLanguage}';
+		let languageConfig = ${JSON.stringify(this.languageConfig)};
+		let currentIDEName = '${currentIDEName.replace(/'/g, "\\'")}';
+		let currentIDEUuid = '${currentIDEUuid}';
 
-    // 👇 已保存的狀態值（從 globalState 恢復）
-    const savedSearchHistory = '${savedSearchHistory.replace(/'/g, "\\'")}';
-    const savedSelectedSettings = ${JSON.stringify(savedSelectedSettings)};
-    const savedSelectedIDEs = ${JSON.stringify(savedSelectedIDEs)};
+		// 👇 已保存的狀態值（從 globalState 恢復）
+		const savedSearchHistory = '${savedSearchHistory.replace(/'/g, "\\'")}';
+		const savedSelectedSettings = ${JSON.stringify(savedSelectedSettings)};
+		const savedSelectedIDEs = ${JSON.stringify(savedSelectedIDEs)};
 
-    // 👇 Multi-language setting descriptions
-    const settingDescriptions = ${JSON.stringify(this.generateMultilingualDescriptions())};
+		// 👇 Multi-language setting descriptions
+		const settingDescriptions = ${JSON.stringify(this.generateMultilingualDescriptions())};
 
-    // 👇 Description lookup function with language fallback
-    function getSettingDescription(key) {
-      if (settingDescriptions[key]) {
-        const desc = settingDescriptions[key];
-        // If there's a secondary language description, show both
-        if (desc.secondary) {
-          return \`\${desc.primary}<br/><small style="color: #999; font-style: italic;">(\${desc.secondary})</small>\`;
-        }
-        return desc.primary || 'No description available';
-      }
-      return 'No description available';
-    }
+		// 👇 Description lookup function with language fallback
+		function getSettingDescription(key) {
+			if (settingDescriptions[key]) {
+				const desc = settingDescriptions[key];
+				// If there's a secondary language description, show both
+				if (desc.secondary) {
+					return \`\${desc.primary}<br/><small style="color: #999; font-style: italic;">(\${desc.secondary})</small>\`;
+				}
+				return desc.primary || 'No description available';
+			}
+			return 'No description available';
+		}
 
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      const content = document.getElementById(tabName);
-      if (content) content.classList.add('active');
+		function switchTab(tabName) {
+			document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+			document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+			const content = document.getElementById(tabName);
+			if (content) content.classList.add('active');
 
-      // Safely activate the corresponding tab button by index
-      const tabIndexMap = { sync: 0, values: 1, selected: 2, 'export-import': 3 };
-      const tabs = Array.from(document.querySelectorAll('.tab'));
-      const btn = tabs[tabIndexMap[tabName]];
-      if (btn) btn.classList.add('active');
+			// Safely activate the corresponding tab button by index
+			const tabIndexMap = { sync: 0, values: 1, selected: 2, 'export-import': 3 };
+			const tabs = Array.from(document.querySelectorAll('.tab'));
+			const btn = tabs[tabIndexMap[tabName]];
+			if (btn) btn.classList.add('active');
 
-      if (tabName === 'values') {
-        try { displayAllSettings(); } catch (e) { console.error(e); }
-      } else if (tabName === 'selected') {
-        try { displaySelectedSettingsList(); } catch (e) { console.error(e); }
-      }
-    }
+			if (tabName === 'values') {
+				try { displayAllSettings(); } catch (e) { console.error(e); }
+			} else if (tabName === 'selected') {
+				try { displaySelectedSettingsList(); } catch (e) { console.error(e); }
+			}
+		}
 
-    function changePrimaryLanguage() {
-      const newLang = document.getElementById('primaryLang').value;
-      vscode.postMessage({ command: 'changePrimaryLanguage', language: newLang });
-      const activeTab = document.querySelector('.tab.active');
-      if (activeTab.textContent.includes('All')) {
-        displayAllSettings();
-      } else {
-        searchSettings();
-      }
-    }
+		function changePrimaryLanguage() {
+			const newLang = document.getElementById('primaryLang').value;
+			vscode.postMessage({ command: 'changePrimaryLanguage', language: newLang });
+			const activeTab = document.querySelector('.tab.active');
+			if (activeTab.textContent.includes('All')) {
+				displayAllSettings();
+			} else {
+				searchSettings();
+			}
+		}
 
-    function openLanguageConfig() {
-      vscode.postMessage({ command: 'openLanguageConfig' });
-    }
+		function openLanguageConfig() {
+			vscode.postMessage({ command: 'openLanguageConfig' });
+		}
 
-    function displayAllSettings() {
-      const allSettingsDiv = document.getElementById('allSettings');
-      allSettingsDiv.innerHTML = '';
+		function displayAllSettings() {
+			const allSettingsDiv = document.getElementById('allSettings');
+			allSettingsDiv.innerHTML = '';
 
-      // 👇 Step 1: Collect all unique setting keys across ALL IDEs
-      const allKeys = new Set();
-      ideList.forEach((ide) => {
-        Object.keys(ide.settings || {}).forEach(key => allKeys.add(key));
-      });
+			// 👇 Step 1: Collect all unique setting keys across ALL IDEs
+			const allKeys = new Set();
+			ideList.forEach((ide) => {
+				Object.keys(ide.settings || {}).forEach(key => allKeys.add(key));
+			});
 
-      // 👇 Step 2: Create a map with entries for each key in ALL IDEs (even missing ones)
-      const settingMap = new Map();
-      allKeys.forEach(key => {
-        settingMap.set(key, {});
-        ideList.forEach((ide) => {
-          if (ide.settings && ide.settings.hasOwnProperty(key)) {
-            settingMap.get(key)[ide.name] = ide.settings[key];
-          } else {
-            // 👇 Mark missing values explicitly
-            settingMap.get(key)[ide.name] = undefined;
-          }
-        });
-      });
+			// 👇 Step 2: Create a map with entries for each key in ALL IDEs (even missing ones)
+			const settingMap = new Map();
+			allKeys.forEach(key => {
+				settingMap.set(key, {});
+				ideList.forEach((ide) => {
+					if (ide.settings && ide.settings.hasOwnProperty(key)) {
+						settingMap.get(key)[ide.name] = ide.settings[key];
+					} else {
+						// 👇 Mark missing values explicitly
+						settingMap.get(key)[ide.name] = undefined;
+					}
+				});
+			});
 
-      // 👇 Sort keys for consistent display
-      const sortedKeys = Array.from(allKeys).sort();
-      sortedKeys.forEach(key => {
-        allSettingsDiv.innerHTML += createSettingHTML(key, settingMap.get(key));
-      });
-    }
+			// 👇 Sort keys for consistent display
+			const sortedKeys = Array.from(allKeys).sort();
+			sortedKeys.forEach(key => {
+				allSettingsDiv.innerHTML += createSettingHTML(key, settingMap.get(key));
+			});
+		}
 
-    function searchSettings() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      const resultsDiv = document.getElementById('searchResults');
-      resultsDiv.innerHTML = '';
+		function searchSettings() {
+			const query = document.getElementById('searchInput').value.toLowerCase();
+			const resultsDiv = document.getElementById('searchResults');
+			resultsDiv.innerHTML = '';
 
-      if (query.length === 0) {
-        return;
-      }
+			if (query.length === 0) {
+				return;
+			}
 
-      // 👇 Step 1: Collect all unique setting keys across ALL IDEs that match query
-      const matchedKeys = new Set();
-      ideList.forEach((ide) => {
-        Object.keys(ide.settings || {}).forEach(key => {
-          if (key.toLowerCase().includes(query)) {
-            matchedKeys.add(key);
-          }
-        });
-      });
+			// 👇 Step 1: Collect all unique setting keys across ALL IDEs that match query
+			const matchedKeys = new Set();
+			ideList.forEach((ide) => {
+				Object.keys(ide.settings || {}).forEach(key => {
+					if (key.toLowerCase().includes(query)) {
+						matchedKeys.add(key);
+					}
+				});
+			});
 
-      // 👇 Step 2: Create a map with entries for each matched key in ALL IDEs
-      const settingMap = new Map();
-      matchedKeys.forEach(key => {
-        settingMap.set(key, {});
-        ideList.forEach((ide) => {
-          if (ide.settings && ide.settings.hasOwnProperty(key)) {
-            settingMap.get(key)[ide.name] = ide.settings[key];
-          } else {
-            // 👇 Mark missing values explicitly for consistency
-            settingMap.get(key)[ide.name] = undefined;
-          }
-        });
-      });
+			let ideRecord = {};
 
-      // 👇 Sort keys for consistent display
-      const sortedKeys = Array.from(matchedKeys).sort();
-      sortedKeys.forEach(key => {
-        resultsDiv.innerHTML += createSettingHTML(key, settingMap.get(key));
-      });
-    }
+			// 👇 Step 2: Create a map with entries for each matched key in ALL IDEs
+			const settingMap = new Map();
+			matchedKeys.forEach(key => {
+				settingMap.set(key, {});
+				ideList.forEach((ide) => {
+					ideRecord[ide.uuid] = ide;
+					if (ide.settings && ide.settings.hasOwnProperty(key)) {
+						settingMap.get(key)[ide.uuid] = ide.settings[key];
+					} else {
+						// 👇 Mark missing values explicitly for consistency
+						settingMap.get(key)[ide.uuid] = undefined;
+					}
+				});
+			});
 
-    function createSettingHTML(key, values) {
-      let valuesHTML = '';
-      Object.entries(values).forEach(([ideName, value]) => {
-        // 👇 Handle missing values (undefined) with special display
-        let displayValue;
-        if (value === undefined) {
-          displayValue = '<em style="color: #999;">Not set</em>';
-        } else if (typeof value === 'object') {
-          displayValue = JSON.stringify(value, null, 2);
-        } else {
-          displayValue = String(value);
-        }
+			const sourceUuid = document.querySelector('.ide-source-radio:checked')?.dataset.uuid;
 
-        const isCurrent = ideName === currentIDEName;
-        let valueClass = value === undefined ? 'ide-value-missing' : '';
-        if (!valueClass && isCurrent) {
-          valueClass = 'current';
-        }
-        valuesHTML += \`<div class="ide-value \${valueClass}">
-          <div class="ide-value-label">\${ideName}</div>
-          <div class="ide-value-content">\${displayValue}</div>
-        </div>\`;
-      });
+			// 👇 Sort keys for consistent display
+			const sortedKeys = Array.from(matchedKeys).sort();
+			sortedKeys.forEach(key => {
+				resultsDiv.innerHTML += createSettingHTML(key, settingMap.get(key), sourceUuid, ideRecord);
+			});
+		}
 
-      const settingId = 'setting-' + key.replace(/\\./g, '_');
-      // 👇 Use the new multilingual description function
-      const description = getSettingDescription(key);
-      return \`<div class="setting-item">
-        <div class="setting-key">
-          <input type="checkbox" class="setting-checkbox" id="\${settingId}" data-key="\${key}">
-          <label for="\${settingId}">\${key}</label>
-        </div>
-        <div class="setting-description">\${description}</div>
-        <div class="setting-values">\${valuesHTML}</div>
-      </div>\`;
-    }
+		function createSettingHTML(key, values, sourceUuid, ideRecord) {
+			let valuesHTML = '';
+			Object.entries(values).forEach(([ideUuid, value]) => {
+				// 👇 Handle missing values (undefined) with special display
+				let displayValue;
+				if (value === undefined) {
+					displayValue = '<em style="color: #999;">Not set</em>';
+				} else if (typeof value === 'object') {
+					displayValue = JSON.stringify(value, null, 2);
+				} else {
+					displayValue = String(value);
+				}
 
-    function clearSearch() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('searchResults').innerHTML = '';
-      saveSearchHistory(); // 👇 清除搜尋歷史記憶
-    }
+				const isCurrent = ideRecord[ideUuid].name === currentIDEName;
+				let valueClass = value === undefined ? 'ide-value-missing' : '';
+				if (!valueClass && isCurrent) {
+					valueClass = 'current';
+				}
+				const isSelected = ideUuid === sourceUuid;
+				valueClass += isSelected ? ' source-ide' : '';
 
-    // 👇 顯示被勾選的設定值清單
-    function displaySelectedSettingsList() {
-      const selectedListDiv = document.getElementById('selectedSettingsList');
-      selectedListDiv.innerHTML = '';
+				valuesHTML += \`<div class="ide-value \${valueClass.trim()}">
+					<div class="ide-value-label">\${ideRecord[ideUuid].name}\${isSelected ? ' (Selected)' : ''}</div>
+					<div class="ide-value-content">\${displayValue}</div>
+				</div>\`;
+			});
 
-      if (!savedSelectedSettings || savedSelectedSettings.length === 0) {
-        selectedListDiv.innerHTML = '<div style="color: var(--vscode-descriptionForeground); padding: 20px; text-align: center;">No settings selected yet</div>';
-        return;
-      }
+			const settingId = 'setting-' + key.replace(/\\./g, '_');
+			// 👇 Use the new multilingual description function
+			const description = getSettingDescription(key);
+			return \`<div class="setting-item">
+				<div class="setting-key">
+					<input type="checkbox" class="setting-checkbox" id="\${settingId}" data-key="\${key}">
+					<label for="\${settingId}">\${key}</label>
+				</div>
+				<div class="setting-description">\${description}</div>
+				<div class="setting-values">\${valuesHTML}</div>
+			</div>\`;
+		}
 
-      // 按字母順序排序
-      const sortedSelectedSettings = [...savedSelectedSettings].sort();
+		function clearSearch() {
+			document.getElementById('searchInput').value = '';
+			document.getElementById('searchResults').innerHTML = '';
+			saveSearchHistory(); // 👇 清除搜尋歷史記憶
+		}
 
-      sortedSelectedSettings.forEach(key => {
-        const description = getSettingDescription(key);
-        const settingId = 'setting-' + key.replace(/\\./g, '_');
+		// 👇 顯示被勾選的設定值清單
+		function displaySelectedSettingsList() {
+			const selectedListDiv = document.getElementById('selectedSettingsList');
+			selectedListDiv.innerHTML = '';
 
-        // 查找該設定值是否在 ideList 中
-        let valuesHTML = '';
-        let settingExists = false;
+			if (!savedSelectedSettings || savedSelectedSettings.length === 0) {
+				selectedListDiv.innerHTML = '<div style="color: var(--vscode-descriptionForeground); padding: 20px; text-align: center;">No settings selected yet</div>';
+				return;
+			}
 
-        ideList.forEach((ide) => {
-          if (ide.settings && ide.settings.hasOwnProperty(key)) {
-            settingExists = true;
-            const value = ide.settings[key];
+			// 按字母順序排序
+			const sortedSelectedSettings = [...savedSelectedSettings].sort();
 
-            let displayValue;
-            if (value === undefined) {
-              displayValue = '<em style="color: #999;">Not set</em>';
-            } else if (typeof value === 'object') {
-              displayValue = JSON.stringify(value, null, 2);
-            } else {
-              displayValue = String(value);
-            }
+			sortedSelectedSettings.forEach(key => {
+				const description = getSettingDescription(key);
+				const settingId = 'setting-' + key.replace(/\\./g, '_');
 
-            const isCurrent = ide.name === currentIDEName;
-            let valueClass = value === undefined ? 'ide-value-missing' : '';
-            if (!valueClass && isCurrent) {
-              valueClass = 'current';
-            }
-            valuesHTML += \`<div class="ide-value \${valueClass}">
-              <div class="ide-value-label">\${ide.name}</div>
-              <div class="ide-value-content">\${displayValue}</div>
-            </div>\`;
-          }
-        });
+				// 查找該設定值是否在 ideList 中
+				let valuesHTML = '';
+				let settingExists = false;
 
-        selectedListDiv.innerHTML += \`<div class="setting-item">
-          <div class="setting-key">
-            <input type="checkbox" class="setting-checkbox" id="\${settingId}" data-key="\${key}" checked>
-            <label for="\${settingId}">\${key}</label>
-            <button class="btn btn-small" onclick="removeFromSelectedSettings('\${key}')" style="margin-left: auto;">✕ Remove</button>
-          </div>
-          <div class="setting-description">\${description}</div>
-          <div class="setting-values">\${valuesHTML}</div>
-        </div>\`;
-      });
-    }
+				ideList.forEach((ide) => {
+					if (ide.settings && ide.settings.hasOwnProperty(key)) {
+						settingExists = true;
+						const value = ide.settings[key];
 
-    // 👇 從被勾選的設定值清單中移除一個項目
-    function removeFromSelectedSettings(key) {
-      const index = savedSelectedSettings.indexOf(key);
-      if (index > -1) {
-        savedSelectedSettings.splice(index, 1);
-        vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: savedSelectedSettings });
-        displaySelectedSettingsList();
-        showMessage(\`✓ Removed "\${key}" from selected settings\`, 'success');
-      }
-    }
+						let displayValue;
+						if (value === undefined) {
+							displayValue = '<em style="color: #999;">Not set</em>';
+						} else if (typeof value === 'object') {
+							displayValue = JSON.stringify(value, null, 2);
+						} else {
+							displayValue = String(value);
+						}
 
-    // 👇 清除所有被勾選的設定值
-    function clearAllSelectedSettings() {
-      if (confirm('Clear all selected settings?')) {
-        savedSelectedSettings = [];
-        vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: [] });
-        displaySelectedSettingsList();
-        showMessage('✓ All selected settings cleared', 'success');
-      }
-    }
+						const isCurrent = ide.name === currentIDEName;
+						let valueClass = value === undefined ? 'ide-value-missing' : '';
+						if (!valueClass && isCurrent) {
+							valueClass = 'current';
+						}
+						valuesHTML += \`<div class="ide-value \${valueClass}">
+							<div class="ide-value-label">\${ide.name}</div>
+							<div class="ide-value-content">\${displayValue}</div>
+						</div>\`;
+					}
+				});
 
-    function syncSettings() {
-      const selectedIDEs = [];
-      document.querySelectorAll('.ide-checkbox:checked').forEach(checkbox => {
-        const index = parseInt(checkbox.dataset.index);
-        if (!isNaN(index)) {
-          selectedIDEs.push(index);
-        }
-      });
+				selectedListDiv.innerHTML += \`<div class="setting-item">
+					<div class="setting-key">
+						<input type="checkbox" class="setting-checkbox" id="\${settingId}" data-key="\${key}" checked>
+						<label for="\${settingId}">\${key}</label>
+						<button class="btn btn-small" onclick="removeFromSelectedSettings('\${key}')" style="margin-left: auto;">✕ Remove</button>
+					</div>
+					<div class="setting-description">\${description}</div>
+					<div class="setting-values">\${valuesHTML}</div>
+				</div>\`;
+			});
+		}
 
-      const selectedSettings = [];
-      document.querySelectorAll('.setting-checkbox:checked').forEach(checkbox => {
-        selectedSettings.push(checkbox.dataset.key);
-      });
+		// 👇 從被勾選的設定值清單中移除一個項目
+		function removeFromSelectedSettings(key) {
+			const index = savedSelectedSettings.indexOf(key);
+			if (index > -1) {
+				savedSelectedSettings.splice(index, 1);
+				vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: savedSelectedSettings });
+				displaySelectedSettingsList();
+				showMessage(\`✓ Removed "\${key}" from selected settings\`, 'success');
+			}
+		}
 
-      if (selectedIDEs.length < 2) {
-        showMessage('Please select at least 2 IDEs', 'error');
-        return;
-      }
+		// 👇 清除所有被勾選的設定值
+		function clearAllSelectedSettings() {
+			if (confirm('Clear all selected settings?')) {
+				savedSelectedSettings = [];
+				vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: [] });
+				displaySelectedSettingsList();
+				showMessage('✓ All selected settings cleared', 'success');
+			}
+		}
 
-      if (selectedSettings.length === 0) {
-        showMessage('Please select at least one setting to sync', 'error');
-        return;
-      }
+		function syncSettings() {
+			const selectedIDEs = [];
+			document.querySelectorAll('.ide-checkbox:checked').forEach(checkbox => {
+				const index = parseInt(checkbox.dataset.index);
+				if (!isNaN(index)) {
+					selectedIDEs.push(index);
+				}
+			});
 
-      vscode.postMessage({
-        command: 'syncSettings',
-        sourceIDE: selectedIDEs[0],
-        targetIDEs: selectedIDEs.slice(1),
-        settings: selectedSettings
-      });
-    }
+			const selectedSettings = [];
+			document.querySelectorAll('.setting-checkbox:checked').forEach(checkbox => {
+				selectedSettings.push(checkbox.dataset.key);
+			});
 
-    /**
-     * Request the extension to reload all IDE settings and
-     * re-render the webview contents. Useful when external
-     * changes have been made to the settings files.
-     *
-     * / 提示擴充套件重新載入所有 IDE 設定並重新渲染視窗。
-     * 通常在設定檔已經由外部修改時使用。
-     *
-     * @jsdoc
-     */
-    /**
-     * Reload settings values for the currently-detected IDEs without
-     * re-scanning for new installations. Used by the in-panel ↻ buttons.
-     * / 僅重新載入目前已偵測到的 IDE 的設定值，不重新掃描安裝位置。
-     *
-     * @jsdoc
-     */
-    function refreshSettings() {
-      vscode.postMessage({ command: 'refreshData' });
-      showMessage('⟳ Settings refreshed', 'info');
-    }
+			if (selectedIDEs.length < 2) {
+				showMessage('Please select at least 2 IDEs', 'error');
+				return;
+			}
 
-    function deleteSettings() {
-      const selectedIDEs = [];
-      document.querySelectorAll('.ide-checkbox:checked').forEach(checkbox => {
-        const index = parseInt(checkbox.dataset.index);
-        if (!isNaN(index)) {
-          selectedIDEs.push(index);
-        }
-      });
+			if (selectedSettings.length === 0) {
+				showMessage('Please select at least one setting to sync', 'error');
+				return;
+			}
 
-      const selectedSettings = [];
-      document.querySelectorAll('.setting-checkbox:checked').forEach(checkbox => {
-        selectedSettings.push(checkbox.dataset.key);
-      });
+			const sourceIndex = document.querySelector('.ide-source-radio:checked')?.dataset.index;
 
-      if (selectedIDEs.length === 0) {
-        showMessage('Please select at least one IDE', 'error');
-        return;
-      }
+			vscode.postMessage({
+				command: 'syncSettings',
+				sourceIDE: sourceIndex,
+				targetIDEs: selectedIDEs.filter(index => index !== sourceIndex),
+				settings: selectedSettings,
+			});
+		}
 
-      if (selectedSettings.length === 0) {
-        showMessage('Please select at least one setting to delete', 'error');
-        return;
-      }
+		/**
+		 * Request the extension to reload all IDE settings and
+		 * re-render the webview contents. Useful when external
+		 * changes have been made to the settings files.
+		 *
+		 * / 提示擴充套件重新載入所有 IDE 設定並重新渲染視窗。
+		 * 通常在設定檔已經由外部修改時使用。
+		 *
+		 * @jsdoc
+		 */
+		/**
+		 * Reload settings values for the currently-detected IDEs without
+		 * re-scanning for new installations. Used by the in-panel ↻ buttons.
+		 * / 僅重新載入目前已偵測到的 IDE 的設定值，不重新掃描安裝位置。
+		 *
+		 * @jsdoc
+		 */
+		function refreshSettings() {
+			vscode.postMessage({ command: 'refreshData' });
+			showMessage('⟳ Settings refreshed', 'info');
+		}
 
-      if (confirm(\`Delete \${selectedSettings.length} setting(s) from \${selectedIDEs.length} IDE(s)?\`)) {
-        vscode.postMessage({
-          command: 'deleteSettings',
-          ideIndices: selectedIDEs,
-          settings: selectedSettings
-        });
-      }
-    }
+		function deleteSettings() {
+			const selectedIDEs = [];
+			document.querySelectorAll('.ide-checkbox:checked').forEach(checkbox => {
+				const index = parseInt(checkbox.dataset.index);
+				if (!isNaN(index)) {
+					selectedIDEs.push(index);
+				}
+			});
 
-    function showMessage(text, type) {
-      const messageDiv = document.getElementById('message');
-      messageDiv.textContent = text;
-      messageDiv.className = \`message \${type}\`;
-      setTimeout(() => {
-        messageDiv.className = 'message';
-      }, 5000);
-    }
+			const selectedSettings = [];
+			document.querySelectorAll('.setting-checkbox:checked').forEach(checkbox => {
+				selectedSettings.push(checkbox.dataset.key);
+			});
 
-    // 👇 記憶功能：初始化時恢復已保存的狀態
-    function initializeMemory() {
-      // 恢復搜尋字符串
-      if (savedSearchHistory) {
-        document.getElementById('searchInput').value = savedSearchHistory;
-      }
+			if (selectedIDEs.length === 0) {
+				showMessage('Please select at least one IDE', 'error');
+				return;
+			}
 
-      // 恢復勾選的IDE
-      if (savedSelectedIDEs && savedSelectedIDEs.length > 0) {
-        savedSelectedIDEs.forEach(index => {
-          const checkbox = document.querySelector(\`input.ide-checkbox[data-index="\${index}"]\`);
-          if (checkbox) {
-            checkbox.checked = true;
-          }
-        });
-      }
+			if (selectedSettings.length === 0) {
+				showMessage('Please select at least one setting to delete', 'error');
+				return;
+			}
 
-      // 恢復勾選的設定值
-      if (savedSelectedSettings && savedSelectedSettings.length > 0) {
-        savedSelectedSettings.forEach(key => {
-          const settingId = 'setting-' + key.replace(/\\./g, '_');
-          const checkbox = document.getElementById(settingId);
-          if (checkbox) {
-            checkbox.checked = true;
-          }
-        });
-      }
-    }
+			if (confirm(\`Delete \${selectedSettings.length} setting(s) from \${selectedIDEs.length} IDE(s)?\`)) {
+				vscode.postMessage({
+					command: 'deleteSettings',
+					ideIndices: selectedIDEs,
+					settings: selectedSettings
+				});
+			}
+		}
 
-    // 👇 記憶功能：保存搜尋字符串
-    function saveSearchHistory() {
-      const searchText = document.getElementById('searchInput').value;
-      vscode.postMessage({ command: 'saveSearchHistory', searchText: searchText });
-    }
+		function showMessage(text, type) {
+			const messageDiv = document.getElementById('message');
+			messageDiv.textContent = text;
+			messageDiv.className = \`message \${type}\`;
+			setTimeout(() => {
+				messageDiv.className = 'message';
+			}, 5000);
+		}
 
-    // 👇 記憶功能：手動保存搜尋結果中的勾選設定值
-    function saveSearchSelectedSettings() {
-      const selectedSettings = [];
-      // 只從搜尋結果中獲取勾選的設定值
-      document.querySelectorAll('#searchResults .setting-checkbox:checked').forEach(checkbox => {
-        selectedSettings.push(checkbox.dataset.key);
-      });
-      vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: selectedSettings });
-      showMessage('✓ Search settings saved', 'success');
-    }
+		// 👇 記憶功能：初始化時恢復已保存的狀態
+		function initializeMemory() {
+			// 恢復搜尋字符串
+			if (savedSearchHistory) {
+				document.getElementById('searchInput').value = savedSearchHistory;
+			}
 
-    // 👇 記憶功能：手動保存所有設定值中的勾選設定值
-    function saveAllSelectedSettings() {
-      const selectedSettings = [];
-      // 只從所有設定值中獲取勾選的設定值
-      document.querySelectorAll('#allSettings .setting-checkbox:checked').forEach(checkbox => {
-        selectedSettings.push(checkbox.dataset.key);
-      });
-      vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: selectedSettings });
-      showMessage('✓ All settings saved', 'success');
-    }
+			// 恢復勾選的IDE
+			if (savedSelectedIDEs && savedSelectedIDEs.length > 0) {
+				savedSelectedIDEs.forEach(index => {
+					const checkbox = document.querySelector(\`input.ide-checkbox[data-index="\${index}"]\`);
+					if (checkbox) {
+						checkbox.checked = true;
+					}
+				});
+			}
 
-    // 👇 記憶功能：保存勾選的IDE
-    function saveSelectedIDEs() {
-      const selectedIDEs = [];
-      document.querySelectorAll('.ide-checkbox:checked').forEach(checkbox => {
-        const index = parseInt(checkbox.dataset.index);
-        if (!isNaN(index)) {
-          selectedIDEs.push(index);
-        }
-      });
-      vscode.postMessage({ command: 'saveSelectedIDEs', selectedIDEs: selectedIDEs });
-    }
+			// 恢復勾選的設定值
+			if (savedSelectedSettings && savedSelectedSettings.length > 0) {
+				savedSelectedSettings.forEach(key => {
+					const settingId = 'setting-' + key.replace(/\\./g, '_');
+					const checkbox = document.getElementById(settingId);
+					if (checkbox) {
+						checkbox.checked = true;
+					}
+				});
+			}
+		}
 
-    window.addEventListener('message', event => {
-      const message = event.data;
-      if (message.command === 'syncComplete')
-      {
-        showMessage('Settings synced successfully!', 'success');
-        vscode.postMessage({ command: 'refreshData' });
-      }
-      else if (message.command === 'deleteComplete')
-      {
-        showMessage('Settings deleted successfully!', 'success');
-        vscode.postMessage({ command: 'refreshData' });
-      }
-      else if (message.command === 'addCustomIDEComplete')
-      {
-        if (message.success)
-        {
-          showMessage(\`✓ Custom IDE "\${message.name}" added successfully!\`, 'success');
-        }
-        else
-        {
-          showMessage(\`✗ Failed to add IDE: \${message.error}\`, 'error');
-        }
-      }
-    });
+		// 👇 記憶功能：保存搜尋字符串
+		function saveSearchHistory() {
+			const searchText = document.getElementById('searchInput').value;
+			vscode.postMessage({ command: 'saveSearchHistory', searchText: searchText });
+		}
 
-    // 👇 在 DOM 加載完成後初始化事件監聽和恢復狀態
-    function initializeEventListeners() {
-      // 初始化時恢復已保存的狀態
-      initializeMemory();
+		// 👇 記憶功能：手動保存搜尋結果中的勾選設定值
+		function saveSearchSelectedSettings() {
+			const selectedSettings = [];
+			// 只從搜尋結果中獲取勾選的設定值
+			document.querySelectorAll('#searchResults .setting-checkbox:checked').forEach(checkbox => {
+				selectedSettings.push(checkbox.dataset.key);
+			});
+			vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: selectedSettings });
+			showMessage('✓ Search settings saved', 'success');
+		}
 
-      // 為搜尋輸入框添加事件監聽
-      const searchInput = document.getElementById('searchInput');
-      if (searchInput) {
-        searchInput.addEventListener('input', saveSearchHistory);
-      }
+		// 👇 記憶功能：手動保存所有設定值中的勾選設定值
+		function saveAllSelectedSettings() {
+			const selectedSettings = [];
+			// 只從所有設定值中獲取勾選的設定值
+			document.querySelectorAll('#allSettings .setting-checkbox:checked').forEach(checkbox => {
+				selectedSettings.push(checkbox.dataset.key);
+			});
+			vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings: selectedSettings });
+			showMessage('✓ All settings saved', 'success');
+		}
 
-      // 為所有IDE勾選框添加事件監聽 - 保持自動保存
-      document.querySelectorAll('.ide-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', saveSelectedIDEs);
-      });
+		// 👇 記憶功能：保存勾選的IDE
+		function saveSelectedIDEs() {
+			const selectedIDEs = [];
+			document.querySelectorAll('.ide-checkbox:checked').forEach(checkbox => {
+				const index = parseInt(checkbox.dataset.index);
+				if (!isNaN(index)) {
+					selectedIDEs.push(index);
+				}
+			});
+			vscode.postMessage({ command: 'saveSelectedIDEs', selectedIDEs: selectedIDEs });
+		}
 
-      // 👇 設定值勾選框改為手動保存，不再自動監聽
-      // 設定值的保存由 saveSearchSelectedSettings() 和 saveAllSelectedSettings() 手動觸發
+		window.addEventListener('message', event => {
+			const message = event.data;
+			if (message.command === 'syncComplete')
+			{
+				showMessage('Settings synced successfully!', 'success');
+				vscode.postMessage({ command: 'refreshData' });
+			}
+			else if (message.command === 'deleteComplete')
+			{
+				showMessage('Settings deleted successfully!', 'success');
+				vscode.postMessage({ command: 'refreshData' });
+			}
+			else if (message.command === 'addCustomIDEComplete')
+			{
+				if (message.success)
+				{
+					showMessage(\`✓ Custom IDE "\${message.name}" added successfully!\`, 'success');
+				}
+				else
+				{
+					showMessage(\`✗ Failed to add IDE: \${message.error}\`, 'error');
+				}
+			}
+		});
 
-      /**
-       * If the search input already contains text (for example restored from
-       * memory after a refresh), trigger the search automatically so the
-       * UI shows the expected results immediately.
-       *
-       * / 如果搜尋框在初始化時已包含文字（例如從記憶還原），自動觸發搜尋
-       * 以便立即顯示結果。
-       *
-       * @jsdoc
-       */
-      if (searchInput && searchInput.value && searchInput.value.trim().length > 0) {
-        try {
-          searchSettings();
-        } catch (e) {
-          console.error('searchSettings failed during init:', e);
-        }
-      }
-    }
+		// 👇 在 DOM 加載完成後初始化事件監聽和恢復狀態
+		function initializeEventListeners() {
+			// 初始化時恢復已保存的狀態
+			initializeMemory();
 
-    document.addEventListener('DOMContentLoaded', initializeEventListeners);
-  </script>
+			// 為搜尋輸入框添加事件監聽
+			const searchInput = document.getElementById('searchInput');
+			if (searchInput) {
+				searchInput.addEventListener('input', saveSearchHistory);
+			}
+
+			// 為所有IDE勾選框添加事件監聽 - 保持自動保存
+			document.querySelectorAll('.ide-checkbox').forEach(checkbox => {
+				checkbox.addEventListener('change', saveSelectedIDEs);
+			});
+
+			// 👇 設定值勾選框改為手動保存，不再自動監聽
+			// 設定值的保存由 saveSearchSelectedSettings() 和 saveAllSelectedSettings() 手動觸發
+
+			/**
+			 * If the search input already contains text (for example restored from
+			 * memory after a refresh), trigger the search automatically so the
+			 * UI shows the expected results immediately.
+			 *
+			 * / 如果搜尋框在初始化時已包含文字（例如從記憶還原），自動觸發搜尋
+			 * 以便立即顯示結果。
+			 *
+			 * @jsdoc
+			 */
+			if (searchInput && searchInput.value && searchInput.value.trim().length > 0) {
+				try {
+					searchSettings();
+				} catch (e) {
+					console.error('searchSettings failed during init:', e);
+				}
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', initializeEventListeners);
+	</script>
 </body>
 </html>`;
 	}
@@ -1015,6 +1035,12 @@ export class SettingsSyncPanel
 
 			for (const targetIDEIndex of targetIDEIndices)
 			{
+				const targetIDE = this.ideProvider.getIdeByIndex(targetIDEIndex);
+
+				const oldValue = await this.ideProvider.getSettingValue(targetIDEIndex, settingKey);
+
+				// console.log('Setting', settingKey, 'from', oldValue, 'to', value, 'on IDE', targetIDE?.name, 'index', targetIDEIndex);
+
 				await this.ideProvider.setSetting(targetIDEIndex, settingKey, value);
 			}
 		}

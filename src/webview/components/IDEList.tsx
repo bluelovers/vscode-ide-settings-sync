@@ -48,11 +48,34 @@ function AvailableIDEItem(props: {
 
 	return (<>
 		<div key={props.index} className={className}>
-			<input type="radio" id={sourceId} name="sourceIDE" className="ide-source-radio" value={props.ide.uuid}
-			       checked={props.isSource} title="Select as source IDE" />
-			<input type="checkbox" id={id} className="ide-checkbox" data-index={props.index} data-name={props.ide.name}
-			       data-uuid={props.ide.uuid} />
-			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
+			<input
+				type="radio"
+				id={sourceId}
+				name="sourceIDE"
+				className="ide-source-radio"
+				value={props.ide.uuid}
+				checked={props.isSource}
+				title="Select as source IDE"
+
+				data-index={props.index}
+				data-name={props.ide.name}
+				data-uuid={props.ide.uuid}
+			/>
+			<input
+				type="checkbox"
+				id={id}
+				className="ide-checkbox"
+
+				data-index={props.index}
+				data-name={props.ide.name}
+				data-uuid={props.ide.uuid}
+			/>
+			<label htmlFor={id}>
+				<strong>{props.ide.name}</strong>
+				<span className="uuid-area">
+					&nbsp;(<span className="uuid">{props.ide.uuid}</span>)
+				</span>
+			</label>
 			<span className="ide-path" title={props.ide.nativePath}>{formatPath(props.ide.nativePath)}</span>
 			<BtnOpenIDEFolder path={props.ide.nativePath} />
 			<BtnOpenSettingsJson idePath={props.ide.nativePath} ideName={props.ide.name} />
@@ -94,8 +117,8 @@ function BtnRemoveCustomIDE(props: {
 
 	return (<button className="btn btn-small btn-remove"
 		// @ts-ignore
-		              onclick={`removeCustomIDE(${JSON.stringify(params)})`}
-		              title="Remove this custom IDE">Remove</button>)
+									onclick={`removeCustomIDE(${JSON.stringify(params)})`}
+									title="Remove this custom IDE">Remove</button>)
 }
 
 function BtnOpenIDEFolder(props: {
@@ -104,7 +127,7 @@ function BtnOpenIDEFolder(props: {
 {
 	// @ts-ignore
 	return (<button className="btn btn-small" onclick={`openIDEFolder(${JSON.stringify(props.path)})`}
-	                title="Open IDE folder">📂</button>)
+									title="Open IDE folder">📂</button>)
 }
 
 function BtnOpenSettingsJson(props: {
@@ -114,8 +137,9 @@ function BtnOpenSettingsJson(props: {
 {
 	// @ts-ignore
 	return (<button className="btn btn-small"
-	                onclick={`openSettingsJson(${JSON.stringify(props.idePath)}, ${JSON.stringify(props.ideName)})`}
-	                title="Open settings.json in editor">📄</button>)
+									// @ts-ignore
+									onclick={`openSettingsJson(${JSON.stringify(props.idePath)}, ${JSON.stringify(props.ideName)})`}
+									title="Open settings.json in editor">📄</button>)
 }
 
 export function UnavailableIDEItemReason(props: ITSRequireAtLeastOne<{
@@ -214,14 +238,17 @@ export function IDEListScript()
 	{
 		const sourceUuid = event.target.value;
 		const sourceName = event.target.dataset.name || event.target.closest('.ide-item')?.querySelector('.ide-checkbox')?.dataset.name;
-		
+
 		// 更新來源 IDE 指示器顯示
-		const indicator = document.querySelector('.source-ide-indicator .source-name');
-		if (indicator)
+		const indicators = document.querySelectorAll('.source-ide-indicator .source-name');
+		indicators.forEach((indicator) =>
 		{
-			indicator.textContent = sourceName || 'Not selected';
-		}
-		
+			if (indicator)
+			{
+				indicator.textContent = sourceName || 'Not selected';
+			}
+		});
+
 		// 更新所有 IDE 項目的 source-ide 類別
 		const allItems = document.querySelectorAll('.ide-item');
 		allItems.forEach((item) =>
@@ -236,7 +263,7 @@ export function IDEListScript()
 				item.classList.remove('source-ide');
 			}
 		});
-		
+
 		// 發送訊息到 VS Code 擴充套件（使用 UUID 而非 index）
 		vscode.postMessage({ command: 'selectSourceIDE', uuid: sourceUuid, name: sourceName });
 	}
@@ -281,8 +308,8 @@ export function IDEList({
 			class="ide-list"
 		>
 			{availableIDEs.map((ide, index) => <AvailableIDEItem key={index} ide={ide} index={index}
-			                                                     isCurrent={ide.name === currentIDEName}
-			                                                     isSource={ide.uuid === defaultSourceUuid} />)}
+																													 isCurrent={ide.name === currentIDEName}
+																													 isSource={ide.uuid === defaultSourceUuid} />)}
 			{unavailableIDEs.map((ide, index) => <UnavailableIDEItem key={index} ide={ide} index={index} />)}
 		</div>
 	</>);
@@ -305,18 +332,13 @@ export function IDEListSection({
 		<div className="section">
 			<h2>Select IDEs</h2>
 			<IDEList availableIDEs={availableIDEs} unavailableIDEs={unavailableIDEs} currentIDEName={currentIDEName}
-			         sourceIDEUuid={sourceIDEUuid} />
+							 sourceIDEUuid={sourceIDEUuid} />
 			{/* @ts-ignore */}
 			<button className="btn" onclick={"addCustomIDE()"} style="margin-top: 10px;"
-			        title="Manually specify an IDE/settings folder">+ Add Custom IDE Path
+							title="Manually specify an IDE/settings folder">+ Add Custom IDE Path
 			</button>
 			{/* @ts-ignore */}
 			<button className="btn secondary" onclick={"refreshIDEs()"} title="Refresh IDE list">🔄 Refresh</button>
-		</div>
-		{/* 來源 IDE 顯示指示器 */}
-		<div className="section source-ide-indicator">
-			<span className="source-label">Source IDE:</span>
-			<span className="source-name">{sourceIDEName || 'Not selected'}</span>
 		</div>
 	</>);
 }

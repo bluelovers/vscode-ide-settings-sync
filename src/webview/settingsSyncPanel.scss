@@ -553,14 +553,16 @@ h2
 	&.current
 	{
 		@include info-state;
-		border-left-color: var(--vscode-inputValidation-infoBorder);
+		background-color: var(--vscode-diffEditor-insertedLineBackground);
+
+		border: 1px solid var(--vscode-focusBorder);
+		border-left-color: var(--vscode-focusBorder);
 	}
 
 	&.source-ide
 	{
-		background-color: rgba(0, 120, 212, 0.15);
-		border-left-color: var(--vscode-focusBorder);
-		border-left-width: 3px;
+		@include info-state;
+		border-left-color: var(--vscode-inputValidation-infoBorder);
 	}
 
 	/**
@@ -608,6 +610,25 @@ h2
 		/* 文字左對齊，長訊息易於閱讀 (Left align for readable long messages) */
 		text-align: left;
 	}
+
+	.uuid-area
+	{
+		font-size: $font-size-sm;
+		color: var(--vscode-descriptionForeground);
+		display: inline-block;
+		float: right;
+
+		.uuid
+		{
+			max-width: 5em;
+			text-overflow: ellipsis;
+			display: inline-block;
+
+			white-space: nowrap;
+			overflow: clip;
+		}
+	}
+
 }
 
 .ide-checkbox
@@ -892,6 +913,14 @@ h2
 	word-break: break-word;
 
 	&.current
+	{
+		@include info-state;
+		background-color: var(--vscode-diffEditor-insertedLineBackground);
+
+		border: 1px solid var(--vscode-focusBorder);
+	}
+
+	&.source-ide
 	{
 		@include info-state;
 	}
