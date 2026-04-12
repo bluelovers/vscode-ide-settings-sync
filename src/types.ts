@@ -52,6 +52,17 @@ export interface ICustomIDEExport
 	detected?: boolean;
 }
 
+/**
+ * 自訂 IDE 儲存類型（包含 UUID）
+ * Custom IDE storage type (with UUID)
+ */
+export interface ICustomIDEWithUuid
+{
+	uuid: string;
+	name: string;
+	path: string;
+}
+
 export interface ISelectedSettingExport
 {
 	key: string;
@@ -102,6 +113,10 @@ export interface IImportResult
  */
 export interface IIDEInfo
 {
+	/**
+	 * IDE 唯一識別符
+	 */
+	uuid: string;
 	/**
 	 * IDE 顯示名稱
 	 */

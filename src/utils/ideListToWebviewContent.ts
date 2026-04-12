@@ -1,5 +1,6 @@
 import { IIDEInfo } from '../types';
 import { IdeSettingProvider } from '../providers/ideSettingProvider';
+import { IRemoveCustomIDEParams } from '../webview/components/types';
 
 /**
  * Transforms IDE list for webview content by loading settings data
@@ -125,4 +126,31 @@ export function sanitizeForWebview(content: any): string
 		.replace(/>/g, '\\u003e')
 		.replace(/&/g, '\\u0026')
 		.replace(/'/g, '\\u0027'); // Use unicode for single quotes
+}
+
+/**
+ * 將 IDE 資訊轉換為移除參數物件
+ * Convert IDE info to remove parameters object
+ *
+ * 此函數用於將 IDE 物件與索引轉換為移除自訂 IDE 所需的參數物件。
+ * This function converts an IDE object with index to the parameters object needed for removing a custom IDE.
+ *
+ * @param ide - IDE 資訊物件 / IDE info object
+ * @param index - IDE 在列表中的索引 / IDE index in the list
+ * @returns 移除參數物件 / Remove parameters object
+ *
+ * @example
+ * ```typescript
+ * const ideList = ideProvider.getIDEList();
+ * const params = ideList.map((ide, index) => toRemoveCustomIDEParams(ide, index));
+ * ```
+ */
+export function toRemoveCustomIDEParams(ide: IIDEInfo, index: number): IRemoveCustomIDEParams
+{
+	return {
+		index,
+		uuid: ide.uuid,
+		name: ide.name,
+		nativePath: ide.nativePath,
+	};
 }

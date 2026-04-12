@@ -1,6 +1,6 @@
 import { h, Fragment } from 'preact';
 import { formatPath } from '../../utils/formatPath';
-import { IIDEListProps } from './types';
+import { IIDEListProps, IRemoveCustomIDEParams } from './types';
 import { IIDEInfo } from '../../types';
 import { ITSRequireAtLeastOne } from 'ts-type';
 
@@ -34,7 +34,7 @@ function escapeHtml(str: string): string
  * @returns HTML 字串
  */
 function AvailableIDEItem(props: {
-	ide: { name: string; type: string; nativePath: string },
+	ide: { uuid: string; name: string; type: string; nativePath: string },
 	index: number,
 	isCurrent: boolean
 })
@@ -54,6 +54,7 @@ function AvailableIDEItem(props: {
 			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
 			<span className="ide-path" title={props.ide.nativePath}>{formatPath(props.ide.nativePath)}</span>
 			<BtnOpenIDEFolder path={props.ide.nativePath} />
+			<BtnOpenSettingsJson idePath={props.ide.nativePath} ideName={props.ide.name} />
 			{props.ide.type === 'custom' ? <BtnRemoveCustomIDE index={props.index} ide={props.ide} /> : null}
 		</div>
 	</>)
@@ -69,15 +70,30 @@ function AvailableIDEItem(props: {
 	// `;
 }
 
+/**
+ * 移除自訂 IDE 按鈕組件
+ * Remove custom IDE button component
+ *
+ * @param props.index - IDE 索引
+ * @param props.ide - IDE 資訊（包含 uuid, name, nativePath）
+ */
 function BtnRemoveCustomIDE(props: {
-	index: number,
-	ide: Pick<IIDEInfo, 'name'>,
+	ide: { uuid: string; name: string; nativePath: string };
+	index: number;
 })
 {
+	// 建立統一的參數物件
+	// Create unified params object
+	const params: IRemoveCustomIDEParams = {
+		index: props.index,
+		uuid: props.ide.uuid,
+		name: props.ide.name,
+		nativePath: props.ide.nativePath,
+	};
 
-	return (<button class="btn btn-small btn-remove"
+	return (<button className="btn btn-small btn-remove"
 		// @ts-ignore
-		              onclick={`removeCustomIDE(${props.index}, ${JSON.stringify(props.ide.name)})`}
+		              onclick={`removeCustomIDE(${JSON.stringify(params)})`}
 		              title="Remove this custom IDE">Remove</button>)
 }
 
@@ -86,8 +102,18 @@ function BtnOpenIDEFolder(props: {
 })
 {
 	// @ts-ignore
-	return (<button class="btn btn-small" onclick={`openIDEFolder(${JSON.stringify(props.path)})`}
+	return (<button className="btn btn-small" onclick={`openIDEFolder(${JSON.stringify(props.path)})`}
 	                title="Open IDE folder">📂</button>)
+}
+
+function BtnOpenSettingsJson(props: {
+	idePath: string,
+	ideName: string,
+})
+{
+	// @ts-ignore
+	return (<button className="btn btn-small" onclick={`openSettingsJson(${JSON.stringify(props.idePath)}, ${JSON.stringify(props.ideName)})`}
+	                title="Open settings.json in editor">📄</button>)
 }
 
 export function UnavailableIDEItemReason(props: ITSRequireAtLeastOne<{
@@ -136,17 +162,25 @@ function UnavailableIDEItem(props: {
 export function IDEListScript()
 {
 	const js = `
-	function removeCustomIDE(index, name)
+	/**
+	 * 移除自訂 IDE
+	 * Remove custom IDE
+	 *
+	 * @param params - 移除參數物件，包含 index, uuid, name, nativePath
+	 */
+	function removeCustomIDE(params)
 	{
-		if (confirm('Remove this custom IDE?'))
-		{
-			vscode.postMessage({ command: 'removeCustomIDE', index, name });
-		}
+		vscode.postMessage({ command: 'removeCustomIDE', ...params });
 	}
 
 	function openIDEFolder(folderPath)
 	{
 		vscode.postMessage({ command: 'openIDEFolder', path: folderPath });
+	}
+
+	function openSettingsJson(idePath, ideName)
+	{
+		vscode.postMessage({ command: 'openSettingsJson', idePath, ideName });
 	}
 
 	function addCustomIDE()

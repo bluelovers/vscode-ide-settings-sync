@@ -1,19 +1,31 @@
 {
   "name": "vscode-ide-settings-sync",
   "displayName": "VSCode IDE Settings Sync",
-  "publisher": "bluelovers",
-  "description": "Synchronize IDE settings across multiple VSCode-based IDEs (Antigravity, VS Code Insiders, CodeBuddy CN, Windsurf, custom paths)",
   "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.85.0"
-  },
+  "description": "Synchronize IDE settings across multiple VSCode-based IDEs (Antigravity, VS Code Insiders, CodeBuddy CN, Windsurf, custom paths)",
   "categories": [
     "Other"
   ],
+  "publisher": "bluelovers",
   "main": "./dist/extension.js",
-  "activationEvents": [
-    "onStartupFinished"
-  ],
+  "scripts": {
+    "pretest": "node --run compile",
+    "test": "node --run test:unit --",
+    "test:unit": "jest --passWithNoTests",
+    "test:unit:coverage": "node --run test:unit -- --coverage",
+    "test:unit:snapshot": "node --run test:unit -- --u",
+    "test:unit:watch": "node --run test:unit -- --watch",
+    "prebuild": "node --run test:unit:snapshot",
+    "build": "node --run esbuild-base",
+    "compile": "tsc -p ./",
+    "esbuild": "node --run esbuild-base --",
+    "esbuild-base": "tsx esbuild.config",
+    "esbuild-watch": "node --run esbuild-base -- --watch",
+    "vscode:prepublish": "node --run esbuild-base -- --minify",
+    "vscode:publish": "ynpx @vscode/vsce publish",
+    "publish:vscode": "node --run vscode:prepublish && node --run vscode:publish",
+    "watch": "tsc -watch -p ./"
+  },
   "contributes": {
     "commands": [
       {
@@ -52,20 +64,6 @@
         "category": "IDE Settings Sync"
       }
     ],
-    "menus": {
-      "menubar/file": [
-        {
-          "command": "vscode-ide-settings-sync.openSync",
-          "group": "z_custom"
-        }
-      ],
-      "view/file": [
-        {
-          "command": "vscode-ide-settings-sync.openSync",
-          "group": "z_custom"
-        }
-      ]
-    },
     "keybindings": [
       {
         "command": "vscode-ide-settings-sync.openSync",
@@ -79,27 +77,38 @@
         "mac": "cmd+shift+alt+r",
         "when": "editorFocus || editorGroupFocus"
       }
-    ]
+    ],
+    "menus": {
+      "menubar/file": [
+        {
+          "command": "vscode-ide-settings-sync.openSync",
+          "group": "z_custom"
+        }
+      ],
+      "view/file": [
+        {
+          "command": "vscode-ide-settings-sync.openSync",
+          "group": "z_custom"
+        }
+      ]
+    }
   },
-  "scripts": {
-    "vscode:prepublish": "node --run esbuild-base -- --minify",
-    "esbuild-base": "tsx esbuild.config",
-    "esbuild": "node --run esbuild-base --",
-    "esbuild-watch": "node --run esbuild-base -- --watch",
-    "prebuild": "node --run test:unit:snapshot",
-    "build": "node --run esbuild-base",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "node --run compile",
-    "test": "node --run test:unit --",
-    "test:unit": "jest --passWithNoTests",
-    "test:unit:watch": "node --run test:unit -- --watch",
-    "test:unit:coverage": "node --run test:unit -- --coverage",
-    "test:unit:snapshot": "node --run test:unit -- --u"
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "dependencies": {
+    "js-yaml": "^4.1.1",
+    "jsonc-parser": "^3.3.1",
+    "nanoid": "^5.1.6",
+    "path-is-same": "^1.0.26",
+    "preact": "^10.28.4",
+    "preact-render-to-string": "^6.6.6",
+    "ts-type": "^3.0.1"
   },
   "devDependencies": {
     "@testing-library/preact": "^3.2.4",
     "@types/jest": "^30.0.0",
+    "@types/nanoid": "^3.0.0",
     "@types/node": "^25.3.0",
     "@types/vscode": "^1.109.0",
     "@vscode/test-cli": "^0.0.12",
@@ -111,13 +120,8 @@
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
   },
-  "dependencies": {
-    "js-yaml": "^4.1.1",
-    "jsonc-parser": "^3.3.1",
-    "path-is-same": "^1.0.26",
-    "preact": "^10.28.4",
-    "preact-render-to-string": "^6.6.6",
-    "ts-type": "^3.0.1"
-  },
-  "packageManager": "pnpm@11.0.0-dev.1005+sha512.91f84a392eea348ea4852a182912d2520273a4336f933b78cc44bc931eb999923c097e9433a9b355adc1f725725ea99082fc9f032a559df832632e764c92c798"
+  "packageManager": "pnpm@11.0.0-dev.1005+sha512.91f84a392eea348ea4852a182912d2520273a4336f933b78cc44bc931eb999923c097e9433a9b355adc1f725725ea99082fc9f032a559df832632e764c92c798",
+  "engines": {
+    "vscode": "^1.85.0"
+  }
 }

@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { fsSameRealpath } from 'path-is-same';
-import { EnumGlobalStateName, EnumIDEInfoType, IIDEInfo, IUnavailableIDE } from '../types';
+import { nanoid } from 'nanoid';
+import { EnumGlobalStateName, EnumIDEInfoType, IIDEInfo, IUnavailableIDE, ICustomIDEWithUuid } from '../types';
 import { _keyToPath } from '../utils/json';
 import { IdeSettingProvider } from './ideSettingProvider';
 import { knownIDEs } from '../data/knownIDEs';
@@ -125,7 +126,7 @@ export class IDEProvider
 	{
 		// 從全域狀態讀取自訂 IDE 清單
 		// Read custom IDE list from global state
-		const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
+		const customIDEs = this.context.globalState.get<Array<ICustomIDEWithUuid>>(
 			EnumGlobalStateName.customIDEs,
 			[], // 預設值：空陣列 / Default value: empty array
 		);
@@ -143,14 +144,26 @@ export class IDEProvider
 		{
 			if (result.detected && result.path && result.settingsPath)
 			{
+				// 取得現有的 UUID（如果存在）
+				// Get existing UUID (if exists)
+				const existingCustomIDE = customIDEs.find(ide => ide.name === result.name);
+				const existingUuid = existingCustomIDE?.uuid;
+
+				console.log(`[Custom IDE] 載入自訂 IDE: ${result.name} (UUID: ${existingUuid || 'new'})`);
+				console.log(`[Custom IDE] Loading custom IDE: ${result.name} (UUID: ${existingUuid || 'new'})`);
+
 				// 成功找到自訂 IDE，嘗試載入設定
 				// Successfully found custom IDE, attempt to load settings
-				this.processIDE(result.name, EnumIDEInfoType.custom, result.settingsPath, result.path);
+				this.processIDE(result.name, EnumIDEInfoType.custom, result.settingsPath, result.path, existingUuid);
 			}
 			else
 			{
 				// 未能找到自訂 IDE，標記為不可用
 				// Failed to find custom IDE, mark as unavailable
+				const existingCustomIDE = customIDEs.find(ide => ide.name === result.name);
+				console.log(`[Custom IDE] 無法載入自訂 IDE: ${result.name} (UUID: ${existingCustomIDE?.uuid || 'unknown'}) - ${result.reason}`);
+				console.log(`[Custom IDE] Failed to load custom IDE: ${result.name} (UUID: ${existingCustomIDE?.uuid || 'unknown'}) - ${result.reason}`);
+
 				this.addUnavailableIDE(
 					result.name,
 					EnumIDEInfoType.custom,
@@ -251,9 +264,12 @@ export class IDEProvider
 		nativePath: string,
 		settingProvider: IdeSettingProvider,
 		successLog: string,
+		uuid?: string,
 	): void
 	{
+		const finalUuid = uuid || nanoid();
 		this.ideList.push({
+			uuid: finalUuid,
 			name,
 			type,
 			available: true,
@@ -262,7 +278,7 @@ export class IDEProvider
 		});
 
 		console.log(successLog);
-		console.log(`[IDE] ✓ Successfully loaded settings for ${name}`);
+		console.log(`[IDE] ✓ Successfully loaded settings for ${name} (UUID: ${finalUuid})`);
 	}
 
 	/**
@@ -302,6 +318,7 @@ export class IDEProvider
 	 * @param type - IDE 類型
 	 * @param settingsJsonPath - settings.json 檔案路徑
 	 * @param nativePath - IDE 實際資料夾路徑
+	 * @param uuid - 可選的 UUID，用於保持 IDE 識別碼一致性
 	 * @returns 是否成功載入
 	 */
 	private processIDE(
@@ -309,6 +326,7 @@ export class IDEProvider
 		type: EnumIDEInfoType,
 		settingsJsonPath: string,
 		nativePath: string,
+		uuid?: string,
 	): boolean
 	{
 		try
@@ -320,12 +338,16 @@ export class IDEProvider
 
 			// 成功載入，新增到 IDE 列表
 			// Successfully loaded, add to IDE list
+			console.log(`[IDE] 載入 IDE 設定成功: ${name} (類型: ${type}, UUID: ${uuid || 'auto-generated'})`);
+			console.log(`[IDE] Loaded IDE settings successfully: ${name} (type: ${type}, UUID: ${uuid || 'auto-generated'})`);
+
 			this.addAvailableIDE(
 				name,
 				type,
 				nativePath,
 				settingProvider,
 				`[IDE] ✓ 成功載入 ${name} 的設定`,
+				uuid,
 			);
 
 			return true;
@@ -357,8 +379,22 @@ export class IDEProvider
 	}
 
 	/**
-	 * 透過索引取得 IDE
-	 * @param ideIndex - IDE 在列表中的索引 / Index of IDE in list
+	 * 根據 UUID 取得 IDE 資訊
+	 * Get IDE information by UUID
+	 *
+	 * @param uuid - IDE 的唯一識別符 / UUID of the IDE
+	 * @returns IIDEInfo | undefined - 找到則回傳該 IDE，否則回傳 undefined
+	 */
+	getIdeByUuid(uuid: string): IIDEInfo | undefined
+	{
+		return this.ideList.find(ide => ide.uuid === uuid);
+	}
+
+	/**
+	 * 根據索引取得 IDE 資訊
+	 * Get IDE information by index
+	 *
+	 * @param ideIndex - IDE 索引 / IDE index
 	 * @param isCustomIDE - 選填，若為 true 則表示為自訂 IDE
 	 * @returns IIDEInfo | undefined - 找到則回傳該 IDE，否則回傳 undefined
 	 */
@@ -476,6 +512,8 @@ export class IDEProvider
 	 * - 名稱不能與已新增的自訂 IDE 名稱相同
 	 * - 路徑不能與已新增的自訂 IDE 路徑相同（使用 fsSameRealpath 比較實際路徑）
 	 *
+	 * 新增時會自動產生 UUID 並儲存，以確保重新整理時保持一致的識別碼。
+	 *
 	 * @param name - 自訂 IDE 的顯示名稱 / Display name for custom IDE
 	 * @param settingsPath - IDE 設定資料夾的完整路徑 / Full path to IDE settings folder
 	 * @returns 是否成功添加 / Whether the addition was successful
@@ -492,7 +530,7 @@ export class IDEProvider
 		}
 
 		// 從全域狀態讀取現有自訂 IDE 列表 / Read existing custom IDE list
-		const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
+		const customIDEs = this.context.globalState.get<Array<ICustomIDEWithUuid>>(
 			EnumGlobalStateName.customIDEs,
 			[],
 		);
@@ -546,16 +584,73 @@ export class IDEProvider
 			}
 		}
 
-		// 所有驗證通過，添加新的自訂 IDE / All validations passed, add new custom IDE
-		customIDEs.push({ name, path: settingsPath });
+		// 所有驗證通過，產生 UUID 並添加新的自訂 IDE
+		// All validations passed, generate UUID and add new custom IDE
+		const newUuid = nanoid();
+		customIDEs.push({ uuid: newUuid, name, path: settingsPath });
 		await this.context.globalState.update(EnumGlobalStateName.customIDEs, customIDEs);
 
-		console.log(`[Custom IDE] 已添加 / Added: ${name} at ${settingsPath}`);
+		console.log(`[Custom IDE] 已添加 / Added: ${name} at ${settingsPath} (UUID: ${newUuid})`);
 
 		// 重新整理以驗證新路徑 / Refresh to validate new path
 		await this.refreshIDEList();
 
 		return true;
+	}
+
+	/**
+	 * 移除自訂 IDE 路徑（根據 UUID）
+	 * Remove a custom IDE path (by UUID)
+	 *
+	 * @param uuid - IDE 的唯一識別符 / IDE UUID
+	 */
+	async removeCustomIDEByUuid(uuid: string): Promise<void>
+	{
+		console.log(`[Custom IDE] 嘗試移除自訂 IDE，UUID: ${uuid}`);
+		console.log(`[Custom IDE] Attempting to remove custom IDE, UUID: ${uuid}`);
+
+		const ide = this.getIdeByUuid(uuid);
+
+		if (!ide)
+		{
+			console.warn(`[Custom IDE] 找不到 ID 為 ${uuid} 的 IDE`);
+			console.warn(`[Custom IDE] Cannot find IDE with UUID: ${uuid}`);
+			return;
+		}
+
+		if (ide.type !== EnumIDEInfoType.custom)
+		{
+			console.warn(`[Custom IDE] IDE "${ide.name}" (UUID: ${uuid}) 不是自訂 IDE，無法移除`);
+			console.warn(`[Custom IDE] IDE "${ide.name}" (UUID: ${uuid}) is not a custom IDE, cannot remove`);
+			return;
+		}
+
+		// 從全域狀態讀取自訂 IDE 列表 / Read custom IDE list from global state
+		const customIDEs = this.context.globalState.get<Array<ICustomIDEWithUuid>>(
+			EnumGlobalStateName.customIDEs,
+			[],
+		);
+
+		console.log(`[Custom IDE] 目前的自訂 IDE 數量: ${customIDEs.length}`);
+		console.log(`[Custom IDE] Current custom IDE count: ${customIDEs.length}`);
+
+		// 過濾掉要移除的 IDE / Filter out the IDE to be removed
+		const filtered = customIDEs.filter((c) => c.uuid !== uuid);
+
+		if (filtered.length === customIDEs.length)
+		{
+			console.warn(`[Custom IDE] 在 globalState 中找不到 UUID 為 ${uuid} 的自訂 IDE`);
+			console.warn(`[Custom IDE] Cannot find custom IDE with UUID ${uuid} in globalState`);
+			return;
+		}
+
+		await this.context.globalState.update(EnumGlobalStateName.customIDEs, filtered);
+
+		console.log(`[Custom IDE] 已移除 / Removed: ${ide.name} (UUID: ${uuid}, Path: ${ide.nativePath})`);
+		console.log(`[Custom IDE] Removed successfully: ${ide.name} (UUID: ${uuid}, Path: ${ide.nativePath})`);
+
+		// 重新整理 IDE 列表 / Refresh IDE list
+		await this.refreshIDEList();
 	}
 
 	/**

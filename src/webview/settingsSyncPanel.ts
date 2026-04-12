@@ -798,8 +798,21 @@ export class SettingsSyncPanel
 						break;
 
 					case 'removeCustomIDE':
-						await this.ideProvider.removeCustomIDE(message.index, message.name);
-						await this.updateWebview();
+						const confirm = await vscode.window.showWarningMessage(
+							`Remove custom IDE "${message.name}"?`,
+							{ modal: true },
+							'Remove',
+							'Cancel'
+						);
+						if (confirm === 'Remove')
+						{
+							await this.ideProvider.removeCustomIDEByUuid(message.uuid);
+							await this.updateWebview();
+						}
+						break;
+
+					case 'openSettingsJson':
+						await this.openSettingsJsonFile(message.idePath, message.ideName);
 						break;
 
 					case 'syncSettings':
@@ -1003,5 +1016,53 @@ export class SettingsSyncPanel
 	{
 		// This would be called by the extension when user clicks sync
 		// The actual sync is handled by the WebView message handler
+	}
+
+	/**
+	 * Open settings.json file for the specified IDE
+	 * @param idePath - The IDE path
+	 * @param ideName - The IDE name
+	 */
+	private async openSettingsJsonFile(idePath: string, ideName: string): Promise<void>
+	{
+		try
+		{
+			const path = require('path');
+			const fs = require('fs');
+
+			// Try multiple possible settings.json paths
+			const possiblePaths = [
+				path.join(idePath, 'settings.json'),
+				path.join(idePath, 'User', 'settings.json'),
+			];
+
+			let settingsPath: string | null = null;
+
+			for (const possiblePath of possiblePaths)
+			{
+				if (fs.existsSync(possiblePath))
+				{
+					settingsPath = possiblePath;
+					break;
+				}
+			}
+
+			if (!settingsPath)
+			{
+				vscode.window.showWarningMessage(
+					`settings.json not found for ${ideName}. Checked paths:\n${possiblePaths.join('\n')}`
+				);
+				return;
+			}
+
+			// Open the settings.json file in VS Code editor
+			const document = await vscode.workspace.openTextDocument(settingsPath);
+			await vscode.window.showTextDocument(document);
+		}
+		catch (error)
+		{
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			vscode.window.showErrorMessage(`Failed to open settings.json for ${ideName}: ${errorMessage}`);
+		}
 	}
 }

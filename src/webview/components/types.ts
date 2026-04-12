@@ -43,6 +43,8 @@ export type ISettingsSyncPanelPagePropsRuntime = Partial<ISettingsSyncPanelPageP
  */
 export interface IIDEInfoWebview
 {
+	/** IDE 唯一識別符 */
+	uuid: string;
 	/** IDE 顯示名稱 */
 	name: string;
 	/** IDE 類型（已知或自訂） */
@@ -79,4 +81,20 @@ export interface IIDEListProps
 	unavailableIDEs: IUnavailableIDEInfoWebview[];
 	/** 當前 IDE 名稱 */
 	currentIDEName: string;
+}
+
+/**
+ * 移除自訂 IDE 的參數物件
+ * 用於統一傳遞刪除 IDE 所需的資訊
+ */
+export interface IRemoveCustomIDEParams
+{
+	/** IDE 索引 */
+	index: number;
+	/** IDE 唯一識別符 */
+	uuid: string;
+	/** IDE 顯示名稱 */
+	name: string;
+	/** IDE 實際資料夾路徑 */
+	nativePath: string;
 }
