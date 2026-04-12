@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.6](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.0.5...vscode-ide-settings-sync@0.0.6) (2026-04-12)
+
+
+
+### 🐛　Bug Fixes
+
+* **ui:** 修正同步設定的來源 IDE。提取來源 IDE 指示器與設定導航元件並改用 UUID 識別 ([218d072](https://github.com/bluelovers/vscode-ide-settings-sync/commit/218d072ea9331c531270ab76482230370272ba10))
+
+
+### ✨　Features
+
+* **ide:** 新增來源 IDE 選擇器與檔案快取持久化 ([6bdc9fc](https://github.com/bluelovers/vscode-ide-settings-sync/commit/6bdc9fc7679f1d89ff1116d69c3f3bc63731f0bc))
+* **openspec:** 新增 OpenSpec 工作流程設定檔與技能定義 ([ad58e0a](https://github.com/bluelovers/vscode-ide-settings-sync/commit/ad58e0a04356c2cac4ff2290003440a630b1f3dc))
+
+
+### 📦　Code Refactoring
+
+* **lang:** 提取語言配置邏輯至共用工具模組 ([59479a1](https://github.com/bluelovers/vscode-ide-settings-sync/commit/59479a1efde9872626c7d7ca61d4422f41f40f9b))
+
+
+### 💎　Styles
+
+* 统一代码格式，增强可读性 ([7ea3d1e](https://github.com/bluelovers/vscode-ide-settings-sync/commit/7ea3d1e2d45edf3cbf2363f1e190eb4e133f647b))
+
+
+
 ## 0.0.5 (2026-04-12)
 
 

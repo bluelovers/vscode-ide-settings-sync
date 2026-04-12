@@ -1,7 +1,7 @@
 {
   "name": "vscode-ide-settings-sync",
   "displayName": "VSCode IDE Settings Sync",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Synchronize IDE settings across multiple VSCode-based IDEs (Antigravity, VS Code Insiders, CodeBuddy CN, Windsurf, custom paths)",
   "categories": [
     "Other"
