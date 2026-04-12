@@ -29,23 +29,23 @@ export class ExportImportCommands
 		// Export commands
 		const exportCustomIDEsCommand = vscode.commands.registerCommand(
 			'ide-sync.exportCustomIDEs',
-			() => this.exportCustomIDEs()
+			() => this.exportCustomIDEs(),
 		);
 
 		const exportSelectedSettingsCommand = vscode.commands.registerCommand(
 			'ide-sync.exportSelectedSettings',
-			() => this.exportSelectedSettings()
+			() => this.exportSelectedSettings(),
 		);
 
 		const exportAllCommand = vscode.commands.registerCommand(
 			'ide-sync.exportAll',
-			() => this.exportAll()
+			() => this.exportAll(),
 		);
 
 		// Import commands
 		const importCommand = vscode.commands.registerCommand(
 			'ide-sync.import',
-			() => this.import()
+			() => this.import(),
 		);
 
 		// Register commands
@@ -53,7 +53,7 @@ export class ExportImportCommands
 			exportCustomIDEsCommand,
 			exportSelectedSettingsCommand,
 			exportAllCommand,
-			importCommand
+			importCommand,
 		);
 	}
 
@@ -72,7 +72,7 @@ export class ExportImportCommands
 		catch (error)
 		{
 			vscode.window.showErrorMessage(
-				`匯出自訂 IDE 失敗: ${error instanceof Error ? error.message : String(error)}`
+				`匯出自訂 IDE 失敗: ${error instanceof Error ? error.message : String(error)}`,
 			);
 		}
 	}
@@ -92,7 +92,7 @@ export class ExportImportCommands
 		catch (error)
 		{
 			vscode.window.showErrorMessage(
-				`匯出選擇的設定失敗: ${error instanceof Error ? error.message : String(error)}`
+				`匯出選擇的設定失敗: ${error instanceof Error ? error.message : String(error)}`,
 			);
 		}
 	}
@@ -112,7 +112,7 @@ export class ExportImportCommands
 		catch (error)
 		{
 			vscode.window.showErrorMessage(
-				`匯出所有資料失敗: ${error instanceof Error ? error.message : String(error)}`
+				`匯出所有資料失敗: ${error instanceof Error ? error.message : String(error)}`,
 			);
 		}
 	}
@@ -159,7 +159,7 @@ export class ExportImportCommands
 		catch (error)
 		{
 			vscode.window.showErrorMessage(
-				`匯入失敗: ${error instanceof Error ? error.message : String(error)}`
+				`匯入失敗: ${error instanceof Error ? error.message : String(error)}`,
 			);
 		}
 	}
@@ -208,14 +208,14 @@ export class ExportImportCommands
 				const showWarnings = await vscode.window.showWarningMessage(
 					'匯入過程中有一些警告，是否查看詳細資訊？',
 					'查看詳細資訊',
-					'忽略'
+					'忽略',
 				);
 
 				if (showWarnings === '查看詳細資訊')
 				{
 					const warningDoc = await vscode.workspace.openTextDocument({
 						content: result.warnings.join('\n'),
-						language: 'text'
+						language: 'text',
 					});
 					await vscode.window.showTextDocument(warningDoc);
 				}

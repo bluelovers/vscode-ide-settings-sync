@@ -250,9 +250,9 @@ export class SettingsSyncPanel
 
     <div id="export-import" class="tab-content">
       ${renderJsxToString(ExportImportPanel, {
-        importResult: undefined,
-        isProcessing: false
-      })}
+			importResult: undefined,
+			isProcessing: false,
+		})}
     </div>
   </div>
 
@@ -827,7 +827,7 @@ export class SettingsSyncPanel
 							`Remove custom IDE "${message.name}"?`,
 							{ modal: true },
 							'Remove',
-							'Cancel'
+							'Cancel',
 						);
 						if (confirm === 'Remove')
 						{
@@ -904,12 +904,13 @@ export class SettingsSyncPanel
 							canSelectFolders: true,
 							canSelectMany: false,
 							openLabel: 'Select Export Folder',
-							title: 'Select folder to save export file'
+							title: 'Select folder to save export file',
 						});
-						if (exportPath && exportPath[0]) {
-							this.panel.webview.postMessage({ 
-								command: 'exportPathSelected', 
-								path: exportPath[0].fsPath 
+						if (exportPath && exportPath[0])
+						{
+							this.panel.webview.postMessage({
+								command: 'exportPathSelected',
+								path: exportPath[0].fsPath,
 							});
 						}
 						break;
@@ -920,67 +921,80 @@ export class SettingsSyncPanel
 							canSelectFolders: false,
 							canSelectMany: false,
 							filters: {
-								'JSON Files': ['json']
+								'JSON Files': ['json'],
 							},
 							openLabel: 'Select Import File',
-							title: 'Select file to import'
+							title: 'Select file to import',
 						});
-						if (importPath && importPath[0]) {
-							this.panel.webview.postMessage({ 
-								command: 'importPathSelected', 
-								path: importPath[0].fsPath 
+						if (importPath && importPath[0])
+						{
+							this.panel.webview.postMessage({
+								command: 'importPathSelected',
+								path: importPath[0].fsPath,
 							});
 						}
 						break;
 
 					case 'exportCustomIDEs':
-						try {
+						try
+						{
 							await vscode.commands.executeCommand('ide-sync.exportCustomIDEs');
 							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
-						} catch (error) {
-							this.panel.webview.postMessage({ 
-								command: 'exportComplete', 
-								success: false, 
-								error: error instanceof Error ? error.message : String(error) 
+						}
+						catch (error)
+						{
+							this.panel.webview.postMessage({
+								command: 'exportComplete',
+								success: false,
+								error: error instanceof Error ? error.message : String(error),
 							});
 						}
 						break;
 
 					case 'exportSelectedSettings':
-						try {
+						try
+						{
 							await vscode.commands.executeCommand('ide-sync.exportSelectedSettings');
 							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
-						} catch (error) {
-							this.panel.webview.postMessage({ 
-								command: 'exportComplete', 
-								success: false, 
-								error: error instanceof Error ? error.message : String(error) 
+						}
+						catch (error)
+						{
+							this.panel.webview.postMessage({
+								command: 'exportComplete',
+								success: false,
+								error: error instanceof Error ? error.message : String(error),
 							});
 						}
 						break;
 
 					case 'exportAll':
-						try {
+						try
+						{
 							await vscode.commands.executeCommand('ide-sync.exportAll');
 							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
-						} catch (error) {
-							this.panel.webview.postMessage({ 
-								command: 'exportComplete', 
-								success: false, 
-								error: error instanceof Error ? error.message : String(error) 
+						}
+						catch (error)
+						{
+							this.panel.webview.postMessage({
+								command: 'exportComplete',
+								success: false,
+								error: error instanceof Error ? error.message : String(error),
 							});
 						}
 						break;
 
 					case 'import':
-						try {
+						try
+						{
 							await vscode.commands.executeCommand('ide-sync.import');
 							this.panel.webview.postMessage({ command: 'importComplete', success: true });
-						} catch (error) {
-							this.panel.webview.postMessage({ 
-								command: 'importComplete', 
-								success: false, 
-								error: error instanceof Error ? error.message : String(error) 
+						}
+						catch (error)
+						{
+							this.panel.webview.postMessage({
+								command: 'importComplete',
+								success: false,
+								error: error instanceof Error ? error.message : String(error),
 							});
 						}
 						break;
@@ -1080,7 +1094,7 @@ export class SettingsSyncPanel
 			if (!settingsPath)
 			{
 				vscode.window.showWarningMessage(
-					`settings.json not found for ${ideName}. Checked paths:\n${possiblePaths.join('\n')}`
+					`settings.json not found for ${ideName}. Checked paths:\n${possiblePaths.join('\n')}`,
 				);
 				return;
 			}

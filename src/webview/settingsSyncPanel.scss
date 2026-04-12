@@ -44,32 +44,35 @@ $gap-lg: 12px;
  * 按鈕基礎樣式
  * Button base style
  */
-@mixin btn-base {
-  padding: $spacing-sm $spacing-md;
-  border: none;
-  border-radius: $radius-md;
-  cursor: pointer;
-  font-size: $font-size-base;
-  font-family: inherit;
-  transition: all 0.2s ease;
+@mixin btn-base
+{
+	padding: $spacing-sm $spacing-md;
+	border: none;
+	border-radius: $radius-md;
+	cursor: pointer;
+	font-size: $font-size-base;
+	font-family: inherit;
+	transition: all 0.2s ease;
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+	&:disabled
+	{
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
 }
 
 /**
  * 表單元素基礎樣式
  * Form element base style
  */
-@mixin form-element {
-  padding: 6px $spacing-sm;
-  background-color: var(--vscode-input-background);
-  color: var(--vscode-input-foreground);
-  border: 1px solid var(--vscode-textBlockQuote-border);
-  border-radius: $radius-md;
-  cursor: pointer;
+@mixin form-element
+{
+	padding: 6px $spacing-sm;
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-textBlockQuote-border);
+	border-radius: $radius-md;
+	cursor: pointer;
 }
 
 /**
@@ -78,175 +81,209 @@ $gap-lg: 12px;
  * ============================================
  */
 
-.export-import-section {
-  .section {
-    margin-bottom: $spacing-xxl;
-    padding: $spacing-xxl;
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: $radius-md;
-    
-    h2 {
-      margin: 0 0 $spacing-xl 0;
-      color: var(--vscode-foreground);
-    }
-  }
+.export-import-section
+{
+	.section
+	{
+		margin-bottom: $spacing-xxl;
+		padding: $spacing-xxl;
+		border: 1px solid var(--vscode-panel-border);
+		border-radius: $radius-md;
 
-  .export-section,
-  .import-section {
-    margin-bottom: $spacing-xxl;
-    padding: $spacing-xxl;
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: $radius-md;
+		h2
+		{
+			margin: 0 0 $spacing-xl 0;
+			color: var(--vscode-foreground);
+		}
+	}
 
-    h3 {
-      margin: 0 0 $spacing-xl 0;
-      color: var(--vscode-foreground);
-    }
-  }
+	.export-section,
+	.import-section
+	{
+		margin-bottom: $spacing-xxl;
+		padding: $spacing-xxl;
+		border: 1px solid var(--vscode-panel-border);
+		border-radius: $radius-md;
 
-  .path-selection {
-    margin-bottom: $spacing-xxl;
-    padding: $spacing-xl;
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: $radius-md;
+		h3
+		{
+			margin: 0 0 $spacing-xl 0;
+			color: var(--vscode-foreground);
+		}
+	}
 
-    h4 {
-      margin: 0 0 $spacing-md 0;
-      font-size: $font-size-base;
-    }
+	.path-selection
+	{
+		margin-bottom: $spacing-xxl;
+		padding: $spacing-xl;
+		border: 1px solid var(--vscode-panel-border);
+		border-radius: $radius-md;
 
-    .path-input-group {
-      display: flex;
-      gap: $gap-md;
-      align-items: center;
-      margin-bottom: $spacing-md;
+		h4
+		{
+			margin: 0 0 $spacing-md 0;
+			font-size: $font-size-base;
+		}
 
-      .path-input {
-        flex: 1;
-        padding: $spacing-sm;
-        border: 1px solid var(--vscode-input-border);
-        background: var(--vscode-input-background);
-        color: var(--vscode-input-foreground);
-        border-radius: $radius-md;
-        font-size: $font-size-base;
+		.path-input-group
+		{
+			display: flex;
+			gap: $gap-md;
+			align-items: center;
+			margin-bottom: $spacing-md;
 
-        &::placeholder {
-          color: var(--vscode-input-placeholderForeground);
-        }
+			.path-input
+			{
+				flex: 1;
+				padding: $spacing-sm;
+				border: 1px solid var(--vscode-input-border);
+				background: var(--vscode-input-background);
+				color: var(--vscode-input-foreground);
+				border-radius: $radius-md;
+				font-size: $font-size-base;
 
-        &:focus {
-          outline: 1px solid var(--vscode-focusBorder);
-          outline-offset: -1px;
-        }
-      }
+				&::placeholder
+				{
+					color: var(--vscode-input-placeholderForeground);
+				}
 
-      .browse-btn {
-        @include btn-base;
-        background: var(--vscode-button-secondaryBackground);
-        color: var(--vscode-button-secondaryForeground);
-        white-space: nowrap;
+				&:focus
+				{
+					outline: 1px solid var(--vscode-focusBorder);
+					outline-offset: -1px;
+				}
+			}
 
-        &:hover:not(:disabled) {
-          background: var(--vscode-button-secondaryHoverBackground);
-        }
-      }
-    }
-  }
+			.browse-btn
+			{
+				@include btn-base;
+				background: var(--vscode-button-secondaryBackground);
+				color: var(--vscode-button-secondaryForeground);
+				white-space: nowrap;
 
-  .options {
-    margin-bottom: $spacing-xxl;
+				&:hover:not(:disabled)
+				{
+					background: var(--vscode-button-secondaryHoverBackground);
+				}
+			}
+		}
+	}
 
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      gap: $gap-sm;
-      cursor: pointer;
+	.options
+	{
+		margin-bottom: $spacing-xxl;
 
-      .checkbox-input {
-        margin: 0;
-      }
+		.checkbox-group
+		{
+			display: flex;
+			align-items: center;
+			gap: $gap-sm;
+			cursor: pointer;
 
-      .checkbox-label {
-        font-size: $font-size-base;
-      }
-    }
-  }
+			.checkbox-input
+			{
+				margin: 0;
+			}
 
-  .actions {
-    .action-btn {
-      @include btn-base;
-      background: var(--vscode-button-background);
-      color: var(--vscode-button-foreground);
-      font-weight: 500;
+			.checkbox-label
+			{
+				font-size: $font-size-base;
+			}
+		}
+	}
 
-      &:hover:not(:disabled) {
-        background: var(--vscode-button-hoverBackground);
-      }
+	.actions
+	{
+		.action-btn
+		{
+			@include btn-base;
+			background: var(--vscode-button-background);
+			color: var(--vscode-button-foreground);
+			font-weight: 500;
 
-      &.processing {
-        opacity: 0.7;
-        cursor: wait;
-      }
-    }
-  }
+			&:hover:not(:disabled)
+			{
+				background: var(--vscode-button-hoverBackground);
+			}
 
-  .import-result {
-    padding: $spacing-xl;
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: $radius-md;
-    background: var(--vscode-editor-background);
+			&.processing
+			{
+				opacity: 0.7;
+				cursor: wait;
+			}
+		}
+	}
 
-    h4 {
-      margin: 0 0 $spacing-md 0;
-      color: var(--vscode-foreground);
-    }
+	.import-result
+	{
+		padding: $spacing-xl;
+		border: 1px solid var(--vscode-panel-border);
+		border-radius: $radius-md;
+		background: var(--vscode-editor-background);
 
-    .result-message {
-      &.success {
-        color: var(--vscode-testing-iconPassed);
-      }
+		h4
+		{
+			margin: 0 0 $spacing-md 0;
+			color: var(--vscode-foreground);
+		}
 
-      &.error {
-        color: var(--vscode-errorForeground);
-      }
-    }
+		.result-message
+		{
+			&.success
+			{
+				color: var(--vscode-testing-iconPassed);
+			}
 
-    .result-summary {
-      margin-top: $spacing-md;
+			&.error
+			{
+				color: var(--vscode-errorForeground);
+			}
+		}
 
-      .summary-title {
-        font-weight: 600;
-        margin-bottom: $spacing-sm;
-      }
+		.result-summary
+		{
+			margin-top: $spacing-md;
 
-      .summary-list {
-        margin: $spacing-sm 0;
-        padding-left: $spacing-xl;
+			.summary-title
+			{
+				font-weight: 600;
+				margin-bottom: $spacing-sm;
+			}
 
-        li {
-          margin-bottom: $spacing-xs;
-        }
-      }
-    }
+			.summary-list
+			{
+				margin: $spacing-sm 0;
+				padding-left: $spacing-xl;
 
-    .result-details {
-      margin-top: $spacing-md;
+				li
+				{
+					margin-bottom: $spacing-xs;
+				}
+			}
+		}
 
-      .details-title {
-        font-weight: 600;
-        margin-bottom: $spacing-sm;
-      }
+		.result-details
+		{
+			margin-top: $spacing-md;
 
-      .details-list {
-        margin: $spacing-sm 0;
-        padding-left: $spacing-xl;
+			.details-title
+			{
+				font-weight: 600;
+				margin-bottom: $spacing-sm;
+			}
 
-        li {
-          margin-bottom: $spacing-xs;
-        }
-      }
-    }
-  }
+			.details-list
+			{
+				margin: $spacing-sm 0;
+				padding-left: $spacing-xl;
+
+				li
+				{
+					margin-bottom: $spacing-xs;
+				}
+			}
+		}
+	}
 }
 
 /**
@@ -255,81 +292,89 @@ $gap-lg: 12px;
  * ============================================
  */
 
-.btn {
-  @include btn-base;
-  background-color: var(--vscode-input-background);
-  color: var(--vscode-input-foreground);
-  border: 1px solid var(--vscode-textBlockQuote-border);
-  border-radius: $radius-md;
-  cursor: pointer;
+.btn
+{
+	@include btn-base;
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-textBlockQuote-border);
+	border-radius: $radius-md;
+	cursor: pointer;
 }
 
 /**
  * 文字省略顯示
  * Text ellipsis
  */
-@mixin text-ellipsis {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+@mixin text-ellipsis
+{
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 /**
  * 區塊容器樣式
  * Section container style
  */
-@mixin section-container {
-  padding: $spacing-xl;
-  background-color: var(--vscode-editor-lineHighlightBackground);
-  border: 1px solid var(--vscode-editorGroup-border);
-  border-radius: $radius-md;
+@mixin section-container
+{
+	padding: $spacing-xl;
+	background-color: var(--vscode-editor-lineHighlightBackground);
+	border: 1px solid var(--vscode-editorGroup-border);
+	border-radius: $radius-md;
 }
 
 /**
  * 列表項目基礎樣式
  * List item base style
  */
-@mixin list-item {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm;
-  padding: $spacing-sm $spacing-md;
-  background-color: var(--vscode-list-hoverBackground);
-  border-radius: $radius-md;
-  border-left: 3px solid var(--vscode-textBlockQuote-border);
+@mixin list-item
+{
+	display: flex;
+	align-items: center;
+	gap: $spacing-sm;
+	padding: $spacing-sm $spacing-md;
+	background-color: var(--vscode-list-hoverBackground);
+	border-radius: $radius-md;
+	border-left: 3px solid var(--vscode-textBlockQuote-border);
 }
 
 /**
  * 錯誤狀態樣式
  * Error state style
  */
-@mixin error-state {
-  background-color: var(--vscode-inputValidation-errorBackground);
-  color: var(--vscode-inputValidation-errorForeground);
+@mixin error-state
+{
+	background-color: var(--vscode-inputValidation-errorBackground);
+	color: var(--vscode-inputValidation-errorForeground);
 }
 
 /**
  * 資訊狀態樣式
  * Info state style
  */
-@mixin info-state {
-  background-color: var(--vscode-inputValidation-infoBackground);
-  border: 1px solid var(--vscode-inputValidation-infoBorder);
+@mixin info-state
+{
+	background-color: var(--vscode-inputValidation-infoBackground);
+	border: 1px solid var(--vscode-inputValidation-infoBorder);
 }
 
 /**
  * Flex 工具類
  * Flex utilities
  */
-@mixin flex-center {
-  display: flex;
-  align-items: center;
+@mixin flex-center
+{
+	display: flex;
+	align-items: center;
 }
 
-@mixin flex-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+@mixin flex-between
+{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 /**
@@ -338,10 +383,11 @@ $gap-lg: 12px;
  * ============================================
  */
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*
+{
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 
 /**
@@ -350,12 +396,13 @@ $gap-lg: 12px;
  * ============================================
  */
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  padding: $spacing-xxl;
-  color: var(--vscode-foreground);
-  background-color: var(--vscode-editor-background);
-  font-size: $font-size-base;
+body
+{
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+	padding: $spacing-xxl;
+	color: var(--vscode-foreground);
+	background-color: var(--vscode-editor-background);
+	font-size: $font-size-base;
 }
 
 /**
@@ -364,19 +411,22 @@ body {
  * ============================================
  */
 
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
+.container
+{
+	max-width: 1000px;
+	margin: 0 auto;
 }
 
-.header {
-  @include flex-between;
-  margin-bottom: $spacing-xxl;
+.header
+{
+	@include flex-between;
+	margin-bottom: $spacing-xxl;
 }
 
-.header-actions {
-  display: flex;
-  gap: $spacing-md;
+.header-actions
+{
+	display: flex;
+	gap: $spacing-md;
 }
 
 /**
@@ -385,18 +435,20 @@ body {
  * ============================================
  */
 
-h1 {
-  font-size: $font-size-lg;
-  color: var(--vscode-editor-foreground);
+h1
+{
+	font-size: $font-size-lg;
+	color: var(--vscode-editor-foreground);
 }
 
-h2 {
-  font-size: $font-size-md;
-  margin-top: $spacing-xl;
-  margin-bottom: $spacing-sm;
-  color: var(--vscode-textBlockQuote-border);
-  border-bottom: 1px solid var(--vscode-editorGroup-border);
-  padding-bottom: $spacing-sm;
+h2
+{
+	font-size: $font-size-md;
+	margin-top: $spacing-xl;
+	margin-bottom: $spacing-sm;
+	color: var(--vscode-textBlockQuote-border);
+	border-bottom: 1px solid var(--vscode-editorGroup-border);
+	padding-bottom: $spacing-sm;
 }
 
 /**
@@ -405,9 +457,10 @@ h2 {
  * ============================================
  */
 
-.section {
-  margin-bottom: 25px;
-  @include section-container;
+.section
+{
+	margin-bottom: 25px;
+	@include section-container;
 }
 
 /**
@@ -416,148 +469,164 @@ h2 {
  * ============================================
  */
 
-.ide-list {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
+.ide-list
+{
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-sm;
 }
 
 /**
  * 來源 IDE Radio 選擇器樣式
  * Source IDE radio selector style
  */
-.ide-source-radio {
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
+.ide-source-radio
+{
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+
+	&:disabled
+	{
+		cursor: not-allowed;
+		opacity: 0.5;
+	}
 }
 
 /**
  * 來源 IDE 指示器樣式
  * Source IDE indicator style
  */
-.source-ide-indicator {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm;
-  padding: $spacing-md $spacing-lg;
-  background-color: var(--vscode-editor-lineHighlightBackground);
-  border: 1px solid var(--vscode-focusBorder);
-  border-radius: $radius-md;
-  margin-top: $spacing-md;
-  
-  .source-label {
-    font-weight: 500;
-    color: var(--vscode-foreground);
-  }
-  
-  .source-name {
-    color: var(--vscode-focusBorder);
-    font-weight: 600;
-  }
+.source-ide-indicator
+{
+	display: flex;
+	align-items: center;
+	gap: $spacing-sm;
+	padding: $spacing-md $spacing-lg;
+	background-color: var(--vscode-editor-lineHighlightBackground);
+	border: 1px solid var(--vscode-focusBorder);
+	border-radius: $radius-md;
+	margin-top: $spacing-md;
+
+	.source-label
+	{
+		font-weight: 500;
+		color: var(--vscode-foreground);
+	}
+
+	.source-name
+	{
+		color: var(--vscode-focusBorder);
+		font-weight: 600;
+	}
 }
 
-.ide-item {
-  @include list-item;
+.ide-item
+{
+	@include list-item;
 
-  label {
-    cursor: pointer;
-    flex: 1;
-    word-break: break-word;
-  }
+	label
+	{
+		cursor: pointer;
+		flex: 1;
+		word-break: break-word;
+	}
 
-  &.unavailable {
-    opacity: 0.5;
-    background-color: var(--vscode-editor-background);
-    border-left-color: var(--vscode-inputValidation-errorBorder);
+	&.unavailable
+	{
+		opacity: 0.5;
+		background-color: var(--vscode-editor-background);
+		border-left-color: var(--vscode-inputValidation-errorBorder);
 
-    label {
-      text-decoration: line-through;
-    }
+		label
+		{
+			text-decoration: line-through;
+		}
 
-    .ide-checkbox {
-      cursor: not-allowed;
-    }
-  }
+		.ide-checkbox
+		{
+			cursor: not-allowed;
+		}
+	}
 
-  &.current {
-    @include info-state;
-    border-left-color: var(--vscode-inputValidation-infoBorder);
-  }
+	&.current
+	{
+		@include info-state;
+		border-left-color: var(--vscode-inputValidation-infoBorder);
+	}
 
-  &.source-ide {
-    background-color: rgba(0, 120, 212, 0.15);
-    border-left-color: var(--vscode-focusBorder);
-    border-left-width: 3px;
-  }
+	&.source-ide
+	{
+		background-color: rgba(0, 120, 212, 0.15);
+		border-left-color: var(--vscode-focusBorder);
+		border-left-width: 3px;
+	}
 
-  /**
-   * unavailable-reason 區塊
-   *
-   * 預期排版：水平置中於父容器，寬度依內容自適應但不大於 90%，
-   *          內部文字左對齊以維持長訊息可讀性
-   * Expected: Horizontally centered, width fits content but max 90%,
-   *           text left-aligned for readability
-   *
-   * 為什麼：錯誤訊息通常較長，置中區塊可突出顯示，
-   *        但文字左對齊讓長訊息易於閱讀
-   * Why: Error messages are often long; centered block draws attention,
-   *      but left-aligned text maintains readability
-   */
-  &.unavailable-reason {
-    /* --vscode-errorForeground 根據主題自動適配錯誤文字色 (Theme-adaptive error text color) */
-    color: var(--vscode-errorForeground);
+	/**
+	 * unavailable-reason 區塊
+	 *
+	 * 預期排版：水平置中於父容器，寬度依內容自適應但不大於 90%，
+	 *          內部文字左對齊以維持長訊息可讀性
+	 * Expected: Horizontally centered, width fits content but max 90%,
+	 *           text left-aligned for readability
+	 *
+	 * 為什麼：錯誤訊息通常較長，置中區塊可突出顯示，
+	 *        但文字左對齊讓長訊息易於閱讀
+	 * Why: Error messages are often long; centered block draws attention,
+	 *      but left-aligned text maintains readability
+	 */
+	&.unavailable-reason
+	{
+		/* --vscode-errorForeground 根據主題自動適配錯誤文字色 (Theme-adaptive error text color) */
+		color: var(--vscode-errorForeground);
 
-    /* $spacing-xs = 4px, auto 實現水平置中 ($spacing-xs = 4px, auto for horizontal centering) */
-    margin: 4px auto 0;
+		/* $spacing-xs = 4px, auto 實現水平置中 ($spacing-xs = 4px, auto for horizontal centering) */
+		margin: 4px auto 0;
 
-    /* 內部間距：垂直 4px, 水平 6px (Padding: vertical 4px, horizontal 6px) */
-    padding: 4px 6px;
+		/* 內部間距：垂直 4px, 水平 6px (Padding: vertical 4px, horizontal 6px) */
+		padding: 4px 6px;
 
-    /**
-     * --vscode-inputValidation-errorBackground = #5a1d1d (dark) / #f2dede (light)
-     * 為什麼：使用主題變數確保與用戶主題一致
-     */
-    background: var(--vscode-inputValidation-errorBackground);
+		/**
+		 * --vscode-inputValidation-errorBackground = #5a1d1d (dark) / #f2dede (light)
+		 * 為什麼：使用主題變數確保與用戶主題一致
+		 */
+		background: var(--vscode-inputValidation-errorBackground);
 
-    /* $radius-sm = 3px */
-    border-radius: 3px;
+		/* $radius-sm = 3px */
+		border-radius: 3px;
 
-    /* 行高 1.4 提升可讀性，避免緊密文字難以閱讀 (line-height 1.4 for readability) */
-    line-height: 1.4;
+		/* 行高 1.4 提升可讀性，避免緊密文字難以閱讀 (line-height 1.4 for readability) */
+		line-height: 1.4;
 
-    /* 寬度依內容調整，避免過寬撐破布局 (Width based on content to prevent overflow) */
-    width: fit-content;
+		/* 寬度依內容調整，避免過寬撐破布局 (Width based on content to prevent overflow) */
+		width: fit-content;
 
-    /* 最大寬度限制為父容器 90%，保持適當留白 (Max 90% of parent for proper spacing) */
-    max-width: 90%;
+		/* 最大寬度限制為父容器 90%，保持適當留白 (Max 90% of parent for proper spacing) */
+		max-width: 90%;
 
-    /* 文字左對齊，長訊息易於閱讀 (Left align for readable long messages) */
-    text-align: left;
-  }
+		/* 文字左對齊，長訊息易於閱讀 (Left align for readable long messages) */
+		text-align: left;
+	}
 }
 
-.ide-checkbox {
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
+.ide-checkbox
+{
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
 }
 
-.ide-path {
-  font-size: $font-size-sm;
-  color: var(--vscode-descriptionForeground);
-  flex: 1;
-  word-break: break-all;
-  margin-right: auto;
-  max-width: 300px;
-  @include text-ellipsis;
+.ide-path
+{
+	font-size: $font-size-sm;
+	color: var(--vscode-descriptionForeground);
+	flex: 1;
+	word-break: break-all;
+	margin-right: auto;
+	max-width: 300px;
+	@include text-ellipsis;
 }
 
 /**
@@ -566,25 +635,29 @@ h2 {
  * ============================================
  */
 
-.language-selector {
-  display: flex;
-  gap: $spacing-sm;
-  align-items: center;
-  margin-bottom: $spacing-xl;
+.language-selector
+{
+	display: flex;
+	gap: $spacing-sm;
+	align-items: center;
+	margin-bottom: $spacing-xl;
 
-  label {
-    font-weight: 500;
-  }
+	label
+	{
+		font-weight: 500;
+	}
 
-  select {
-    @include form-element;
-  }
+	select
+	{
+		@include form-element;
+	}
 }
 
-.language-config {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-lg;
+.language-config
+{
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-lg;
 }
 
 /**
@@ -593,24 +666,27 @@ h2 {
  * ============================================
  */
 
-.config-row {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm;
-  padding: $spacing-sm;
-  background-color: var(--vscode-editor-background);
-  border-radius: $radius-md;
+.config-row
+{
+	display: flex;
+	align-items: center;
+	gap: $spacing-sm;
+	padding: $spacing-sm;
+	background-color: var(--vscode-editor-background);
+	border-radius: $radius-md;
 
-  label {
-    font-weight: 500;
-    flex: 0 0 150px;
-  }
+	label
+	{
+		font-weight: 500;
+		flex: 0 0 150px;
+	}
 
-  select {
-    flex: 1;
-    @include form-element;
-    border-color: var(--vscode-inputValidation-infoBorder);
-  }
+	select
+	{
+		flex: 1;
+		@include form-element;
+		border-color: var(--vscode-inputValidation-infoBorder);
+	}
 }
 
 /**
@@ -619,30 +695,33 @@ h2 {
  * ============================================
  */
 
-.fallback-list {
-  display: flex;
-  gap: $gap-xs;
-  flex-wrap: wrap;
-  flex: 1;
+.fallback-list
+{
+	display: flex;
+	gap: $gap-xs;
+	flex-wrap: wrap;
+	flex: 1;
 }
 
-.fallback-tag {
-  display: inline-block;
-  padding: $spacing-xs $spacing-sm;
-  background-color: var(--vscode-textBlockQuote-border);
-  color: var(--vscode-editor-background);
-  border-radius: $radius-md;
-  font-size: $font-size-sm;
-  font-weight: 500;
+.fallback-tag
+{
+	display: inline-block;
+	padding: $spacing-xs $spacing-sm;
+	background-color: var(--vscode-textBlockQuote-border);
+	color: var(--vscode-editor-background);
+	border-radius: $radius-md;
+	font-size: $font-size-sm;
+	font-weight: 500;
 }
 
-.secondary-lang {
-  padding: $spacing-xs $spacing-sm;
-  background-color: var(--vscode-inputValidation-infoBorder);
-  color: var(--vscode-editor-background);
-  border-radius: $radius-md;
-  font-size: $font-size-sm;
-  font-weight: 500;
+.secondary-lang
+{
+	padding: $spacing-xs $spacing-sm;
+	background-color: var(--vscode-inputValidation-infoBorder);
+	color: var(--vscode-editor-background);
+	border-radius: $radius-md;
+	font-size: $font-size-sm;
+	font-weight: 500;
 }
 
 /**
@@ -651,26 +730,29 @@ h2 {
  * ============================================
  */
 
-.search-container {
-  margin-bottom: $spacing-xl;
-  display: flex;
-  gap: $spacing-md;
-  flex-wrap: wrap;
+.search-container
+{
+	margin-bottom: $spacing-xl;
+	display: flex;
+	gap: $spacing-md;
+	flex-wrap: wrap;
 }
 
-.search-input {
-  flex: 1;
-  min-width: 200px;
-  padding: $spacing-sm $spacing-md;
-  background-color: var(--vscode-input-background);
-  color: var(--vscode-input-foreground);
-  border: 1px solid var(--vscode-inputValidation-infoBorder);
-  border-radius: $radius-md;
-  font-size: $font-size-base;
+.search-input
+{
+	flex: 1;
+	min-width: 200px;
+	padding: $spacing-sm $spacing-md;
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-inputValidation-infoBorder);
+	border-radius: $radius-md;
+	font-size: $font-size-base;
 
-  &::placeholder {
-    color: var(--vscode-input-placeholderForeground);
-  }
+	&::placeholder
+	{
+		color: var(--vscode-input-placeholderForeground);
+	}
 }
 
 /**
@@ -679,54 +761,64 @@ h2 {
  * ============================================
  */
 
-.btn {
-  @include btn-base;
-  background-color: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
+.btn
+{
+	@include btn-base;
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
 
-  &:hover {
-    background-color: var(--vscode-button-hoverBackground);
-  }
+	&:hover
+	{
+		background-color: var(--vscode-button-hoverBackground);
+	}
 
-  &.secondary {
-    background-color: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-button-secondaryForeground);
+	&.secondary
+	{
+		background-color: var(--vscode-button-secondaryBackground);
+		color: var(--vscode-button-secondaryForeground);
 
-    &:hover {
-      background-color: var(--vscode-button-secondaryHoverBackground);
-    }
-  }
+		&:hover
+		{
+			background-color: var(--vscode-button-secondaryHoverBackground);
+		}
+	}
 
-  &.btn-small {
-    padding: $spacing-xs $spacing-sm;
-    font-size: $font-size-sm;
-    background-color: var(--vscode-button-background);
-    color: var(--vscode-button-foreground);
-    border: 1px solid var(--vscode-button-secondaryBackground);
-    cursor: pointer;
+	&.btn-small
+	{
+		padding: $spacing-xs $spacing-sm;
+		font-size: $font-size-sm;
+		background-color: var(--vscode-button-background);
+		color: var(--vscode-button-foreground);
+		border: 1px solid var(--vscode-button-secondaryBackground);
+		cursor: pointer;
 
-    &:hover {
-      background-color: var(--vscode-button-hoverBackground);
-    }
-  }
+		&:hover
+		{
+			background-color: var(--vscode-button-hoverBackground);
+		}
+	}
 
-  &.btn-sync {
-    background-color: #0fbf5a;
-    color: #ffffff;
+	&.btn-sync
+	{
+		background-color: #0fbf5a;
+		color: #ffffff;
 
-    &:hover {
-      background-color: #0aa34f;
-    }
-  }
+		&:hover
+		{
+			background-color: #0aa34f;
+		}
+	}
 
-  &.btn-delete {
-    @include error-state;
-    margin-left: auto;
+	&.btn-delete
+	{
+		@include error-state;
+		margin-left: auto;
 
-    &:hover {
-      background-color: var(--vscode-inputValidation-errorBorder);
-    }
-  }
+		&:hover
+		{
+			background-color: var(--vscode-inputValidation-errorBorder);
+		}
+	}
 }
 
 /**
@@ -735,48 +827,54 @@ h2 {
  * ============================================
  */
 
-.settings-list {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
-  max-height: 500px;
-  overflow-y: auto;
+.settings-list
+{
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-md;
+	max-height: 500px;
+	overflow-y: auto;
 }
 
-.setting-item {
-  padding: $spacing-lg;
-  background-color: var(--vscode-list-hoverBackground);
-  border-left: 3px solid var(--vscode-textBlockQuote-border);
-  border-radius: $radius-md;
+.setting-item
+{
+	padding: $spacing-lg;
+	background-color: var(--vscode-list-hoverBackground);
+	border-left: 3px solid var(--vscode-textBlockQuote-border);
+	border-radius: $radius-md;
 }
 
-.setting-key {
-  font-weight: bold;
-  color: var(--vscode-symbolIcon-fieldForeground);
-  margin-bottom: $spacing-xs;
-  @include flex-center;
-  gap: $spacing-sm;
+.setting-key
+{
+	font-weight: bold;
+	color: var(--vscode-symbolIcon-fieldForeground);
+	margin-bottom: $spacing-xs;
+	@include flex-center;
+	gap: $spacing-sm;
 }
 
-.setting-checkbox {
-  margin-right: 0;
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
+.setting-checkbox
+{
+	margin-right: 0;
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
 }
 
-.setting-description {
-  font-size: $font-size-sm;
-  color: var(--vscode-descriptionForeground);
-  margin-bottom: $spacing-sm;
-  font-style: italic;
+.setting-description
+{
+	font-size: $font-size-sm;
+	color: var(--vscode-descriptionForeground);
+	margin-bottom: $spacing-sm;
+	font-style: italic;
 }
 
-.setting-values {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: $spacing-sm;
-  font-size: $font-size-sm;
+.setting-values
+{
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: $spacing-sm;
+	font-size: $font-size-sm;
 }
 
 /**
@@ -785,34 +883,39 @@ h2 {
  * ============================================
  */
 
-.ide-value {
-  padding: $spacing-sm;
-  background-color: var(--vscode-editor-background);
-  border: 1px solid var(--vscode-editorGroup-border);
-  border-radius: $radius-sm;
-  word-break: break-word;
+.ide-value
+{
+	padding: $spacing-sm;
+	background-color: var(--vscode-editor-background);
+	border: 1px solid var(--vscode-editorGroup-border);
+	border-radius: $radius-sm;
+	word-break: break-word;
 
-  &.current {
-    @include info-state;
-  }
+	&.current
+	{
+		@include info-state;
+	}
 
-  &-missing {
-    @include error-state;
-  }
+	&-missing
+	{
+		@include error-state;
+	}
 }
 
-.ide-value-label {
-  color: var(--vscode-symbolIcon-fieldForeground);
-  font-size: $font-size-xs;
-  font-weight: bold;
-  margin-bottom: $spacing-xs;
+.ide-value-label
+{
+	color: var(--vscode-symbolIcon-fieldForeground);
+	font-size: $font-size-xs;
+	font-weight: bold;
+	margin-bottom: $spacing-xs;
 }
 
-.ide-value-content {
-  color: var(--vscode-descriptionForeground);
-  word-break: break-all;
-  max-height: 60px;
-  overflow-y: auto;
+.ide-value-content
+{
+	color: var(--vscode-descriptionForeground);
+	word-break: break-all;
+	max-height: 60px;
+	overflow-y: auto;
 }
 
 /**
@@ -821,11 +924,12 @@ h2 {
  * ============================================
  */
 
-.actions {
-  display: flex;
-  gap: $spacing-md;
-  margin-top: $spacing-xl;
-  flex-wrap: wrap;
+.actions
+{
+	display: flex;
+	gap: $spacing-md;
+	margin-top: $spacing-xl;
+	flex-wrap: wrap;
 }
 
 /**
@@ -834,32 +938,36 @@ h2 {
  * ============================================
  */
 
-.message {
-  padding: $spacing-lg $spacing-xl;
-  margin-top: $spacing-xl;
-  border-radius: $radius-md;
-  display: none;
-  border-left: 4px solid;
+.message
+{
+	padding: $spacing-lg $spacing-xl;
+	margin-top: $spacing-xl;
+	border-radius: $radius-md;
+	display: none;
+	border-left: 4px solid;
 
-  &.success {
-    background-color: var(--vscode-gitDecoration-addedResourceForeground);
-    color: var(--vscode-editor-background);
-    border-left-color: var(--vscode-gitDecoration-addedResourceForeground);
-    display: block;
-  }
+	&.success
+	{
+		background-color: var(--vscode-gitDecoration-addedResourceForeground);
+		color: var(--vscode-editor-background);
+		border-left-color: var(--vscode-gitDecoration-addedResourceForeground);
+		display: block;
+	}
 
-  &.error {
-    @include error-state;
-    border-left-color: var(--vscode-inputValidation-errorBorder);
-    display: block;
-  }
+	&.error
+	{
+		@include error-state;
+		border-left-color: var(--vscode-inputValidation-errorBorder);
+		display: block;
+	}
 
-  &.info {
-    background-color: var(--vscode-inputValidation-infoBorder);
-    color: var(--vscode-editor-background);
-    border-left-color: var(--vscode-inputValidation-infoBorder);
-    display: block;
-  }
+	&.info
+	{
+		background-color: var(--vscode-inputValidation-infoBorder);
+		color: var(--vscode-editor-background);
+		border-left-color: var(--vscode-inputValidation-infoBorder);
+		display: block;
+	}
 }
 
 /**
@@ -868,39 +976,45 @@ h2 {
  * ============================================
  */
 
-.tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--vscode-editorGroup-border);
-  margin-bottom: $spacing-xl;
+.tabs
+{
+	display: flex;
+	gap: 0;
+	border-bottom: 1px solid var(--vscode-editorGroup-border);
+	margin-bottom: $spacing-xl;
 }
 
-.tab {
-  padding: $spacing-sm $spacing-xl;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: var(--vscode-foreground);
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.2s;
+.tab
+{
+	padding: $spacing-sm $spacing-xl;
+	cursor: pointer;
+	border: none;
+	background: none;
+	color: var(--vscode-foreground);
+	border-bottom: 2px solid transparent;
+	transition: border-color 0.2s;
 
-  &:hover {
-    background-color: var(--vscode-list-hoverBackground);
-  }
+	&:hover
+	{
+		background-color: var(--vscode-list-hoverBackground);
+	}
 
-  &.active {
-    border-bottom-color: var(--vscode-textBlockQuote-border);
-    color: var(--vscode-textBlockQuote-border);
-    font-weight: 500;
-  }
+	&.active
+	{
+		border-bottom-color: var(--vscode-textBlockQuote-border);
+		color: var(--vscode-textBlockQuote-border);
+		font-weight: 500;
+	}
 }
 
-.tab-content {
-  display: none;
+.tab-content
+{
+	display: none;
 
-  &.active {
-    display: block;
-  }
+	&.active
+	{
+		display: block;
+	}
 }
 
 /**
@@ -909,10 +1023,11 @@ h2 {
  * ============================================
  */
 
-.stats {
-  font-size: $font-size-sm;
-  color: var(--vscode-descriptionForeground);
-  margin-top: $spacing-sm;
-  padding-top: $spacing-sm;
-  border-top: 1px solid var(--vscode-editorGroup-border);
+.stats
+{
+	font-size: $font-size-sm;
+	color: var(--vscode-descriptionForeground);
+	margin-top: $spacing-sm;
+	padding-top: $spacing-sm;
+	border-top: 1px solid var(--vscode-editorGroup-border);
 }

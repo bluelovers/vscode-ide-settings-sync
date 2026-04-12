@@ -95,7 +95,7 @@ export function getExistingUuid(options: {
 	if (cachedData?.ides)
 	{
 		const cachedIDE = cachedData.ides.find(
-			c => c.name === ideName && c.nativePath === idePath
+			c => c.name === ideName && c.nativePath === idePath,
 		);
 		if (cachedIDE?.uuid)
 		{
@@ -146,7 +146,7 @@ export function isIDECacheExists(extensionPath: string): boolean
 export function saveIDECache(
 	extensionPath: string,
 	ides: IIDEInfoWebview[],
-	sourceIDEUuid?: string
+	sourceIDEUuid?: string,
 ): boolean
 {
 	try
@@ -184,7 +184,7 @@ export function saveIDECache(
  * @returns IDE 列表與來源 IDE UUID，或 null（如果不存在）
  */
 export function loadIDECache(
-	extensionPath: string
+	extensionPath: string,
 ): { ides: IIDEInfoWebview[]; sourceIDEUuid?: string } | null
 {
 	try
@@ -284,7 +284,7 @@ export function importIDECache(extensionPath: string, jsonData: string): boolean
 		return saveIDECache(
 			extensionPath,
 			data.ides,
-			data.sourceIDEUuid
+			data.sourceIDEUuid,
 		);
 	}
 	catch (error)

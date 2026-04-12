@@ -84,7 +84,12 @@ export class IDEProvider
 	 *
 	 * @param cachedIDEs - 快取的 IDE 列表，用於保持 UUID 一致性
 	 */
-	private async detectKnownIDEs(cachedIDEs: Array<{ uuid: string; name: string; type: string; nativePath: string }> = []): Promise<void>
+	private async detectKnownIDEs(cachedIDEs: Array<{
+		uuid: string;
+		name: string;
+		type: string;
+		nativePath: string
+	}> = []): Promise<void>
 	{
 		// 使用獨立偵測器偵測所有已知 IDE
 		// Use standalone detector to detect all known IDEs
@@ -113,7 +118,7 @@ export class IDEProvider
 				// 未能找到 IDE，標記為不可用
 				// Failed to find IDE, mark as unavailable
 				const defaultPath = this.getUserDataPath(knownIDEs.find(ide => ide.name === result.name)?.appFolderNames[0] || result.name, 'User');
-				
+
 				this.addUnavailableIDE(
 					result.name,
 					EnumIDEInfoType.known,
@@ -135,7 +140,12 @@ export class IDEProvider
 	 *
 	 * @param cachedIDEs - 快取的 IDE 列表，用於保持 UUID 一致性
 	 */
-	private async loadCustomIDEs(cachedIDEs: Array<{ uuid: string; name: string; type: string; nativePath: string }> = []): Promise<void>
+	private async loadCustomIDEs(cachedIDEs: Array<{
+		uuid: string;
+		name: string;
+		type: string;
+		nativePath: string
+	}> = []): Promise<void>
 	{
 		// 從全域狀態讀取自訂 IDE 清單
 		// Read custom IDE list from global state

@@ -10,13 +10,21 @@
  */
 
 import { IKnownIDE } from '../data/knownIDEs';
-import { IDetectionResult, IDetectionConfig, IDEDetector, detectIDEs, getDetectedIDEs, getUndetectedIDEs } from '../utils/ideDetector';
+import {
+	IDetectionResult,
+	IDetectionConfig,
+	IDEDetector,
+	detectIDEs,
+	getDetectedIDEs,
+	getUndetectedIDEs,
+} from '../utils/ideDetector';
 
 /**
  * IDE 資訊介面（獨立版本）
  * IDE information interface (standalone version)
  */
-export interface IStandaloneIDEInfo {
+export interface IStandaloneIDEInfo
+{
 	/**
 	 * IDE 顯示名稱
 	 * IDE display name
@@ -48,7 +56,8 @@ export interface IStandaloneIDEInfo {
  * 自訂 IDE 配置介面
  * Custom IDE configuration interface
  */
-export interface ICustomIDEConfig {
+export interface ICustomIDEConfig
+{
 	name: string;
 	path: string;
 }
@@ -57,7 +66,8 @@ export interface ICustomIDEConfig {
  * 獨立 IDE Provider 配置介面
  * Standalone IDE Provider configuration interface
  */
-export interface IStandaloneProviderConfig extends IDetectionConfig {
+export interface IStandaloneProviderConfig extends IDetectionConfig
+{
 	/**
 	 * 自訂 IDE 列表
 	 * Custom IDE list
@@ -69,7 +79,8 @@ export interface IStandaloneProviderConfig extends IDetectionConfig {
  * 獨立的 IDE 偵測 Provider
  * Standalone IDE Detection Provider
  */
-export class StandaloneIDEProvider {
+export class StandaloneIDEProvider
+{
 	private config: IStandaloneProviderConfig;
 	private detector: IDEDetector;
 	private knownIDEs: IKnownIDE[];
@@ -80,7 +91,8 @@ export class StandaloneIDEProvider {
 	 * @param knownIDEs 已知 IDE 列表
 	 * @param config Provider 配置
 	 */
-	constructor(knownIDEs: IKnownIDE[], config: IStandaloneProviderConfig = {}) {
+	constructor(knownIDEs: IKnownIDE[], config: IStandaloneProviderConfig = {})
+	{
 		this.knownIDEs = knownIDEs;
 		this.config = config;
 		this.detector = new IDEDetector(config);
@@ -91,16 +103,18 @@ export class StandaloneIDEProvider {
 	 * Redetect all IDEs
 	 * @returns 偵測結果
 	 */
-	async refresh(): Promise<IDetectionResult[]> {
+	async refresh(): Promise<IDetectionResult[]>
+	{
 		this.detectionResults.clear();
 
 		// 使用統一的偵測方法
 		// Use unified detection method
 		const allResults = this.detector.detectAllIDEs(this.knownIDEs, this.config.customIDEs);
-		
+
 		// 存儲所有結果
 		// Store all results
-		for (const result of allResults.allResults) {
+		for (const result of allResults.allResults)
+		{
 			this.detectionResults.set(result.name, result);
 		}
 
@@ -112,11 +126,14 @@ export class StandaloneIDEProvider {
 	 * Get all IDE information
 	 * @returns IDE 資訊列表
 	 */
-	getAllIDEs(): IStandaloneIDEInfo[] {
+	getAllIDEs(): IStandaloneIDEInfo[]
+	{
 		const ideInfos: IStandaloneIDEInfo[] = [];
 
-		for (const result of this.detectionResults.values()) {
-			if (result.detected && result.path && result.settingsPath) {
+		for (const result of this.detectionResults.values())
+		{
+			if (result.detected && result.path && result.settingsPath)
+			{
 				ideInfos.push({
 					name: result.name,
 					available: true,
@@ -135,7 +152,8 @@ export class StandaloneIDEProvider {
 	 * Get available IDE list
 	 * @returns 可用的 IDE 列表
 	 */
-	getAvailableIDEs(): IStandaloneIDEInfo[] {
+	getAvailableIDEs(): IStandaloneIDEInfo[]
+	{
 		return this.getAllIDEs().filter(ide => ide.available);
 	}
 
@@ -144,11 +162,14 @@ export class StandaloneIDEProvider {
 	 * Get unavailable IDE list
 	 * @returns 不可用的 IDE 列表
 	 */
-	getUnavailableIDEs(): IDetectionResult[] {
+	getUnavailableIDEs(): IDetectionResult[]
+	{
 		const unavailableResults: IDetectionResult[] = [];
 
-		for (const result of this.detectionResults.values()) {
-			if (!result.detected) {
+		for (const result of this.detectionResults.values())
+		{
+			if (!result.detected)
+			{
 				unavailableResults.push(result);
 			}
 		}
@@ -162,7 +183,8 @@ export class StandaloneIDEProvider {
 	 * @param name IDE 名稱
 	 * @returns IDE 資訊或 undefined
 	 */
-	getIDEByName(name: string): IStandaloneIDEInfo | undefined {
+	getIDEByName(name: string): IStandaloneIDEInfo | undefined
+	{
 		return this.getAllIDEs().find(ide => ide.name === name);
 	}
 
@@ -172,7 +194,8 @@ export class StandaloneIDEProvider {
 	 * @param name IDE 名稱
 	 * @returns 偵測結果或 undefined
 	 */
-	getDetectionResult(name: string): IDetectionResult | undefined {
+	getDetectionResult(name: string): IDetectionResult | undefined
+	{
 		return this.detectionResults.get(name);
 	}
 
@@ -182,7 +205,8 @@ export class StandaloneIDEProvider {
 	 * @param name IDE 名稱
 	 * @returns 是否可用
 	 */
-	isIDEAvailable(name: string): boolean {
+	isIDEAvailable(name: string): boolean
+	{
 		const result = this.detectionResults.get(name);
 		return result?.detected ?? false;
 	}
@@ -192,7 +216,8 @@ export class StandaloneIDEProvider {
 	 * Get count of available IDEs
 	 * @returns 可用 IDE 的數量
 	 */
-	getAvailableIDECount(): number {
+	getAvailableIDECount(): number
+	{
 		return this.getAvailableIDEs().length;
 	}
 
@@ -206,7 +231,8 @@ export class StandaloneIDEProvider {
 		detected: number;
 		undetected: number;
 		detectionRate: number;
-	} {
+	}
+	{
 		const total = this.detectionResults.size;
 		const detected = Array.from(this.detectionResults.values()).filter(r => r.detected).length;
 		const undetected = total - detected;
@@ -225,7 +251,8 @@ export class StandaloneIDEProvider {
 	 * Export detection results as JSON
 	 * @returns JSON 字串
 	 */
-	exportResults(): string {
+	exportResults(): string
+	{
 		const results = {
 			timestamp: new Date().toISOString(),
 			statistics: this.getStatistics(),
@@ -242,7 +269,8 @@ export class StandaloneIDEProvider {
 	 * Set custom IDE list
 	 * @param customIDEs 自訂 IDE 列表
 	 */
-	setCustomIDEs(customIDEs: ICustomIDEConfig[]): void {
+	setCustomIDEs(customIDEs: ICustomIDEConfig[]): void
+	{
 		this.config.customIDEs = customIDEs;
 	}
 
@@ -251,8 +279,10 @@ export class StandaloneIDEProvider {
 	 * Add custom IDE
 	 * @param customIDE 自訂 IDE 配置
 	 */
-	addCustomIDE(customIDE: ICustomIDEConfig): void {
-		if (!this.config.customIDEs) {
+	addCustomIDE(customIDE: ICustomIDEConfig): void
+	{
+		if (!this.config.customIDEs)
+		{
 			this.config.customIDEs = [];
 		}
 		this.config.customIDEs.push(customIDE);
@@ -264,13 +294,16 @@ export class StandaloneIDEProvider {
 	 * @param name IDE 名稱
 	 * @returns 是否成功移除
 	 */
-	removeCustomIDE(name: string): boolean {
-		if (!this.config.customIDEs) {
+	removeCustomIDE(name: string): boolean
+	{
+		if (!this.config.customIDEs)
+		{
 			return false;
 		}
 
 		const index = this.config.customIDEs.findIndex(ide => ide.name === name);
-		if (index !== -1) {
+		if (index !== -1)
+		{
 			this.config.customIDEs.splice(index, 1);
 			return true;
 		}
@@ -286,7 +319,10 @@ export class StandaloneIDEProvider {
  * @param config 配置
  * @returns 獨立 IDE Provider 實例
  */
-export function createStandaloneIDEProvider(knownIDEs: IKnownIDE[], config?: IStandaloneProviderConfig): StandaloneIDEProvider {
+export function createStandaloneIDEProvider(knownIDEs: IKnownIDE[],
+	config?: IStandaloneProviderConfig,
+): StandaloneIDEProvider
+{
 	return new StandaloneIDEProvider(knownIDEs, config);
 }
 
@@ -301,10 +337,11 @@ export async function quickDetectIDEs(knownIDEs: IKnownIDE[], config?: IStandalo
 	available: IStandaloneIDEInfo[];
 	unavailable: IDetectionResult[];
 	statistics: ReturnType<StandaloneIDEProvider['getStatistics']>;
-}> {
+}>
+{
 	const provider = createStandaloneIDEProvider(knownIDEs, config);
 	await provider.refresh();
-	
+
 	return {
 		available: provider.getAvailableIDEs(),
 		unavailable: provider.getUnavailableIDEs(),

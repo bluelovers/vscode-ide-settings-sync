@@ -17,7 +17,8 @@ import { IKnownIDE } from '../data/knownIDEs';
  * IDE 偵測結果介面
  * IDE detection result interface
  */
-export interface IDetectionResult {
+export interface IDetectionResult
+{
 	/**
 	 * IDE 顯示名稱
 	 * IDE display name
@@ -54,7 +55,8 @@ export interface IDetectionResult {
  * 自訂 IDE 配置介面
  * Custom IDE configuration interface
  */
-export interface ICustomIDEConfig {
+export interface ICustomIDEConfig
+{
 	name: string;
 	path: string;
 }
@@ -63,7 +65,8 @@ export interface ICustomIDEConfig {
  * IDE 偵測配置介面
  * IDE detection configuration interface
  */
-export interface IDetectionConfig {
+export interface IDetectionConfig
+{
 	/**
 	 * 自訂用戶資料目錄（可選）
 	 * Custom user data directory (optional)
@@ -92,14 +95,16 @@ export interface IDetectionConfig {
  * 核心 IDE 偵測工具類別
  * Core IDE detection utility class
  */
-export class IDEDetector {
+export class IDEDetector
+{
 	private config: IDetectionConfig;
 
 	/**
 	 * 建構子
 	 * @param config 偵測配置
 	 */
-	constructor(config: IDetectionConfig = {}) {
+	constructor(config: IDetectionConfig = {})
+	{
 		this.config = {
 			verbose: false,
 			...config,
@@ -111,11 +116,16 @@ export class IDEDetector {
 	 * Log message
 	 * @param message 日誌訊息
 	 */
-	private log(message: string): void {
-		if (this.config.verbose) {
-			if (this.config.logger) {
+	private log(message: string): void
+	{
+		if (this.config.verbose)
+		{
+			if (this.config.logger)
+			{
 				this.config.logger(message);
-			} else {
+			}
+			else
+			{
 				console.log(message);
 			}
 		}
@@ -128,15 +138,17 @@ export class IDEDetector {
 	 * @param folderName 資料夾名稱
 	 * @returns 完整路徑
 	 */
-	private getUserDataPath(appName: string, folderName: string): string {
+	private getUserDataPath(appName: string, folderName: string): string
+	{
 		// 使用配置的用戶資料目錄或系統環境變數
 		// Use configured user data directory or system environment variables
-		const userDataDir = this.config.userDataDir || 
-			process.env.APPDATA || 
-			process.env.HOME || 
+		const userDataDir = this.config.userDataDir ||
+			process.env.APPDATA ||
+			process.env.HOME ||
 			'';
 
-		if (!userDataDir) {
+		if (!userDataDir)
+		{
 			this.log('[IDE Detection] 警告：無法確定系統的應用資料目錄');
 			this.log('[IDE Detection] Warning: Cannot determine system app data directory');
 		}
@@ -153,7 +165,8 @@ export class IDEDetector {
 	 * @param ide IDE 配置
 	 * @returns 偵測結果
 	 */
-	detectIDE(ide: IKnownIDE): IDetectionResult {
+	detectIDE(ide: IKnownIDE): IDetectionResult
+	{
 		const result: IDetectionResult = {
 			name: ide.name,
 			detected: false,
@@ -168,7 +181,8 @@ export class IDEDetector {
 
 		// 嘗試多個可能的資料夾名稱
 		// Try multiple possible folder name variations
-		for (const appFolderName of ide.appFolderNames) {
+		for (const appFolderName of ide.appFolderNames)
+		{
 			const testPath = this.getUserDataPath(appFolderName, 'User');
 			const settingsJsonPath = path.join(testPath, 'settings.json');
 
@@ -179,40 +193,49 @@ export class IDEDetector {
 
 			// 步驟 1：檢查主資料夾是否存在
 			// Step 1: Check if the main folder exists
-			if (existsSync(testPath)) {
+			if (existsSync(testPath))
+			{
 				detectedPath = testPath;
 				this.log(`[IDE Detection] ✓ 找到資料夾 ${ide.name} at ${testPath}`);
 				this.log(`[IDE Detection] ✓ Found folder for ${ide.name} at ${testPath}`);
 
 				// 步驟 2：檢查 settings.json 檔案是否存在
 				// Step 2: Check if settings.json file exists
-				if (existsSync(settingsJsonPath)) {
+				if (existsSync(settingsJsonPath))
+				{
 					foundPath = testPath;
 					this.log(`[IDE Detection] ✓✓ 成功偵測到 ${ide.name}，settings.json 已找到`);
 					this.log(`[IDE Detection] ✓✓ Successfully detected ${ide.name}, settings.json found`);
 					// 成功找到，退出迴圈
 					// Found successfully, exit loop
 					break;
-				} else {
+				}
+				else
+				{
 					// 資料夾存在但缺少 settings.json 檔案
 					// Folder exists but settings.json is missing
 					this.log(`[IDE Detection] ⚠ 資料夾存在但找不到 settings.json: ${settingsJsonPath}`);
 					this.log(`[IDE Detection] ⚠ Folder exists but settings.json not found: ${settingsJsonPath}`);
 				}
-			} else {
+			}
+			else
+			{
 				this.log(`[IDE Detection] ✗ 路徑不存在 / Path not found: ${testPath}`);
 			}
 		}
 
 		// 處理偵測結果
 		// Handle detection result
-		if (foundPath) {
+		if (foundPath)
+		{
 			result.detected = true;
 			result.path = foundPath;
 			result.settingsPath = path.join(foundPath, 'settings.json');
 			this.log(`[IDE Detection] ✓ 成功偵測到 ${ide.name}`);
 			this.log(`[IDE Detection] ✓ Successfully detected ${ide.name}`);
-		} else {
+		}
+		else
+		{
 			result.detected = false;
 			const triedPaths = result.attemptedPaths.join('\n- ');
 			result.reason = `IDE not found. Tried paths:\n- ${triedPaths}`;
@@ -229,13 +252,15 @@ export class IDEDetector {
 	 * @param ides IDE 配置列表
 	 * @returns 偵測結果列表
 	 */
-	detectIDEs(ides: IKnownIDE[]): IDetectionResult[] {
+	detectIDEs(ides: IKnownIDE[]): IDetectionResult[]
+	{
 		this.log(`[IDE Detection] 開始偵測 ${ides.length} 個 IDE`);
 		this.log(`[IDE Detection] Starting detection for ${ides.length} IDEs`);
 
 		const results: IDetectionResult[] = [];
 
-		for (const ide of ides) {
+		for (const ide of ides)
+		{
 			const result = this.detectIDE(ide);
 			results.push(result);
 		}
@@ -253,13 +278,15 @@ export class IDEDetector {
 	 * @param customIDEs 自訂 IDE 列表
 	 * @returns 偵測結果列表
 	 */
-	detectCustomIDEs(customIDEs: ICustomIDEConfig[]): IDetectionResult[] {
+	detectCustomIDEs(customIDEs: ICustomIDEConfig[]): IDetectionResult[]
+	{
 		const results: IDetectionResult[] = [];
 
 		this.log(`[Custom IDE] 開始偵測 ${customIDEs.length} 個自訂 IDE`);
 		this.log(`[Custom IDE] Starting detection for ${customIDEs.length} custom IDEs`);
 
-		for (const customIDE of customIDEs) {
+		for (const customIDE of customIDEs)
+		{
 			const result = this.detectCustomIDE(customIDE);
 			results.push(result);
 		}
@@ -277,7 +304,8 @@ export class IDEDetector {
 	 * @param customIDE 自訂 IDE 配置
 	 * @returns 偵測結果
 	 */
-	private detectCustomIDE(customIDE: ICustomIDEConfig): IDetectionResult {
+	private detectCustomIDE(customIDE: ICustomIDEConfig): IDetectionResult
+	{
 		const result: IDetectionResult = {
 			name: customIDE.name,
 			detected: false,
@@ -297,7 +325,8 @@ export class IDEDetector {
 		const directPath = path.join(customIDE.path, 'settings.json');
 		result.attemptedPaths.push(directPath);
 
-		if (existsSync(directPath)) {
+		if (existsSync(directPath))
+		{
 			settingsJsonPath = directPath;
 			foundPath = customIDE.path;
 			this.log(`[Custom IDE] 直接路徑找到 settings.json: ${directPath}`);
@@ -306,11 +335,13 @@ export class IDEDetector {
 
 		// 選項 2: 在 User 子資料夾中尋找
 		// Option 2: Look in User subfolder
-		if (!settingsJsonPath) {
+		if (!settingsJsonPath)
+		{
 			const userSubfolderPath = path.join(customIDE.path, 'User', 'settings.json');
 			result.attemptedPaths.push(userSubfolderPath);
 
-			if (existsSync(userSubfolderPath)) {
+			if (existsSync(userSubfolderPath))
+			{
 				settingsJsonPath = userSubfolderPath;
 				foundPath = path.join(customIDE.path, 'User');
 				this.log(`[Custom IDE] User 子資料夾找到 settings.json: ${userSubfolderPath}`);
@@ -320,20 +351,24 @@ export class IDEDetector {
 
 		// 檢查最終結果
 		// Check final result
-		if (settingsJsonPath && foundPath) {
+		if (settingsJsonPath && foundPath)
+		{
 			result.detected = true;
 			result.path = foundPath;
 			result.settingsPath = settingsJsonPath;
 			this.log(`[Custom IDE] ✓ 成功偵測到自訂 IDE ${customIDE.name}`);
 			this.log(`[Custom IDE] ✓ Successfully detected custom IDE ${customIDE.name}`);
-		} else {
+		}
+		else
+		{
 			// settings.json 檔案不存在
 			// settings.json file does not exist
 			const directCheck = existsSync(directPath);
 			const userCheck = existsSync(path.join(customIDE.path, 'User', 'settings.json'));
 
 			let reason = 'settings.json not found';
-			if (!directCheck && !userCheck) {
+			if (!directCheck && !userCheck)
+			{
 				reason = `settings.json not found in:\n- ${directPath}\n- ${path.join(customIDE.path, 'User', 'settings.json')}`;
 			}
 
@@ -350,7 +385,8 @@ export class IDEDetector {
 	 * @param ides IDE 配置列表
 	 * @returns 已偵測到的 IDE 列表
 	 */
-	getDetectedIDEs(ides: IKnownIDE[]): IDetectionResult[] {
+	getDetectedIDEs(ides: IKnownIDE[]): IDetectionResult[]
+	{
 		const results = this.detectIDEs(ides);
 		return results.filter(result => result.detected);
 	}
@@ -361,7 +397,8 @@ export class IDEDetector {
 	 * @param ides IDE 配置列表
 	 * @returns 未偵測到的 IDE 列表
 	 */
-	getUndetectedIDEs(ides: IKnownIDE[]): IDetectionResult[] {
+	getUndetectedIDEs(ides: IKnownIDE[]): IDetectionResult[]
+	{
 		const results = this.detectIDEs(ides);
 		return results.filter(result => !result.detected);
 	}
@@ -377,7 +414,8 @@ export class IDEDetector {
 		knownResults: IDetectionResult[];
 		customResults: IDetectionResult[];
 		allResults: IDetectionResult[];
-	} {
+	}
+	{
 		const knownResults = this.detectIDEs(knownIDEs);
 		const customResults = customIDEs ? this.detectCustomIDEs(customIDEs) : [];
 		const allResults = [...knownResults, ...customResults];
@@ -397,7 +435,8 @@ export class IDEDetector {
  * @param config 偵測配置
  * @returns 偵測結果
  */
-export function detectIDE(ide: IKnownIDE, config?: IDetectionConfig): IDetectionResult {
+export function detectIDE(ide: IKnownIDE, config?: IDetectionConfig): IDetectionResult
+{
 	const detector = new IDEDetector(config);
 	return detector.detectIDE(ide);
 }
@@ -409,7 +448,8 @@ export function detectIDE(ide: IKnownIDE, config?: IDetectionConfig): IDetection
  * @param config 偵測配置
  * @returns 偵測結果列表
  */
-export function detectIDEs(ides: IKnownIDE[], config?: IDetectionConfig): IDetectionResult[] {
+export function detectIDEs(ides: IKnownIDE[], config?: IDetectionConfig): IDetectionResult[]
+{
 	const detector = new IDEDetector(config);
 	return detector.detectIDEs(ides);
 }
@@ -421,7 +461,8 @@ export function detectIDEs(ides: IKnownIDE[], config?: IDetectionConfig): IDetec
  * @param config 偵測配置
  * @returns 已偵測到的 IDE 列表
  */
-export function getDetectedIDEs(ides: IKnownIDE[], config?: IDetectionConfig): IDetectionResult[] {
+export function getDetectedIDEs(ides: IKnownIDE[], config?: IDetectionConfig): IDetectionResult[]
+{
 	const detector = new IDEDetector(config);
 	return detector.getDetectedIDEs(ides);
 }
@@ -433,7 +474,8 @@ export function getDetectedIDEs(ides: IKnownIDE[], config?: IDetectionConfig): I
  * @param config 偵測配置
  * @returns 未偵測到的 IDE 列表
  */
-export function getUndetectedIDEs(ides: IKnownIDE[], config?: IDetectionConfig): IDetectionResult[] {
+export function getUndetectedIDEs(ides: IKnownIDE[], config?: IDetectionConfig): IDetectionResult[]
+{
 	const detector = new IDEDetector(config);
 	return detector.getUndetectedIDEs(ides);
 }
@@ -445,7 +487,8 @@ export function getUndetectedIDEs(ides: IKnownIDE[], config?: IDetectionConfig):
  * @param config 偵測配置
  * @returns 偵測結果列表
  */
-export function detectCustomIDEs(customIDEs: ICustomIDEConfig[], config?: IDetectionConfig): IDetectionResult[] {
+export function detectCustomIDEs(customIDEs: ICustomIDEConfig[], config?: IDetectionConfig): IDetectionResult[]
+{
 	const detector = new IDEDetector(config);
 	return detector.detectCustomIDEs(customIDEs);
 }
@@ -462,7 +505,8 @@ export function detectAllIDEs(knownIDEs: IKnownIDE[], customIDEs?: ICustomIDECon
 	knownResults: IDetectionResult[];
 	customResults: IDetectionResult[];
 	allResults: IDetectionResult[];
-} {
+}
+{
 	const detector = new IDEDetector(config);
 	return detector.detectAllIDEs(knownIDEs, customIDEs);
 }

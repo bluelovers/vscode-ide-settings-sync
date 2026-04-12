@@ -1,12 +1,15 @@
 import { h, Fragment } from 'preact';
 import { IImportResult } from '../../../types';
 
-interface IImportResultDisplayProps {
+interface IImportResultDisplayProps
+{
 	importResult?: IImportResult;
 }
 
-export function ImportResultDisplay({ importResult }: IImportResultDisplayProps) {
-	if (!importResult) {
+export function ImportResultDisplay({ importResult }: IImportResultDisplayProps)
+{
+	if (!importResult)
+	{
 		return null;
 	}
 
@@ -14,9 +17,11 @@ export function ImportResultDisplay({ importResult }: IImportResultDisplayProps)
 		<div class="import-result">
 			<h4>Import Result</h4>
 			<div class={`result-message ${importResult.success ? 'success' : 'error'}`}>
-				{importResult.success ? '✅ Import successful!' : `❌ Import failed: ${importResult.errors?.join(', ') || 'Unknown error'}`}
+				{importResult.success
+					? '✅ Import successful!'
+					: `❌ Import failed: ${importResult.errors?.join(', ') || 'Unknown error'}`}
 			</div>
-			
+
 			{(importResult.importedCustomIDEs > 0 || importResult.importedSelectedSettings > 0) && (
 				<div class="result-summary">
 					<div class="summary-title">Import Summary:</div>
@@ -28,15 +33,17 @@ export function ImportResultDisplay({ importResult }: IImportResultDisplayProps)
 							<li>Imported {importResult.importedSelectedSettings} selected settings</li>
 						)}
 						{importResult.skippedCustomIDEs > 0 && (
-							<li style="color: var(--vscode-warningForeground);">Skipped {importResult.skippedCustomIDEs} custom IDEs</li>
+							<li
+								style="color: var(--vscode-warningForeground);">Skipped {importResult.skippedCustomIDEs} custom IDEs</li>
 						)}
 						{importResult.skippedSelectedSettings > 0 && (
-							<li style="color: var(--vscode-warningForeground);">Skipped {importResult.skippedSelectedSettings} selected settings</li>
+							<li
+								style="color: var(--vscode-warningForeground);">Skipped {importResult.skippedSelectedSettings} selected settings</li>
 						)}
 					</ul>
 				</div>
 			)}
-			
+
 			{importResult.errors && importResult.errors.length > 0 && (
 				<div class="result-details">
 					<div class="details-title" style="color: var(--vscode-errorForeground);">Errors:</div>
@@ -47,7 +54,7 @@ export function ImportResultDisplay({ importResult }: IImportResultDisplayProps)
 					</ul>
 				</div>
 			)}
-			
+
 			{importResult.warnings && importResult.warnings.length > 0 && (
 				<div class="result-details">
 					<div class="details-title" style="color: var(--vscode-warningForeground);">Warnings:</div>

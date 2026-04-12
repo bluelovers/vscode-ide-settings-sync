@@ -9,14 +9,14 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { 
-	ExportImportType, 
-	IExportImportData, 
-	ICustomIDEExport, 
+import {
+	ExportImportType,
+	IExportImportData,
+	ICustomIDEExport,
 	ISelectedSettingExport,
 	IImportOptions,
 	IImportResult,
-	EnumGlobalStateName
+	EnumGlobalStateName,
 } from '../types';
 import { knownIDEs } from '../data/knownIDEs';
 
@@ -38,7 +38,7 @@ export class ExportImportService
 	{
 		const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
 			EnumGlobalStateName.customIDEs,
-			[]
+			[],
 		);
 
 		const exportData: IExportImportData = {
@@ -70,7 +70,7 @@ export class ExportImportService
 	{
 		const selectedSettings = this.context.globalState.get<Record<string, boolean>>(
 			EnumGlobalStateName.selectedSettings,
-			{}
+			{},
 		);
 
 		// Convert selected settings to export format
@@ -108,12 +108,12 @@ export class ExportImportService
 	{
 		const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
 			EnumGlobalStateName.customIDEs,
-			[]
+			[],
 		);
 
 		const selectedSettings = this.context.globalState.get<Record<string, boolean>>(
 			EnumGlobalStateName.selectedSettings,
-			{}
+			{},
 		);
 
 		const exportSettings: ISelectedSettingExport[] = Object.entries(selectedSettings)
@@ -203,14 +203,14 @@ export class ExportImportService
 	 * Import custom IDEs
 	 */
 	private async importCustomIDEs(
-		customIDEs: ICustomIDEExport[], 
-		options: IImportOptions, 
-		result: IImportResult
+		customIDEs: ICustomIDEExport[],
+		options: IImportOptions,
+		result: IImportResult,
 	): Promise<void>
 	{
 		const existingCustomIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
 			EnumGlobalStateName.customIDEs,
-			[]
+			[],
 		);
 
 		const existingNames = new Set(existingCustomIDEs.map(ide => ide.name));
@@ -251,14 +251,14 @@ export class ExportImportService
 	 * Import selected settings
 	 */
 	private async importSelectedSettings(
-		selectedSettings: ISelectedSettingExport[], 
-		options: IImportOptions, 
-		result: IImportResult
+		selectedSettings: ISelectedSettingExport[],
+		options: IImportOptions,
+		result: IImportResult,
 	): Promise<void>
 	{
 		const existingSelectedSettings = this.context.globalState.get<Record<string, boolean>>(
 			EnumGlobalStateName.selectedSettings,
-			{}
+			{},
 		);
 
 		// Filter settings based on selected keys if provided
@@ -303,8 +303,8 @@ export class ExportImportService
 	{
 		// This would be implemented based on actual setting definitions
 		// For now, return the key as display name
-		return key.split('.').map(part => 
-			part.charAt(0).toUpperCase() + part.slice(1)
+		return key.split('.').map(part =>
+			part.charAt(0).toUpperCase() + part.slice(1),
 		).join(' ');
 	}
 
@@ -362,11 +362,11 @@ export class ExportImportService
 			return undefined;
 		}
 
-		const includeCustomIDEs = selectedOptions.some(option => 
-			option.label.includes('自訂 IDE')
+		const includeCustomIDEs = selectedOptions.some(option =>
+			option.label.includes('自訂 IDE'),
 		);
-		const includeSelectedSettings = selectedOptions.some(option => 
-			option.label.includes('選擇的設定')
+		const includeSelectedSettings = selectedOptions.some(option =>
+			option.label.includes('選擇的設定'),
 		);
 
 		// Show additional options
@@ -386,11 +386,11 @@ export class ExportImportService
 			canPickMany: true,
 		});
 
-		const excludeKnownIDEs = advancedOptions?.some(option => 
-			option.label.includes('排除內建 IDE')
+		const excludeKnownIDEs = advancedOptions?.some(option =>
+			option.label.includes('排除內建 IDE'),
 		) ?? true;
-		const overwriteExisting = advancedOptions?.some(option => 
-			option.label.includes('覆蓋現有設定')
+		const overwriteExisting = advancedOptions?.some(option =>
+			option.label.includes('覆蓋現有設定'),
 		) ?? false;
 
 		// If selected settings, show setting selection dialog
@@ -414,7 +414,7 @@ export class ExportImportService
 	 * Show setting selection dialog
 	 */
 	private async showSettingSelectionDialog(
-		settings: ISelectedSettingExport[]
+		settings: ISelectedSettingExport[],
 	): Promise<string[] | undefined>
 	{
 		const quickPickItems: vscode.QuickPickItem[] = settings.map(setting => ({
@@ -436,7 +436,7 @@ export class ExportImportService
 				canPickMany: true,
 				matchOnDescription: true,
 				matchOnDetail: true,
-			}
+			},
 		);
 
 		if (!selectedItems)

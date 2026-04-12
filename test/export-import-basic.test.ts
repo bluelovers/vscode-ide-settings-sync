@@ -14,9 +14,12 @@ const mockKnownIDEs = [
 	{ name: 'Windsurf', appFolderNames: ['Windsurf'] },
 ];
 
-describe('Export/Import Basic Logic', () => {
-	describe('Export Data Structure', () => {
-		it('should create valid export data structure', () => {
+describe('Export/Import Basic Logic', () =>
+{
+	describe('Export Data Structure', () =>
+	{
+		it('should create valid export data structure', () =>
+		{
 			const exportData: IExportImportData = {
 				version: '1.0.0',
 				exportedAt: new Date().toISOString(),
@@ -54,7 +57,8 @@ describe('Export/Import Basic Logic', () => {
 			expect(exportData.metadata?.knownIDEsExcluded).toContain('Visual Studio Code');
 		});
 
-		it('should validate JSON serialization', () => {
+		it('should validate JSON serialization', () =>
+		{
 			const exportData: IExportImportData = {
 				version: '1.0.0',
 				exportedAt: new Date().toISOString(),
@@ -80,8 +84,10 @@ describe('Export/Import Basic Logic', () => {
 		});
 	});
 
-	describe('Import Options Validation', () => {
-		it('should create valid import options', () => {
+	describe('Import Options Validation', () =>
+	{
+		it('should create valid import options', () =>
+		{
 			const options: IImportOptions = {
 				includeCustomIDEs: true,
 				includeSelectedSettings: true,
@@ -97,7 +103,8 @@ describe('Export/Import Basic Logic', () => {
 			expect(options.selectedSettingKeys).toHaveLength(2);
 		});
 
-		it('should handle minimal import options', () => {
+		it('should handle minimal import options', () =>
+		{
 			const options: IImportOptions = {
 				includeCustomIDEs: false,
 				includeSelectedSettings: false,
@@ -109,8 +116,10 @@ describe('Export/Import Basic Logic', () => {
 		});
 	});
 
-	describe('Known IDE Filtering Logic', () => {
-		it('should identify known IDEs', () => {
+	describe('Known IDE Filtering Logic', () =>
+	{
+		it('should identify known IDEs', () =>
+		{
 			const knownIDENames = new Set(mockKnownIDEs.map(ide => ide.name));
 
 			expect(knownIDENames.has('Visual Studio Code')).toBe(true);
@@ -118,7 +127,8 @@ describe('Export/Import Basic Logic', () => {
 			expect(knownIDENames.has('Unknown IDE')).toBe(false);
 		});
 
-		it('should filter out known IDEs from custom IDE list', () => {
+		it('should filter out known IDEs from custom IDE list', () =>
+		{
 			const customIDEs = [
 				{ name: 'Visual Studio Code', path: '/vscode' },
 				{ name: 'Custom IDE 1', path: '/custom1' },
@@ -135,8 +145,10 @@ describe('Export/Import Basic Logic', () => {
 		});
 	});
 
-	describe('Import Result Structure', () => {
-		it('should create successful import result', () => {
+	describe('Import Result Structure', () =>
+	{
+		it('should create successful import result', () =>
+		{
 			const result = {
 				success: true,
 				importedCustomIDEs: 2,
@@ -154,7 +166,8 @@ describe('Export/Import Basic Logic', () => {
 			expect(result.warnings).toHaveLength(1);
 		});
 
-		it('should create failed import result', () => {
+		it('should create failed import result', () =>
+		{
 			const result = {
 				success: false,
 				importedCustomIDEs: 0,
@@ -171,8 +184,10 @@ describe('Export/Import Basic Logic', () => {
 		});
 	});
 
-	describe('Setting Selection Logic', () => {
-		it('should filter settings by selected keys', () => {
+	describe('Setting Selection Logic', () =>
+	{
+		it('should filter settings by selected keys', () =>
+		{
 			const allSettings = [
 				{ key: 'setting1', display: 'Setting 1' },
 				{ key: 'setting2', display: 'Setting 2' },
@@ -180,8 +195,8 @@ describe('Export/Import Basic Logic', () => {
 			];
 
 			const selectedKeys = ['setting1', 'setting3'];
-			const filteredSettings = allSettings.filter(setting => 
-				selectedKeys.includes(setting.key)
+			const filteredSettings = allSettings.filter(setting =>
+				selectedKeys.includes(setting.key),
 			);
 
 			expect(filteredSettings).toHaveLength(2);
@@ -189,41 +204,47 @@ describe('Export/Import Basic Logic', () => {
 			expect(filteredSettings[1].key).toBe('setting3');
 		});
 
-		it('should handle empty selection', () => {
+		it('should handle empty selection', () =>
+		{
 			const allSettings = [
 				{ key: 'setting1', display: 'Setting 1' },
 				{ key: 'setting2', display: 'Setting 2' },
 			];
 
 			const selectedKeys: string[] = [];
-			const filteredSettings = allSettings.filter(setting => 
-				selectedKeys.includes(setting.key)
+			const filteredSettings = allSettings.filter(setting =>
+				selectedKeys.includes(setting.key),
 			);
 
 			expect(filteredSettings).toHaveLength(0);
 		});
 	});
 
-	describe('Version Compatibility', () => {
-		it('should accept compatible versions', () => {
+	describe('Version Compatibility', () =>
+	{
+		it('should accept compatible versions', () =>
+		{
 			const supportedVersions = ['1.0.0'];
 			const version = '1.0.0';
-			
+
 			const isCompatible = supportedVersions.includes(version);
 			expect(isCompatible).toBe(true);
 		});
 
-		it('should reject incompatible versions', () => {
+		it('should reject incompatible versions', () =>
+		{
 			const supportedVersions = ['1.0.0'];
 			const version = '2.0.0';
-			
+
 			const isCompatible = supportedVersions.includes(version);
 			expect(isCompatible).toBe(false);
 		});
 	});
 
-	describe('Conflict Detection', () => {
-		it('should detect existing custom IDEs', () => {
+	describe('Conflict Detection', () =>
+	{
+		it('should detect existing custom IDEs', () =>
+		{
 			const existingCustomIDEs = [
 				{ name: 'Existing IDE', path: '/existing/path' },
 			];
@@ -240,7 +261,8 @@ describe('Export/Import Basic Logic', () => {
 			expect(conflicts[0].name).toBe('Existing IDE');
 		});
 
-		it('should detect existing settings', () => {
+		it('should detect existing settings', () =>
+		{
 			const existingSettings = {
 				'setting1': true,
 				'setting2': false,
@@ -254,8 +276,10 @@ describe('Export/Import Basic Logic', () => {
 		});
 	});
 
-	describe('Data Transformation', () => {
-		it('should transform custom IDEs for export', () => {
+	describe('Data Transformation', () =>
+	{
+		it('should transform custom IDEs for export', () =>
+		{
 			const customIDEs = [
 				{ name: 'Test IDE', path: '/test/path' },
 			];
@@ -273,7 +297,8 @@ describe('Export/Import Basic Logic', () => {
 			expect(exportIDEs[0].exportedAt).toBeDefined();
 		});
 
-		it('should transform selected settings for export', () => {
+		it('should transform selected settings for export', () =>
+		{
 			const selectedSettings = {
 				'setting1': true,
 				'setting2': true,
@@ -284,8 +309,8 @@ describe('Export/Import Basic Logic', () => {
 				.filter(([_, selected]) => selected)
 				.map(([key, _]) => ({
 					key,
-					display: key.split('.').map(part => 
-						part.charAt(0).toUpperCase() + part.slice(1)
+					display: key.split('.').map(part =>
+						part.charAt(0).toUpperCase() + part.slice(1),
 					).join(' '),
 					description: `Setting for ${key}`,
 					values: {},

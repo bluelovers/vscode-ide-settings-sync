@@ -1,12 +1,14 @@
 import { h, Fragment } from 'preact';
 
-interface IPathInputProps {
+interface IPathInputProps
+{
 	id: string;
 	placeholder: string;
 	onBrowse?: string;
 }
 
-export function PathInput({ id, placeholder, onBrowse }: IPathInputProps) {
+export function PathInput({ id, placeholder, onBrowse }: IPathInputProps)
+{
 	return (
 		<div class="path-input-group">
 			<input

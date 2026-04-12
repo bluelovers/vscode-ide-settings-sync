@@ -34,11 +34,13 @@ const mockFs = {
 jest.mock('vscode', () => mockVscode);
 jest.mock('fs', () => mockFs);
 
-describe('ExportImportService', () => {
+describe('ExportImportService', () =>
+{
 	let service: ExportImportService;
 	let mockContext: any;
 
-	beforeEach(() => {
+	beforeEach(() =>
+	{
 		mockContext = {
 			globalState: {
 				get: jest.fn(),
@@ -48,12 +50,15 @@ describe('ExportImportService', () => {
 		service = new ExportImportService(mockContext);
 	});
 
-	afterEach(() => {
+	afterEach(() =>
+	{
 		jest.clearAllMocks();
 	});
 
-	describe('Export Custom IDEs', () => {
-		it('should export custom IDEs successfully', async () => {
+	describe('Export Custom IDEs', () =>
+	{
+		it('should export custom IDEs successfully', async () =>
+		{
 			const customIDEs = [
 				{ name: 'Custom IDE 1', path: '/path/to/custom1' },
 				{ name: 'Custom IDE 2', path: '/path/to/custom2' },
@@ -72,7 +77,8 @@ describe('ExportImportService', () => {
 			expect(data.metadata?.totalCustomIDEs).toBe(2);
 		});
 
-		it('should export empty custom IDEs list', async () => {
+		it('should export empty custom IDEs list', async () =>
+		{
 			mockContext.globalState.get.mockReturnValue([]);
 
 			const result = await service.exportCustomIDEs();
@@ -83,8 +89,10 @@ describe('ExportImportService', () => {
 		});
 	});
 
-	describe('Export Selected Settings', () => {
-		it('should export selected settings successfully', async () => {
+	describe('Export Selected Settings', () =>
+	{
+		it('should export selected settings successfully', async () =>
+		{
 			const selectedSettings = {
 				'setting1': true,
 				'setting2': true,
@@ -103,7 +111,8 @@ describe('ExportImportService', () => {
 			expect(data.metadata?.totalSelectedSettings).toBe(2);
 		});
 
-		it('should export empty selected settings', async () => {
+		it('should export empty selected settings', async () =>
+		{
 			mockContext.globalState.get.mockReturnValue({});
 
 			const result = await service.exportSelectedSettings();
@@ -114,8 +123,10 @@ describe('ExportImportService', () => {
 		});
 	});
 
-	describe('Export All', () => {
-		it('should export both custom IDEs and selected settings', async () => {
+	describe('Export All', () =>
+	{
+		it('should export both custom IDEs and selected settings', async () =>
+		{
 			const customIDEs = [
 				{ name: 'Custom IDE 1', path: '/path/to/custom1' },
 			];
@@ -139,8 +150,10 @@ describe('ExportImportService', () => {
 		});
 	});
 
-	describe('Import Data', () => {
-		it('should import custom IDEs successfully', async () => {
+	describe('Import Data', () =>
+	{
+		it('should import custom IDEs successfully', async () =>
+		{
 			const importData: IExportImportData = {
 				version: '1.0.0',
 				exportedAt: new Date().toISOString(),
@@ -168,11 +181,12 @@ describe('ExportImportService', () => {
 			expect(result.importedSelectedSettings).toBe(0);
 			expect(mockContext.globalState.update).toHaveBeenCalledWith(
 				'customIDEs',
-				[{ name: 'Import IDE 1', path: '/import/path1' }]
+				[{ name: 'Import IDE 1', path: '/import/path1' }],
 			);
 		});
 
-		it('should skip known IDEs when excludeKnownIDEs is true', async () => {
+		it('should skip known IDEs when excludeKnownIDEs is true', async () =>
+		{
 			const importData: IExportImportData = {
 				version: '1.0.0',
 				exportedAt: new Date().toISOString(),
@@ -202,7 +216,8 @@ describe('ExportImportService', () => {
 			expect(result.warnings).toContain('跳過已知 IDE: Visual Studio Code');
 		});
 
-		it('should skip existing custom IDEs when overwriteExisting is false', async () => {
+		it('should skip existing custom IDEs when overwriteExisting is false', async () =>
+		{
 			const importData: IExportImportData = {
 				version: '1.0.0',
 				exportedAt: new Date().toISOString(),
@@ -233,7 +248,8 @@ describe('ExportImportService', () => {
 			expect(result.warnings).toContain('跳過已存在的自訂 IDE: Existing IDE');
 		});
 
-		it('should import selected settings successfully', async () => {
+		it('should import selected settings successfully', async () =>
+		{
 			const importData: IExportImportData = {
 				version: '1.0.0',
 				exportedAt: new Date().toISOString(),
@@ -267,11 +283,12 @@ describe('ExportImportService', () => {
 			expect(result.importedSelectedSettings).toBe(1);
 			expect(mockContext.globalState.update).toHaveBeenCalledWith(
 				'selectedSettings',
-				{ setting1: true }
+				{ setting1: true },
 			);
 		});
 
-		it('should handle invalid JSON', async () => {
+		it('should handle invalid JSON', async () =>
+		{
 			const invalidJson = '{ invalid json }';
 			const options = {
 				includeCustomIDEs: true,
@@ -286,7 +303,8 @@ describe('ExportImportService', () => {
 			expect(result.errors.length).toBeGreaterThan(0);
 		});
 
-		it('should handle incompatible version', async () => {
+		it('should handle incompatible version', async () =>
+		{
 			const importData: IExportImportData = {
 				version: '2.0.0',
 				exportedAt: new Date().toISOString(),
@@ -309,8 +327,10 @@ describe('ExportImportService', () => {
 		});
 	});
 
-	describe('File Operations', () => {
-		it('should save export file successfully', async () => {
+	describe('File Operations', () =>
+	{
+		it('should save export file successfully', async () =>
+		{
 			const mockUri = { fsPath: '/test/export.json' };
 			mockVscode.window.showSaveDialog.mockResolvedValue(mockUri);
 
@@ -322,7 +342,8 @@ describe('ExportImportService', () => {
 			expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith('匯出成功: /test/export.json');
 		});
 
-		it('should handle save dialog cancellation', async () => {
+		it('should handle save dialog cancellation', async () =>
+		{
 			mockVscode.window.showSaveDialog.mockResolvedValue(undefined);
 
 			const content = 'test content';
@@ -332,7 +353,8 @@ describe('ExportImportService', () => {
 			expect(mockFs.writeFileSync).not.toHaveBeenCalled();
 		});
 
-		it('should read import file successfully', async () => {
+		it('should read import file successfully', async () =>
+		{
 			const mockUri = { fsPath: '/test/import.json' };
 			mockVscode.window.showOpenDialog.mockResolvedValue([mockUri]);
 			mockFs.readFileSync.mockReturnValue('{"test": "data"}');
@@ -344,7 +366,8 @@ describe('ExportImportService', () => {
 			expect(mockFs.readFileSync).toHaveBeenCalledWith('/test/import.json', 'utf8');
 		});
 
-		it('should handle read dialog cancellation', async () => {
+		it('should handle read dialog cancellation', async () =>
+		{
 			mockVscode.window.showOpenDialog.mockResolvedValue(undefined);
 
 			const result = await service.readImportFile();
@@ -354,18 +377,22 @@ describe('ExportImportService', () => {
 		});
 	});
 
-	describe('Helper Methods', () => {
-		it('should get setting display name', () => {
+	describe('Helper Methods', () =>
+	{
+		it('should get setting display name', () =>
+		{
 			const display = service['getSettingDisplay']('editor.fontSize');
 			expect(display).toBe('Editor Font Size');
 		});
 
-		it('should get setting description', () => {
+		it('should get setting description', () =>
+		{
 			const description = service['getSettingDescription']('editor.fontSize');
 			expect(description).toBe('Setting for editor.fontSize');
 		});
 
-		it('should check version compatibility', () => {
+		it('should check version compatibility', () =>
+		{
 			expect(service['isVersionCompatible']('1.0.0')).toBe(true);
 			expect(service['isVersionCompatible']('2.0.0')).toBe(false);
 		});

@@ -4,22 +4,24 @@ import { ExportSection } from './export-import/ExportSection';
 import { ImportSection } from './export-import/ImportSection';
 import { ImportResultDisplay } from './export-import/ImportResultDisplay';
 
-interface IExportImportPanelProps {
+interface IExportImportPanelProps
+{
 	importResult?: IImportResult;
 	isProcessing?: boolean;
 }
 
 export function ExportImportPanel({
 	importResult,
-	isProcessing = false
-}: IExportImportPanelProps) {
+	isProcessing = false,
+}: IExportImportPanelProps)
+{
 	return (<>
 		<ExportImportScript />
 		<div class="export-import-section">
 			<div class="section">
 				<h2>Export / Import Settings</h2>
-				
-				<ExportSection 
+
+				<ExportSection
 					title="📤 Export Custom IDEs"
 					pathId="exportCustomPath"
 					pathPlaceholder="Enter custom path or leave empty to use file dialog"
@@ -31,7 +33,7 @@ export function ExportImportPanel({
 					isProcessing={isProcessing}
 				/>
 
-				<ExportSection 
+				<ExportSection
 					title="📤 Export Selected Settings"
 					pathId="exportSelectedPath"
 					pathPlaceholder="Enter custom path or leave empty to use file dialog"
@@ -41,7 +43,7 @@ export function ExportImportPanel({
 					isProcessing={isProcessing}
 				/>
 
-				<ExportSection 
+				<ExportSection
 					title="📤 Export All Settings"
 					pathId="exportAllPath"
 					pathPlaceholder="Enter custom path or leave empty to use file dialog"
@@ -53,7 +55,7 @@ export function ExportImportPanel({
 					isProcessing={isProcessing}
 				/>
 
-				<ImportSection 
+				<ImportSection
 					actionOnClick="handleImport()"
 					actionTitle="Import settings from file"
 					actionText="📥 Import Settings"

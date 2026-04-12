@@ -48,8 +48,10 @@ function AvailableIDEItem(props: {
 
 	return (<>
 		<div key={props.index} className={className}>
-			<input type="radio" id={sourceId} name="sourceIDE" className="ide-source-radio" value={props.ide.uuid} checked={props.isSource} title="Select as source IDE" />
-			<input type="checkbox" id={id} className="ide-checkbox" data-index={props.index} data-name={props.ide.name} data-uuid={props.ide.uuid} />
+			<input type="radio" id={sourceId} name="sourceIDE" className="ide-source-radio" value={props.ide.uuid}
+			       checked={props.isSource} title="Select as source IDE" />
+			<input type="checkbox" id={id} className="ide-checkbox" data-index={props.index} data-name={props.ide.name}
+			       data-uuid={props.ide.uuid} />
 			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
 			<span className="ide-path" title={props.ide.nativePath}>{formatPath(props.ide.nativePath)}</span>
 			<BtnOpenIDEFolder path={props.ide.nativePath} />
@@ -111,7 +113,8 @@ function BtnOpenSettingsJson(props: {
 })
 {
 	// @ts-ignore
-	return (<button className="btn btn-small" onclick={`openSettingsJson(${JSON.stringify(props.idePath)}, ${JSON.stringify(props.ideName)})`}
+	return (<button className="btn btn-small"
+	                onclick={`openSettingsJson(${JSON.stringify(props.idePath)}, ${JSON.stringify(props.ideName)})`}
 	                title="Open settings.json in editor">📄</button>)
 }
 
@@ -301,7 +304,8 @@ export function IDEListSection({
 		<IDEListScript />
 		<div className="section">
 			<h2>Select IDEs</h2>
-			<IDEList availableIDEs={availableIDEs} unavailableIDEs={unavailableIDEs} currentIDEName={currentIDEName} sourceIDEUuid={sourceIDEUuid} />
+			<IDEList availableIDEs={availableIDEs} unavailableIDEs={unavailableIDEs} currentIDEName={currentIDEName}
+			         sourceIDEUuid={sourceIDEUuid} />
 			{/* @ts-ignore */}
 			<button className="btn" onclick={"addCustomIDE()"} style="margin-top: 10px;"
 			        title="Manually specify an IDE/settings folder">+ Add Custom IDE Path

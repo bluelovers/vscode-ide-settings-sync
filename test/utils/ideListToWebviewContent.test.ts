@@ -1,15 +1,21 @@
-import { transformIDEListForWebview, validateWebviewContent, sanitizeForWebview } from '../../src/utils/ideListToWebviewContent';
+import {
+	transformIDEListForWebview,
+	validateWebviewContent,
+	sanitizeForWebview,
+} from '../../src/utils/ideListToWebviewContent';
 import { IIDEInfo, EnumIDEInfoType } from '../../src/types';
 import { IdeSettingProvider } from '../../src/providers/ideSettingProvider';
 
 // Mock IdeSettingProvider
 jest.mock('../../src/providers/ideSettingProvider');
 
-describe('ideListToWebviewContent', () => {
+describe('ideListToWebviewContent', () =>
+{
 	let mockSettingProvider: jest.Mocked<IdeSettingProvider>;
 	let mockIDEList: IIDEInfo[];
 
-	beforeEach(() => {
+	beforeEach(() =>
+	{
 		// Reset all mocks
 		jest.clearAllMocks();
 
@@ -29,7 +35,7 @@ describe('ideListToWebviewContent', () => {
 				'git.enableSmartCommit': true,
 				'editor.rulers': [80, 120],
 				'editor.suggestSelection': 'first',
-			})
+			}),
 		};
 
 		// Mock the IdeSettingProvider's load method to return the mock settings
@@ -64,8 +70,10 @@ describe('ideListToWebviewContent', () => {
 		];
 	});
 
-	describe('transformIDEListForWebview', () => {
-		it('should transform IDE list correctly', () => {
+	describe('transformIDEListForWebview', () =>
+	{
+		it('should transform IDE list correctly', () =>
+		{
 			// Create a simpler test with direct mock
 			const mockIDE: IIDEInfo = {
 				name: 'Test IDE',
@@ -77,8 +85,8 @@ describe('ideListToWebviewContent', () => {
 						valueOf: jest.fn().mockReturnValue({
 							'editor.fontFamily': 'Consolas, monospace',
 							'editor.fontSize': 14,
-						})
-					})
+						}),
+					}),
 				} as any,
 			};
 
@@ -103,18 +111,21 @@ describe('ideListToWebviewContent', () => {
 			expect(settings.hasOwnProperty('editor.fontSize')).toBe(true);
 		});
 
-		it('should call load() on each IDE setting provider', () => {
+		it('should call load() on each IDE setting provider', () =>
+		{
 			transformIDEListForWebview(mockIDEList);
 
 			expect(mockSettingProvider.load).toHaveBeenCalledTimes(3);
 		});
 
-		it('should handle empty IDE list', () => {
+		it('should handle empty IDE list', () =>
+		{
 			const result = transformIDEListForWebview([]);
 			expect(result).toEqual([]);
 		});
 
-		it('should preserve all IDE properties and add settings', () => {
+		it('should preserve all IDE properties and add settings', () =>
+		{
 			const result = transformIDEListForWebview(mockIDEList);
 
 			// Check first IDE (has all properties)
@@ -139,8 +150,10 @@ describe('ideListToWebviewContent', () => {
 		});
 	});
 
-	describe('validateWebviewContent', () => {
-		it('should validate correct webview content', () => {
+	describe('validateWebviewContent', () =>
+	{
+		it('should validate correct webview content', () =>
+		{
 			const content = transformIDEListForWebview(mockIDEList);
 			const result = validateWebviewContent(content);
 
@@ -148,14 +161,16 @@ describe('ideListToWebviewContent', () => {
 			expect(result.errors).toHaveLength(0);
 		});
 
-		it('should detect non-array input', () => {
+		it('should detect non-array input', () =>
+		{
 			const result = validateWebviewContent({} as any);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toContain('Content must be an array');
 		});
 
-		it('should detect missing required fields', () => {
+		it('should detect missing required fields', () =>
+		{
 			const invalidContent = [
 				{ name: 'Test IDE' }, // missing other required fields
 				{ type: 'known', available: true, nativePath: '/test', settings: {} }, // missing name
@@ -170,7 +185,8 @@ describe('ideListToWebviewContent', () => {
 			expect(result.errors).toContain('IDE at index 1 missing required field: name');
 		});
 
-		it('should detect invalid settings type', () => {
+		it('should detect invalid settings type', () =>
+		{
 			const invalidContent = [
 				{
 					name: 'Test IDE',
@@ -186,7 +202,8 @@ describe('ideListToWebviewContent', () => {
 			expect(result.errors).toContain('IDE at index 0 settings must be an object');
 		});
 
-		it('should detect non-serializable settings', () => {
+		it('should detect non-serializable settings', () =>
+		{
 			const circularObject: any = { prop: 'value' };
 			circularObject.self = circularObject; // Create circular reference
 
@@ -205,7 +222,8 @@ describe('ideListToWebviewContent', () => {
 			expect(result.errors.some(error => error.includes('circular references'))).toBe(true);
 		});
 
-		it('should warn about HTML characters in names', () => {
+		it('should warn about HTML characters in names', () =>
+		{
 			const contentWithHTML = [
 				{
 					name: 'IDE <script>alert("xss")</script>',
@@ -225,10 +243,12 @@ describe('ideListToWebviewContent', () => {
 			const result = validateWebviewContent(contentWithHTML);
 
 			expect(result.isValid).toBe(true); // Still valid, just warning
-			expect(result.warnings).toContain('IDE at index 0 name contains HTML characters: IDE <script>alert("xss")</script>');
+			expect(result.warnings)
+				.toContain('IDE at index 0 name contains HTML characters: IDE <script>alert("xss")</script>');
 		});
 
-		it('should handle null/undefined IDE objects', () => {
+		it('should handle null/undefined IDE objects', () =>
+		{
 			const invalidContent = [
 				null,
 				undefined,
@@ -248,8 +268,10 @@ describe('ideListToWebviewContent', () => {
 		});
 	});
 
-	describe('sanitizeForWebview', () => {
-		it('should sanitize HTML characters correctly', () => {
+	describe('sanitizeForWebview', () =>
+	{
+		it('should sanitize HTML characters correctly', () =>
+		{
 			const content = [
 				{
 					name: 'Test <script>alert("xss")</script>',
@@ -273,7 +295,8 @@ describe('ideListToWebviewContent', () => {
 			expect(result).toContain('\\"');
 		});
 
-		it('should handle quotes correctly', () => {
+		it('should handle quotes correctly', () =>
+		{
 			const content = {
 				name: "Test IDE's \"quoted\" name",
 				type: 'known',
@@ -290,7 +313,8 @@ describe('ideListToWebviewContent', () => {
 			expect(result).toContain("\\u0027");
 		});
 
-		it('should handle complex nested objects', () => {
+		it('should handle complex nested objects', () =>
+		{
 			const content = {
 				name: 'Test IDE',
 				type: 'known',
@@ -311,11 +335,13 @@ describe('ideListToWebviewContent', () => {
 			expect(result).toContain('\\"');
 		});
 
-		it('should produce valid JSON that can be parsed back', () => {
+		it('should produce valid JSON that can be parsed back', () =>
+		{
 			const content = transformIDEListForWebview(mockIDEList);
 			const sanitized = sanitizeForWebview(content);
 
-			expect(() => {
+			expect(() =>
+			{
 				// Remove the extra escaping for quotes to make it valid JSON
 				const jsonForParsing = sanitized.replace(/\\"/g, '"').replace(/\\'/g, "'");
 				JSON.parse(jsonForParsing);
@@ -323,8 +349,10 @@ describe('ideListToWebviewContent', () => {
 		});
 	});
 
-	describe('Integration Tests', () => {
-		it('should work end-to-end: transform -> validate -> sanitize', () => {
+	describe('Integration Tests', () =>
+	{
+		it('should work end-to-end: transform -> validate -> sanitize', () =>
+		{
 			// Transform
 			const transformed = transformIDEListForWebview(mockIDEList);
 			expect(transformed).toHaveLength(3);
@@ -345,7 +373,8 @@ describe('ideListToWebviewContent', () => {
 			expect(jsTemplate).toMatch(/^let ideList = \[.*\];$/);
 		});
 
-		it('should handle real-world IDE settings data', () => {
+		it('should handle real-world IDE settings data', () =>
+		{
 			// Simulate real VS Code settings
 			const realSettings = {
 				'editor.fontFamily': "'Fira Code', 'Courier New', monospace",
@@ -390,7 +419,8 @@ describe('ideListToWebviewContent', () => {
 			expect(() => JSON.parse(JSON.stringify(transformed))).not.toThrow();
 		});
 
-		it('should handle problematic characters in IDE names and paths', () => {
+		it('should handle problematic characters in IDE names and paths', () =>
+		{
 			const problematicIDEs: IIDEInfo[] = [
 				{
 					name: 'IDE with "quotes" & <brackets>',

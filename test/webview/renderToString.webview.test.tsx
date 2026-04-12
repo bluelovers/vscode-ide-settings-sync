@@ -29,12 +29,14 @@ const mockSettingsSyncPanel = {
  * 測試套件：SettingsSyncPanelPage 組件
  * Test Suite: SettingsSyncPanelPage Component
  */
-describe('SettingsSyncPanelPage:renderToString', () => {
+describe('SettingsSyncPanelPage:renderToString', () =>
+{
 	/**
 	 * 測試：組件能正確渲染基本結構
 	 * Test: Component renders basic structure correctly
 	 */
-	it('should render basic HTML structure', () => {
+	it('should render basic HTML structure', () =>
+	{
 		const html = renderToString(<SettingsSyncPanelPage />);
 
 		expect(html).toContain('<html');
@@ -49,7 +51,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：包含正確的 meta 標籤
 	 * Test: Contains correct meta tags
 	 */
-	it('should render meta charset and viewport tags', () => {
+	it('should render meta charset and viewport tags', () =>
+	{
 		const html = renderToString(<SettingsSyncPanelPage />);
 
 		expect(html).toContain('charset="UTF-8"');
@@ -61,7 +64,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：包含正確的 title
 	 * Test: Contains correct title
 	 */
-	it('should render correct title', () => {
+	it('should render correct title', () =>
+	{
 		const html = renderToString(<SettingsSyncPanelPage />);
 
 		expect(html).toContain('<title>IDE Settings Sync</title>');
@@ -71,7 +75,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：Content Security Policy 正確設置
 	 * Test: Content Security Policy is correctly set
 	 */
-	it('should render ContentSecurityPolicy with correct CSP source', () => {
+	it('should render ContentSecurityPolicy with correct CSP source', () =>
+	{
 		const html = renderToString(<SettingsSyncPanelPage settingsSyncPanel={mockSettingsSyncPanel} />);
 
 		expect(html).toContain('http-equiv="Content-Security-Policy"');
@@ -83,7 +88,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：Content Security Policy 包含所有必要的指令
 	 * Test: Content Security Policy contains all required directives
 	 */
-	it('should include all required CSP directives', () => {
+	it('should include all required CSP directives', () =>
+	{
 		const html = renderToString(<SettingsSyncPanelPage settingsSyncPanel={mockSettingsSyncPanel} />);
 
 		const cspMatch = html.match(/content="([^"]*)"/);
@@ -102,7 +108,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：正確渲染 CSS 內容
 	 * Test: Renders CSS content correctly
 	 */
-	it('should render CSS content in style tag', () => {
+	it('should render CSS content in style tag', () =>
+	{
 		const cssContent = 'body { background: red; }';
 		const html = renderToString(<SettingsSyncPanelPage cssContent={cssContent} />);
 
@@ -116,7 +123,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：包含兩個 script 標籤
 	 * Test: Contains two script tags
 	 */
-	it('should render two script tags', () => {
+	it('should render two script tags', () =>
+	{
 		const html = renderToString(<SettingsSyncPanelPage />);
 
 		const scriptMatches = html.match(/<script>/g);
@@ -127,7 +135,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：靜態 HTML 輸出可以與 DOCTYPE 結合使用
 	 * Test: Static HTML output can be combined with DOCTYPE
 	 */
-	it('should render to string that can be wrapped with DOCTYPE', () => {
+	it('should render to string that can be wrapped with DOCTYPE', () =>
+	{
 		const html = `<!DOCTYPE html>${renderToString(<SettingsSyncPanelPage />)}`;
 
 		expect(html).toMatch(/^<!DOCTYPE html>/i);
@@ -139,12 +148,13 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：完整渲染快照
 	 * Test: Full render snapshot
 	 */
-	it('should match snapshot with all props', () => {
+	it('should match snapshot with all props', () =>
+	{
 		const html = `<!DOCTYPE html>${renderToString(
 			<SettingsSyncPanelPage
 				settingsSyncPanel={mockSettingsSyncPanel}
 				cssContent={'/* test css */'}
-			/>
+			/>,
 		)}`;
 
 		expect(html).toMatchSnapshot();
@@ -154,7 +164,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：無 settingsSyncPanel 時正確處理 CSP
 	 * Test: Handles missing settingsSyncPanel gracefully for CSP
 	 */
-	it('should handle missing settingsSyncPanel prop', () => {
+	it('should handle missing settingsSyncPanel prop', () =>
+	{
 		const html = renderToString(<SettingsSyncPanelPage />);
 
 		// 即使沒有 settingsSyncPanel，組件仍應正確渲染基本結構
@@ -167,7 +178,8 @@ describe('SettingsSyncPanelPage:renderToString', () => {
 	 * 測試：CSP 在無 cspSource 時使用預設值
 	 * Test: CSP uses default values when cspSource is not provided
 	 */
-	it('should render CSP even without cspSource', () => {
+	it('should render CSP even without cspSource', () =>
+	{
 		const html = renderToString(<SettingsSyncPanelPage />);
 
 		// 應該仍然有 CSP meta 標籤，即使沒有 cspSource

@@ -18,7 +18,8 @@ import { IDetectionConfig } from '../utils/ideDetector';
 /**
  * CLI 配置介面
  */
-interface ICLIConfig {
+interface ICLIConfig
+{
 	verbose?: boolean;
 	outputFormat?: 'table' | 'json' | 'summary';
 	customIDEs?: Array<{ name: string; path: string }>;
@@ -28,16 +29,19 @@ interface ICLIConfig {
  * 解析命令行參數
  * Parse command line arguments
  */
-function parseArgs(): ICLIConfig {
+function parseArgs(): ICLIConfig
+{
 	const args = process.argv.slice(2);
 	const config: ICLIConfig = {
 		outputFormat: 'table',
 	};
 
-	for (let i = 0; i < args.length; i++) {
+	for (let i = 0; i < args.length; i++)
+	{
 		const arg = args[i];
-		
-		switch (arg) {
+
+		switch (arg)
+		{
 			case '-v':
 			case '--verbose':
 				config.verbose = true;
@@ -60,10 +64,13 @@ function parseArgs(): ICLIConfig {
 				process.exit(0);
 				break;
 			default:
-				if (arg.startsWith('--custom-ide=')) {
+				if (arg.startsWith('--custom-ide='))
+				{
 					const [name, path] = arg.substring(13).split(':');
-					if (name && path) {
-						if (!config.customIDEs) {
+					if (name && path)
+					{
+						if (!config.customIDEs)
+						{
 							config.customIDEs = [];
 						}
 						config.customIDEs.push({ name, path });
@@ -80,7 +87,8 @@ function parseArgs(): ICLIConfig {
  * 顯示幫助資訊
  * Show help information
  */
-function showHelp(): void {
+function showHelp(): void
+{
 	console.log(`
 IDE Detection CLI Tool
 
@@ -111,11 +119,15 @@ ${knownIDEs.map(ide => `  - ${ide.name} (${ide.appFolderNames.join(', ')})`).joi
  * 格式化表格輸出
  * Format table output
  */
-function formatTableOutput(available: any[], unavailable: any[]): void {
+function formatTableOutput(available: any[], unavailable: any[]): void
+{
 	console.log('\n=== Available IDEs ===');
-	if (available.length === 0) {
+	if (available.length === 0)
+	{
 		console.log('No IDEs detected.');
-	} else {
+	}
+	else
+	{
 		console.table(available.map(ide => ({
 			Name: ide.name,
 			Path: ide.nativePath,
@@ -124,9 +136,12 @@ function formatTableOutput(available: any[], unavailable: any[]): void {
 	}
 
 	console.log('\n=== Unavailable IDEs ===');
-	if (unavailable.length === 0) {
+	if (unavailable.length === 0)
+	{
 		console.log('All IDEs detected successfully.');
-	} else {
+	}
+	else
+	{
 		console.table(unavailable.map(ide => ({
 			Name: ide.name,
 			Reason: ide.reason?.split('\n')[0] || 'Unknown',
@@ -138,7 +153,8 @@ function formatTableOutput(available: any[], unavailable: any[]): void {
  * 格式化摘要輸出
  * Format summary output
  */
-function formatSummaryOutput(statistics: any): void {
+function formatSummaryOutput(statistics: any): void
+{
 	console.log('\n=== Detection Summary ===');
 	console.log(`Total IDEs: ${statistics.total}`);
 	console.log(`Detected: ${statistics.detected}`);
@@ -150,7 +166,8 @@ function formatSummaryOutput(statistics: any): void {
  * 格式化 JSON 輸出
  * Format JSON output
  */
-function formatJSONOutput(available: any[], unavailable: any[], statistics: any): void {
+function formatJSONOutput(available: any[], unavailable: any[], statistics: any): void
+{
 	const output = {
 		timestamp: new Date().toISOString(),
 		statistics,
@@ -164,10 +181,12 @@ function formatJSONOutput(available: any[], unavailable: any[], statistics: any)
  * 主函數
  * Main function
  */
-async function main(): Promise<void> {
-	try {
+async function main(): Promise<void>
+{
+	try
+	{
 		const config = parseArgs();
-		
+
 		const detectionConfig: IDetectionConfig = {
 			verbose: config.verbose,
 			logger: config.verbose ? (message: string) => console.log(`[CLI] ${message}`) : undefined,
@@ -180,7 +199,8 @@ async function main(): Promise<void> {
 			customIDEs: config.customIDEs,
 		});
 
-		switch (config.outputFormat) {
+		switch (config.outputFormat)
+		{
 			case 'json':
 				formatJSONOutput(results.available, results.unavailable, results.statistics);
 				break;
@@ -197,7 +217,9 @@ async function main(): Promise<void> {
 		// 設定退出碼
 		// Set exit code
 		process.exit(results.statistics.detected > 0 ? 0 : 1);
-	} catch (error) {
+	}
+	catch (error)
+	{
 		console.error('❌ Error during IDE detection:', error);
 		process.exit(1);
 	}
@@ -205,7 +227,8 @@ async function main(): Promise<void> {
 
 // 如果直接運行此檔案，執行主函數
 // If this file is run directly, execute main function
-if (require.main === module) {
+if (require.main === module)
+{
 	main();
 }
 

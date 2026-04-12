@@ -1,6 +1,7 @@
 import { h, Fragment } from 'preact';
 
-interface IActionBtnProps {
+interface IActionBtnProps
+{
 	onClick: string;
 	disabled?: boolean;
 	children: any;
@@ -8,7 +9,8 @@ interface IActionBtnProps {
 	processing?: boolean;
 }
 
-export function ActionBtn({ onClick, disabled = false, children, title, processing = false }: IActionBtnProps) {
+export function ActionBtn({ onClick, disabled = false, children, title, processing = false }: IActionBtnProps)
+{
 	return (
 		<>
 			{/* @ts-ignore */}

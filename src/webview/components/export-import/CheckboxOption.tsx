@@ -1,12 +1,14 @@
 import { h, Fragment } from 'preact';
 
-interface ICheckboxOptionProps {
+interface ICheckboxOptionProps
+{
 	id: string;
 	label: string;
 	checked?: boolean;
 }
 
-export function CheckboxOption({ id, label, checked = false }: ICheckboxOptionProps) {
+export function CheckboxOption({ id, label, checked = false }: ICheckboxOptionProps)
+{
 	return (
 		<label class="checkbox-group">
 			<input
