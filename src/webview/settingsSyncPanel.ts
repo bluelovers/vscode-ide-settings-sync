@@ -7,6 +7,7 @@ import {
 	getSettingDescriptionBilingual,
 	getAllSettingKeys,
 } from '../utils/settingsDescriptions';
+import { getDefaultLanguageConfig } from '../utils/languageConfig';
 // @ts-ignore
 import cssContent from './settingsSyncPanel.scss';
 import { h, Fragment } from 'preact';
@@ -32,12 +33,9 @@ export class SettingsSyncPanel
 	{
 		this.context = context;
 		this.ideProvider = ideProvider;
-		this.languageConfig = languageConfig || {
-			primary: 'en' as ILanguageCode,
-			fallbackList: ['zh-tw', 'en'],
-			secondary: undefined,
-			showSecondary: false,
-		};
+		// 使用工具函數取得預設語言配置，避免重複
+		// Use utility to get default language config to avoid duplication
+		this.languageConfig = languageConfig || getDefaultLanguageConfig();
 		this.currentLanguage = this.languageConfig.primary;
 
 		const extensionUri = context.extensionUri;

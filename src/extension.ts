@@ -4,6 +4,13 @@ import { SettingsSyncPanel } from './webview/settingsSyncPanel';
 import { ExportImportCommands } from './commands/exportImportCommands';
 import { ILanguageConfig, ILanguageSourceInfo, ILanguageCode, EnumGlobalStateName } from './types';
 import { isValidLanguageCode, getDefaultFallbackList } from './utils/settingsDescriptions';
+import {
+	loadLanguageConfig as loadLanguageConfigUtil,
+	saveLanguageConfig as saveLanguageConfigUtil,
+	getDefaultLanguageConfig,
+	transformLanguagesToQuickPick,
+	createYesNoQuickPickOptions,
+} from './utils/languageConfig';
 
 let ideProvider: IDEProvider;
 let syncPanel: SettingsSyncPanel | undefined;
@@ -88,35 +95,45 @@ export async function activate(context: vscode.ExtensionContext)
 
 /**
  * 載入語言配置
+ * Load language configuration
+ *
+ * 從全域狀態載入語言配置，若無效則返回預設值。
+ * 使用語言配置工具函式避免重複邏輯。
+ * Load from globalState, return default if invalid.
+ * Uses utility functions to avoid duplicate logic.
+ *
+ * @param {vscode.ExtensionContext} context - VS Code 擴充功能上下文
+ * @returns {ILanguageConfig} 語言配置物件
+ *
+ * @see loadLanguageConfigUtil 請參考 src/utils/languageConfig 中的實現
+ * @see src/utils/languageConfig
  */
 function loadLanguageConfig(context: vscode.ExtensionContext): ILanguageConfig
 {
-	const saved = context.globalState.get<ILanguageConfig>(EnumGlobalStateName.languageConfig);
-
-	if (saved && isValidLanguageCode(saved.primary))
-	{
-		return saved;
-	}
-
-	// 預設配置
-	const defaultConfig: ILanguageConfig = {
-		primary: 'en' as ILanguageCode,
-		fallbackList: ['zh-tw', 'en'],
-		secondary: undefined,
-		showSecondary: false,
-	};
-
-	return defaultConfig;
+	return loadLanguageConfigUtil(context);
 }
 
 /**
  * 保存語言配置
+ * Save language configuration
+ *
+ * 將語言配置儲存至全域狀態。
+ * 使用語言配置工具函式避免重複邏輯。
+ * Save to globalState.
+ * Uses utility functions to avoid duplicate logic.
+ *
+ * @param {vscode.ExtensionContext} context - VS Code 擴充功能上下文
+ * @param {ILanguageConfig} config - 要保存的語言配置
+ *
+ * @see saveLanguageConfigUtil 請參考 src/utils/languageConfig 中的實現
+ * @see src/utils/languageConfig
  */
 function saveLanguageConfig(context: vscode.ExtensionContext, config: ILanguageConfig): void
 {
-	context.globalState.update(EnumGlobalStateName.languageConfig, config);
-	languageConfig = config;
-	console.log('[Language Config] 已保存:', config);
+	saveLanguageConfigUtil(context, config, (savedConfig) =>
+	{
+		languageConfig = savedConfig;
+	});
 }
 
 /**
@@ -128,8 +145,10 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
 	const supportedLangs = getSupportedLanguages();
 
 	// 選擇主語言
+	// Transform languages to QuickPick format for selection
+	const quickPickLanguages = transformLanguagesToQuickPick(supportedLangs);
 	const primaryChoice = await vscode.window.showQuickPick(
-		supportedLangs.map(l => ({ label: l.name, id: l.code })),
+		quickPickLanguages,
 		{ placeHolder: '選擇主顯示語言' },
 	);
 
@@ -143,21 +162,26 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
 	// 👇 New: Sort Fallback Languages by letting user select them in order
 	await configureFallbackLanguages(supportedLangs, primaryChoice.id as ILanguageCode);
 
-	// 選擇是否顯示副語言
+	// 選擇是否��示副語言
+	// Use utility function to create Yes/No options
+	const yesNoOptions = createYesNoQuickPickOptions();
 	const showSecondaryChoice = await vscode.window.showQuickPick(
-		[{ label: '是', id: 'true' }, { label: '否', id: 'false' }],
+		yesNoOptions,
 		{ placeHolder: '是否同時顯示副語言描述？' },
 	);
 
 	languageConfig.showSecondary = showSecondaryChoice?.id === 'true';
 
 	// 如果啟用副語言，選擇副語言
+	// Transform languages to QuickPick format, excluding primary language
 	if (languageConfig.showSecondary)
 	{
+		const secondaryQuickPickOptions = transformLanguagesToQuickPick(
+			supportedLangs,
+			primaryChoice.id as ILanguageCode,
+		);
 		const secondaryChoice = await vscode.window.showQuickPick(
-			supportedLangs
-				.filter(l => l.code !== primaryChoice.id)
-				.map(l => ({ label: l.name, id: l.code })),
+			secondaryQuickPickOptions,
 			{ placeHolder: '選擇副顯示語言' },
 		);
 
@@ -192,7 +216,11 @@ async function configureFallbackLanguages(
 	primaryLanguage: ILanguageCode,
 ): Promise<void>
 {
-	const availableLangs = supportedLangs.filter(l => l.code !== primaryLanguage);
+	// 過濾可用的語言（排除主要語言）
+	// Filter available languages (exclude primary)
+	const availableLangsForPick = supportedLangs
+		.filter(l => l.code !== primaryLanguage)
+		.map(l => ({ label: l.name, id: l.code }));
 	const selectedLangs: ILanguageCode[] = [];
 
 	// Show current fallback list
@@ -206,11 +234,11 @@ async function configureFallbackLanguages(
 	);
 
 	// Learn the selected languages first
+	// Add picked property to track selections
 	const fallbackChoices = await vscode.window.showQuickPick(
-		availableLangs.map(l => ({
-			label: l.name,
-			id: l.code,
-			picked: languageConfig.fallbackList.includes(l.code as ILanguageCode),
+		availableLangsForPick.map(l => ({
+			...l,
+			picked: languageConfig.fallbackList.includes(l.id as ILanguageCode),
 		})),
 		{
 			placeHolder: 'Select Fallback Languages (you can reorder them next)',
