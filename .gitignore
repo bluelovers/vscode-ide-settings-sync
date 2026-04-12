@@ -8,3 +8,7 @@ node_modules
 coverage
 test/*temp*
 test/**/*temp*
+.idea/
+.vscode/changelists.json
+examples/webview-content-demo.js
+.vscode-ide-cache.json

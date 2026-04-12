@@ -31,26 +31,25 @@ function escapeHtml(str: string): string
  * @param ide - IDE 資訊
  * @param index - IDE 索引
  * @param isCurrent - 是否為當前 IDE
+ * @param isSource - 是否為來源 IDE
  * @returns HTML 字串
  */
 function AvailableIDEItem(props: {
 	ide: { uuid: string; name: string; type: string; nativePath: string },
 	index: number,
-	isCurrent: boolean
+	isCurrent: boolean,
+	isSource: boolean
 })
 {
-	const className = `ide-item available${props.isCurrent ? ' current' : ''}`;
-	// const escapedPath = escapeSingleQuote(ide.nativePath);
-	// const removeButton =
-	// 	ide.type === 'custom'
-	// 		? `<button class="btn btn-small btn-remove" onclick="removeCustomIDE(${index})" title="Remove this custom IDE">Remove</button>`
-	// 		: '';
+	const className = `ide-item available${props.isCurrent ? ' current' : ''}${props.isSource ? ' source-ide' : ''}`;
 
 	const id = `ide-${props.index}`;
+	const sourceId = `source-${props.ide.uuid}`;
 
 	return (<>
 		<div key={props.index} className={className}>
-			<input type="checkbox" id={id} className="ide-checkbox" data-index={props.index} data-name={props.ide.name} />
+			<input type="radio" id={sourceId} name="sourceIDE" className="ide-source-radio" value={props.ide.uuid} checked={props.isSource} title="Select as source IDE" />
+			<input type="checkbox" id={id} className="ide-checkbox" data-index={props.index} data-name={props.ide.name} data-uuid={props.ide.uuid} />
 			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
 			<span className="ide-path" title={props.ide.nativePath}>{formatPath(props.ide.nativePath)}</span>
 			<BtnOpenIDEFolder path={props.ide.nativePath} />
@@ -150,6 +149,7 @@ function UnavailableIDEItem(props: {
 
 	return (<>
 		<div key={props.index} className="ide-item unavailable" title={`Not detected: ${props.ide.expectedPath}`}>
+			<input type="radio" className="ide-source-radio" disabled title="Cannot select unavailable IDE as source" />
 			<input type="checkbox" id={id} className="ide-checkbox" disabled />
 			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
 			<span className="ide-path">❌ Not detected: {props.ide.expectedPath}</span>
@@ -201,6 +201,52 @@ export function IDEListScript()
 	{
 		vscode.postMessage({ command: 'refreshIDEs' });
 	}
+
+	/**
+	 * 處理來源 IDE 選擇變更
+	 * 當使用者點擊 radio 按鈕選擇來源 IDE 時觸發
+	 * 使用 UUID 而非 index，以確保持久化
+	 */
+	function handleSourceIDEChange(event)
+	{
+		const sourceUuid = event.target.value;
+		const sourceName = event.target.dataset.name || event.target.closest('.ide-item')?.querySelector('.ide-checkbox')?.dataset.name;
+		
+		// 更新來源 IDE 指示器顯示
+		const indicator = document.querySelector('.source-ide-indicator .source-name');
+		if (indicator)
+		{
+			indicator.textContent = sourceName || 'Not selected';
+		}
+		
+		// 更新所有 IDE 項目的 source-ide 類別
+		const allItems = document.querySelectorAll('.ide-item');
+		allItems.forEach((item) =>
+		{
+			const checkbox = item.querySelector('.ide-checkbox');
+			if (checkbox && checkbox.dataset.uuid === sourceUuid)
+			{
+				item.classList.add('source-ide');
+			}
+			else
+			{
+				item.classList.remove('source-ide');
+			}
+		});
+		
+		// 發送訊息到 VS Code 擴充套件（使用 UUID 而非 index）
+		vscode.postMessage({ command: 'selectSourceIDE', uuid: sourceUuid, name: sourceName });
+	}
+
+	// 初始化來源 IDE radio 的事件監聽
+	document.addEventListener('DOMContentLoaded', function()
+	{
+		const sourceRadios = document.querySelectorAll('.ide-source-radio');
+		sourceRadios.forEach(radio =>
+		{
+			radio.addEventListener('change', handleSourceIDEChange);
+		});
+	});
 	`;
 
 	return (<script dangerouslySetInnerHTML={{ __html: js }} />)
@@ -221,14 +267,19 @@ export function IDEList({
 	availableIDEs,
 	unavailableIDEs,
 	currentIDEName,
+	sourceIDEUuid,
 }: IIDEListProps)
 {
+	// 計算預設來源 IDE UUID（如果未指定，則選擇第一個可用 IDE）
+	const defaultSourceUuid = sourceIDEUuid ?? (availableIDEs.length > 0 ? availableIDEs[0].uuid : undefined);
+
 	return (<>
 		<div
 			class="ide-list"
 		>
 			{availableIDEs.map((ide, index) => <AvailableIDEItem key={index} ide={ide} index={index}
-			                                                     isCurrent={ide.name === currentIDEName} />)}
+			                                                     isCurrent={ide.name === currentIDEName}
+			                                                     isSource={ide.uuid === defaultSourceUuid} />)}
 			{unavailableIDEs.map((ide, index) => <UnavailableIDEItem key={index} ide={ide} index={index} />)}
 		</div>
 	</>);
@@ -238,19 +289,30 @@ export function IDEListSection({
 	availableIDEs,
 	unavailableIDEs,
 	currentIDEName,
+	sourceIDEUuid,
 }: IIDEListProps)
 {
+	// 計算預設來源 IDE UUID（如果未指定，則選擇第一個可用 IDE）
+	const defaultSourceUuid = sourceIDEUuid ?? (availableIDEs.length > 0 ? availableIDEs[0].uuid : undefined);
+	const sourceIDE = availableIDEs.find(ide => ide.uuid === defaultSourceUuid);
+	const sourceIDEName = sourceIDE?.name;
+
 	return (<>
 		<IDEListScript />
 		<div className="section">
 			<h2>Select IDEs</h2>
-			<IDEList availableIDEs={availableIDEs} unavailableIDEs={unavailableIDEs} currentIDEName={currentIDEName} />
+			<IDEList availableIDEs={availableIDEs} unavailableIDEs={unavailableIDEs} currentIDEName={currentIDEName} sourceIDEUuid={sourceIDEUuid} />
 			{/* @ts-ignore */}
 			<button className="btn" onclick={"addCustomIDE()"} style="margin-top: 10px;"
 			        title="Manually specify an IDE/settings folder">+ Add Custom IDE Path
 			</button>
 			{/* @ts-ignore */}
 			<button className="btn secondary" onclick={"refreshIDEs()"} title="Refresh IDE list">🔄 Refresh</button>
+		</div>
+		{/* 來源 IDE 顯示指示器 */}
+		<div className="section source-ide-indicator">
+			<span className="source-label">Source IDE:</span>
+			<span className="source-name">{sourceIDEName || 'Not selected'}</span>
 		</div>
 	</>);
 }

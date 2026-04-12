@@ -30,6 +30,7 @@ export const enum EnumGlobalStateName
 	searchHistory = 'searchHistory',
 	selectedSettings = 'selectedSettings',
 	selectedIDEs = 'selectedIDEs',
+	sourceIDEUuid = 'sourceIDEUuid',
 }
 
 /**

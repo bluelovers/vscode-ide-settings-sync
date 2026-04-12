@@ -16,6 +16,7 @@ import { IDEList, IDEListSection } from './components/IDEList';
 import { ExportImportPanel } from './components/ExportImportPanel';
 import { renderJsxToString } from '../utils/render-jsx';
 import { formatPath } from '../utils/formatPath';
+import { saveIDECache, loadIDECache, exportIDECache, importIDECache } from '../utils/ideCache';
 
 export class SettingsSyncPanel
 {
@@ -56,6 +57,21 @@ export class SettingsSyncPanel
 
 		this.panel.iconPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'icon.svg');
 
+		// 嘗試從檔案快取載入來源 IDE UUID
+		// Try to load source IDE UUID from file cache
+		const cachedData = loadIDECache(context.extensionPath);
+		if (cachedData?.sourceIDEUuid)
+		{
+			// 如果 globalState 中沒有來源 IDE，則使用檔案快取中的值
+			const globalSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid);
+			if (!globalSourceIDEUuid)
+			{
+				this.context.globalState.update(EnumGlobalStateName.sourceIDEUuid, cachedData.sourceIDEUuid);
+				console.log(`[IDE Cache] 從檔案快取恢復來源 IDE UUID: ${cachedData.sourceIDEUuid}`);
+				console.log(`[IDE Cache] Restored source IDE UUID from file cache: ${cachedData.sourceIDEUuid}`);
+			}
+		}
+
 		this.updateWebview();
 		this.setupMessageHandler();
 
@@ -82,6 +98,13 @@ export class SettingsSyncPanel
 		{
 			await this.ideProvider.refreshIDEList();
 		}
+
+		// 儲存 IDE 列表到檔案快取
+		// Save IDE list to file cache
+		const ideList = this.ideProvider.getIDEList();
+		const savedSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid) || '';
+		saveIDECache(this.context.extensionPath, ideList, savedSourceIDEUuid);
+
 		this.panel.webview.html = this.getWebviewContent();
 	}
 
@@ -97,6 +120,7 @@ export class SettingsSyncPanel
 		const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
 		const savedSelectedSettings = this.context.globalState.get<string[]>(EnumGlobalStateName.selectedSettings) || [];
 		const savedSelectedIDEs = this.context.globalState.get<number[]>(EnumGlobalStateName.selectedIDEs) || [];
+		const savedSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid) || '';
 
 		/**
 		 * 生成 IDE 列表 HTML
@@ -106,6 +130,7 @@ export class SettingsSyncPanel
 			availableIDEs: ideList,
 			unavailableIDEs: unavailableIDEs,
 			currentIDEName,
+			sourceIDEUuid: savedSourceIDEUuid,
 		});
 
 		return `<!DOCTYPE html>
@@ -866,6 +891,11 @@ export class SettingsSyncPanel
 
 					case 'saveSelectedIDEs':
 						this.context.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
+						break;
+
+					case 'selectSourceIDE':
+						// 儲存來源 IDE UUID 到 globalState，實現持久化
+						this.context.globalState.update(EnumGlobalStateName.sourceIDEUuid, message.uuid);
 						break;
 
 					case 'browseExportPath':

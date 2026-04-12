@@ -81,6 +81,8 @@ export interface IIDEListProps
 	unavailableIDEs: IUnavailableIDEInfoWebview[];
 	/** 當前 IDE 名稱 */
 	currentIDEName: string;
+	/** 來源 IDE UUID（用於同步來源選擇，具持久化） */
+	sourceIDEUuid?: string;
 }
 
 /**

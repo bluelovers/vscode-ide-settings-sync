@@ -9,6 +9,7 @@ import { IdeSettingProvider } from './ideSettingProvider';
 import { knownIDEs } from '../data/knownIDEs';
 import { IDEDetector, IDetectionResult } from '../utils/ideDetector';
 import { transformIDEListForWebview } from '../utils/ideListToWebviewContent';
+import { loadIDECache, getExistingUuid } from '../utils/ideCache';
 
 /**
  * IDE 設定供應商
@@ -80,8 +81,10 @@ export class IDEProvider
 	 *
 	 * 使用獨立的 IDE 偵測器進行偵測，然後將結果轉換為 VSCode 擴展格式
 	 * Uses standalone IDE detector for detection, then converts results to VSCode extension format
+	 *
+	 * @param cachedIDEs - 快取的 IDE 列表，用於保持 UUID 一致性
 	 */
-	private async detectKnownIDEs(): Promise<void>
+	private async detectKnownIDEs(cachedIDEs: Array<{ uuid: string; name: string; type: string; nativePath: string }> = []): Promise<void>
 	{
 		// 使用獨立偵測器偵測所有已知 IDE
 		// Use standalone detector to detect all known IDEs
@@ -91,11 +94,19 @@ export class IDEProvider
 		// Process detection results
 		for (const result of detectionResults)
 		{
+			// 使用工具函數取得現有的 UUID
+			// Use utility function to get existing UUID
+			const existingUuid = getExistingUuid({
+				extensionPath: this.context.extensionPath,
+				ideName: result.name,
+				idePath: result.path || '',
+			});
+
 			if (result.detected && result.path && result.settingsPath)
 			{
 				// 成功找到 IDE，嘗試載入設定
 				// Successfully found IDE, attempt to load settings
-				this.processIDE(result.name, EnumIDEInfoType.known, result.settingsPath, result.path);
+				this.processIDE(result.name, EnumIDEInfoType.known, result.settingsPath, result.path, existingUuid);
 			}
 			else
 			{
@@ -121,8 +132,10 @@ export class IDEProvider
 	 * 並使用獨立偵測器進行偵測。
 	 * This method reads custom IDE paths added by users previously,
 	 * and uses the standalone detector for detection.
+	 *
+	 * @param cachedIDEs - 快取的 IDE 列表，用於保持 UUID 一致性
 	 */
-	private async loadCustomIDEs(): Promise<void>
+	private async loadCustomIDEs(cachedIDEs: Array<{ uuid: string; name: string; type: string; nativePath: string }> = []): Promise<void>
 	{
 		// 從全域狀態讀取自訂 IDE 清單
 		// Read custom IDE list from global state
@@ -144,10 +157,14 @@ export class IDEProvider
 		{
 			if (result.detected && result.path && result.settingsPath)
 			{
-				// 取得現有的 UUID（如果存在）
-				// Get existing UUID (if exists)
-				const existingCustomIDE = customIDEs.find(ide => ide.name === result.name);
-				const existingUuid = existingCustomIDE?.uuid;
+				// 使用工具函數取得現有的 UUID
+				// Use utility function to get existing UUID
+				const existingUuid = getExistingUuid({
+					extensionPath: this.context.extensionPath,
+					ideName: result.name,
+					idePath: result.path || '',
+					globalStateIDEs: customIDEs,
+				});
 
 				console.log(`[Custom IDE] 載入自訂 IDE: ${result.name} (UUID: ${existingUuid || 'new'})`);
 				console.log(`[Custom IDE] Loading custom IDE: ${result.name} (UUID: ${existingUuid || 'new'})`);

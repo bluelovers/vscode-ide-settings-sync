@@ -15,7 +15,7 @@ describe('ideListToWebviewContent', () => {
 
 		// Create mock setting provider
 		mockSettingProvider = new IdeSettingProvider('test/path', 'test/native') as jest.Mocked<IdeSettingProvider>;
-		
+
 		// Mock the load method to return a mock settings object
 		const mockSettings = {
 			valueOf: jest.fn().mockReturnValue({
@@ -31,7 +31,7 @@ describe('ideListToWebviewContent', () => {
 				'editor.suggestSelection': 'first',
 			})
 		};
-		
+
 		// Mock the IdeSettingProvider's load method to return the mock settings
 		mockSettingProvider.load = jest.fn().mockReturnValue(mockSettings);
 
@@ -89,15 +89,15 @@ describe('ideListToWebviewContent', () => {
 			expect(result[0]).toHaveProperty('type', EnumIDEInfoType.known);
 			expect(result[0]).toHaveProperty('available', true);
 			expect(result[0]).toHaveProperty('settings');
-			
+
 			// Check that settings is an object with the expected properties
 			const settings = result[0].settings;
 			expect(settings).toEqual(expect.any(Object));
-			
+
 			// Try different assertion approaches
 			expect(settings['editor.fontFamily']).toBe('Consolas, monospace');
 			expect(settings['editor.fontSize']).toBe(14);
-			
+
 			// Also check with Object.hasOwnProperty
 			expect(settings.hasOwnProperty('editor.fontFamily')).toBe(true);
 			expect(settings.hasOwnProperty('editor.fontSize')).toBe(true);
