@@ -2,6 +2,11 @@
 
 A Visual Studio Code extension that synchronizes IDE settings across multiple VS Code-based IDEs.
 
+
+Install on Visual Studio Code Marketplace
+
+[VSCode IDE Settings Sync](https://marketplace.visualstudio.com/items?itemName=bluelovers.vscode-ide-settings-sync)
+
 ---
 
 ## 功能特色
