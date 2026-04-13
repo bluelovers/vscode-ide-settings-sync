@@ -1,0 +1,6 @@
+{
+	"show_banner": "not-a-boolean",
+	"editor.fontSize": "not-a-number",
+	"terminal.integrated.commandsToSkipShell": "not-an-array",
+	"editorjumper.ideConfigurations": "not-an-array"
+}

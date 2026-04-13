@@ -67,7 +67,7 @@ describe('ideListToWebviewContent', () =>
 				settingProvider: mockSettingProvider,
 				languageId: 'zh-tw',
 			},
-		];
+		] as any;
 	});
 
 	describe('transformIDEListForWebview', () =>
@@ -87,8 +87,8 @@ describe('ideListToWebviewContent', () =>
 							'editor.fontSize': 14,
 						}),
 					}),
-				} as any,
-			};
+				},
+			} as any;
 
 			const result = transformIDEListForWebview([mockIDE]);
 
@@ -436,7 +436,7 @@ describe('ideListToWebviewContent', () =>
 					nativePath: "D:\\Path\\With 'Single' Quotes",
 					settingProvider: mockSettingProvider,
 				},
-			];
+			] as any;
 
 			const transformed = transformIDEListForWebview(problematicIDEs);
 			const validation = validateWebviewContent(transformed);

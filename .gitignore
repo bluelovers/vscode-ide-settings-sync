@@ -1,5 +1,7 @@
 out
 dist
+out/*
+dist/*
 node_modules
 .vscode-test
 *.vsix
@@ -12,3 +14,7 @@ test/**/*temp*
 .vscode/changelists.json
 examples/webview-content-demo.js
 .vscode-ide-cache.json
+
+!__mocks__
+!__mocks__/
+!__mocks__/*

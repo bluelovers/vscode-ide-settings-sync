@@ -1,0 +1,28 @@
+{
+	"show_banner": true,
+	"editor.renderWhitespace": "all",
+	"editor.fontSize": 14,
+	"editor.fontFamily": "Consolas",
+	"terminal.integrated.commandsToSkipShell": [
+		"kilo-code.new.agentManagerOpen",
+		"kilo-code.new.agentManager.showTerminal"
+	],
+	"editorjumper.ideConfigurations": [
+		{
+			"name": "IDEA",
+			"isCustom": false,
+			"hidden": false,
+			"commandPath": null
+		},
+		{
+			"name": "WebStorm",
+			"isCustom": false,
+			"hidden": false,
+			"commandPath": null
+		}
+	],
+	"files.associations": {
+		"*.json5": "jsonc",
+		"*.jsonc": "jsonc"
+	}
+}
