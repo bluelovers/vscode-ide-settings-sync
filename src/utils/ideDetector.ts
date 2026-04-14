@@ -9,9 +9,11 @@
  * can run independently in Node.js environment or be used with parameters.
  */
 
-import * as path from 'path';
+import path from 'upath2';
 import { existsSync } from 'fs';
 import { IKnownIDE } from '../data/knownIDEs';
+import { IPathType } from '@lazy-node/types-path';
+import { ITSPickExtra, ITSRequireAtLeastOne, ITSRequiredPick } from 'ts-type';
 
 /**
  * IDE 偵測結果介面
@@ -89,6 +91,11 @@ export interface IDetectionConfig
 	 * Custom IDE list (optional)
 	 */
 	customIDEs?: ICustomIDEConfig[];
+
+	/**
+	 * 適用於測試環境
+	 */
+	pathLib?: ITSRequireAtLeastOne<Partial<IPathType>, 'normalize' | 'join' | 'resolve'>;
 }
 
 /**
@@ -97,7 +104,9 @@ export interface IDetectionConfig
  */
 export class IDEDetector
 {
-	private config: IDetectionConfig;
+	protected config: Omit<IDetectionConfig, 'pathLib'> & {
+		pathLib: Required<NonNullable<IDetectionConfig["pathLib"]>>,
+	};
 
 	/**
 	 * 建構子
@@ -107,8 +116,20 @@ export class IDEDetector
 	{
 		this.config = {
 			verbose: false,
-			...config,
+			...config as any,
 		};
+
+		if (this.config.pathLib)
+		{
+			this.config.pathLib = {
+				...path,
+				...this.config.pathLib,
+			};
+		}
+		else
+		{
+			this.config.pathLib = path;
+		}
 	}
 
 	/**
@@ -131,6 +152,20 @@ export class IDEDetector
 		}
 	}
 
+	protected _getUserDataPathCore(): string
+	{
+		/**
+		 * 使用配置的用戶資料目錄或系統環境變數
+		 * Use configured user data directory or system environment variables
+		 */
+		const userDataDir = this.config.userDataDir ||
+			process.env.APPDATA ||
+			process.env.HOME ||
+			'';
+
+		return userDataDir;
+	}
+
 	/**
 	 * 取得用戶資料路徑
 	 * Get user data path
@@ -140,12 +175,7 @@ export class IDEDetector
 	 */
 	private getUserDataPath(appName: string, folderName: string): string
 	{
-		// 使用配置的用戶資料目錄或系統環境變數
-		// Use configured user data directory or system environment variables
-		const userDataDir = this.config.userDataDir ||
-			process.env.APPDATA ||
-			process.env.HOME ||
-			'';
+		const userDataDir = this._getUserDataPathCore();
 
 		if (!userDataDir)
 		{
@@ -153,7 +183,7 @@ export class IDEDetector
 			this.log('[IDE Detection] Warning: Cannot determine system app data directory');
 		}
 
-		const fullPath = path.join(userDataDir, appName, folderName);
+		const fullPath = this.config.pathLib.join(userDataDir, appName, folderName);
 		this.log(`[Path Resolution] ${appName}/${folderName} -> ${fullPath}`);
 
 		return fullPath;
@@ -183,8 +213,8 @@ export class IDEDetector
 		// Try multiple possible folder name variations
 		for (const appFolderName of ide.appFolderNames)
 		{
-			const testPath = this.getUserDataPath(appFolderName, 'User');
-			const settingsJsonPath = path.join(testPath, 'settings.json');
+			const testPath = this.config.pathLib.normalize(this.getUserDataPath(appFolderName, 'User'));
+			const settingsJsonPath = this.config.pathLib!.join(testPath, 'settings.json');
 
 			result.attemptedPaths.push(testPath);
 
@@ -230,7 +260,7 @@ export class IDEDetector
 		{
 			result.detected = true;
 			result.path = foundPath;
-			result.settingsPath = path.join(foundPath, 'settings.json');
+			result.settingsPath = this.config.pathLib!.join(foundPath, 'settings.json');
 			this.log(`[IDE Detection] ✓ 成功偵測到 ${ide.name}`);
 			this.log(`[IDE Detection] ✓ Successfully detected ${ide.name}`);
 		}
@@ -322,13 +352,18 @@ export class IDEDetector
 
 		// 選項 1: 直接在提供的路徑下尋找
 		// Option 1: Look directly in the provided path
-		const directPath = path.join(customIDE.path, 'settings.json');
+		let _path = path.isAbsolute(customIDE.path)
+			? customIDE.path
+			: this.config.pathLib!.join(this._getUserDataPathCore(), customIDE.path)
+		;
+
+		const directPath = this.config.pathLib!.join(_path, 'settings.json');
 		result.attemptedPaths.push(directPath);
 
 		if (existsSync(directPath))
 		{
 			settingsJsonPath = directPath;
-			foundPath = customIDE.path;
+			foundPath = _path;
 			this.log(`[Custom IDE] 直接路徑找到 settings.json: ${directPath}`);
 			this.log(`[Custom IDE] Found settings.json in direct path: ${directPath}`);
 		}
@@ -337,13 +372,15 @@ export class IDEDetector
 		// Option 2: Look in User subfolder
 		if (!settingsJsonPath)
 		{
-			const userSubfolderPath = path.join(customIDE.path, 'User', 'settings.json');
+			_path = this.config.pathLib!.join(_path, 'User');
+
+			const userSubfolderPath = this.config.pathLib!.join(_path, 'settings.json');
 			result.attemptedPaths.push(userSubfolderPath);
 
 			if (existsSync(userSubfolderPath))
 			{
 				settingsJsonPath = userSubfolderPath;
-				foundPath = path.join(customIDE.path, 'User');
+				foundPath = _path;
 				this.log(`[Custom IDE] User 子資料夾找到 settings.json: ${userSubfolderPath}`);
 				this.log(`[Custom IDE] Found settings.json in User subfolder: ${userSubfolderPath}`);
 			}
@@ -364,12 +401,12 @@ export class IDEDetector
 			// settings.json 檔案不存在
 			// settings.json file does not exist
 			const directCheck = existsSync(directPath);
-			const userCheck = existsSync(path.join(customIDE.path, 'User', 'settings.json'));
+			const userCheck = existsSync(this.config.pathLib!.join(_path, 'settings.json'));
 
 			let reason = 'settings.json not found';
 			if (!directCheck && !userCheck)
 			{
-				reason = `settings.json not found in:\n- ${directPath}\n- ${path.join(customIDE.path, 'User', 'settings.json')}`;
+				reason = `settings.json not found in:\n- ${directPath}\n- ${this.config.pathLib!.join(_path, 'settings.json')}`;
 			}
 
 			result.reason = reason;

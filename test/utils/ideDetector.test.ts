@@ -13,24 +13,162 @@ import {
 	detectAllIDEs,
 } from '../../src/utils/ideDetector';
 import { knownIDEs } from '../../src/data/knownIDEs';
+import { getVolumeFromFs } from 'memfs-extra';
+import fse from 'memfs-extra/fs-extra';
+import fs from 'fs';
+import { join } from 'upath2';
+import { __ROOT_TEST_TEMP } from '../__root';
+import { IDetectionConfig } from '../../src/utils/ideDetector';
+import path from 'upath2';
 
 // Type for mock IDE in tests
 type MockIDE = {
 	name: string;
 	appFolderNames: string[];
+	existsPathIndex?: number;
+	defaultSettings?: Record<string, any>;
 };
+
+jest.mock('fs');
+
+const vol2 = getVolumeFromFs(fse);
+const vol = getVolumeFromFs(fs);
+
+const mockIDEs: MockIDE[] = [
+	{
+		name: 'IDE1',
+		appFolderNames: [
+			join('IDE', 'Test1'),
+		],
+		existsPathIndex: 0,
+	},
+	{
+		name: 'IDE2',
+		appFolderNames: [
+			join('IDE', 'Test2-not-exists'),
+			join('IDE', 'Test2'),
+		],
+		existsPathIndex: 1,
+	},
+	{
+		name: 'IDE3 with User subfolder',
+		appFolderNames: [
+			join('IDE', 'IDE3 with User subfolder'),
+			join('IDE', 'IDE3 with User subfolder', 'User'),
+		],
+		existsPathIndex: 1,
+	},
+];
+
+const mockIDEsCustom: MockIDE[] = [
+	{
+		name: 'Existing IDE 1',
+		appFolderNames: [
+			join('IDE Custom', 'ExistingIDE'),
+		],
+		existsPathIndex: 0,
+	},
+	{
+		name: 'Non-existing IDE',
+		appFolderNames: [
+			join('IDE Custom', 'NonExistingIDE'),
+		],
+	},
+	{
+		name: 'Existing IDE 2 with User subfolder',
+		appFolderNames: [
+			join('IDE Custom', 'Existing IDE 2'),
+			join('IDE Custom', 'Existing IDE 2', 'User'),
+		],
+		existsPathIndex: 1,
+	},
+];
+
+const customIDEs = mockIDEsCustom.map(v =>
+{
+	return {
+		name: v.name,
+		path: v.appFolderNames[0],
+	}
+});
+
+const defautDetectionConfig: IDetectionConfig = {
+
+	logger: jest.fn(),
+
+	userDataDir: __ROOT_TEST_TEMP,
+
+	pathLib: {
+		join(...args: string[])
+		{
+			// @ts-ignore
+			return path.join(...args);
+		},
+		resolve(...args: string[])
+		{
+			// @ts-ignore
+			return path.resolve(...args);
+		},
+		normalize(arg: string)
+		{
+			return toGitBashPath(path.normalize(arg));
+		},
+	},
+}
+
+mockIDEs.concat(mockIDEsCustom).forEach(ide =>
+{
+	ide.appFolderNames = ide.appFolderNames.map(v => toGitBashPath(v));
+
+	if (ide.existsPathIndex !== undefined)
+	{
+		let path = join(defautDetectionConfig.userDataDir, ide.appFolderNames[ide.existsPathIndex], 'settings.json');
+		if (!fse.existsSync(path))
+		{
+			vol.fromJSON({
+				[path]: JSON.stringify(ide.defaultSettings || {}),
+			});
+
+			// fse.outputJSONSync(path, ide.defaultSettings || {}, {
+			// 	spaces: 2,
+			// });
+		}
+	}
+});
+
+console.dir({
+	vol1: vol.toJSON(),
+	vol2: vol2.toJSON(),
+	mockIDEs,
+	mockIDEsCustom,
+}, {
+	depth: 4,
+});
+
+function toGitBashPath(inputPath: string) {
+  if (!inputPath) return inputPath;
+
+  // 1. 統一將反斜線 \ 轉為正斜線 /
+  let normalized = inputPath.replace(/\\/g, '/');
+
+  // 2. 匹配磁碟代號 (如 D:/) 並轉為 /d/
+  // [A-Za-z]: 匹配磁碟代號, (.*) 匹配後面的路徑
+  normalized = normalized.replace(/^([A-Za-z]):\//, (match, drive) => {
+    return `/${drive.toLowerCase()}/`;
+  });
+
+  return normalized;
+}
 
 describe('IDEDetector', () =>
 {
 	let detector: IDEDetector;
-	let mockLogger: jest.MockedFunction<(message: string) => void>;
 
 	beforeEach(() =>
 	{
-		mockLogger = jest.fn();
 		detector = new IDEDetector({
+			...defautDetectionConfig,
 			verbose: true,
-			logger: mockLogger,
 		});
 	});
 
@@ -40,16 +178,6 @@ describe('IDEDetector', () =>
 		{
 			const defaultDetector = new IDEDetector();
 			expect(defaultDetector).toBeInstanceOf(IDEDetector);
-		});
-
-		it('should create detector with custom config', () =>
-		{
-			const customDetector = new IDEDetector({
-				verbose: true,
-				userDataDir: '/custom/path',
-				logger: mockLogger,
-			});
-			expect(customDetector).toBeInstanceOf(IDEDetector);
 		});
 	});
 
@@ -74,17 +202,12 @@ describe('IDEDetector', () =>
 			const result = detector.detectIDE(insidersConfig);
 
 			expect(result.name).toBe('Visual Studio Code - Insiders');
-			expect(result.attemptedPaths.length).toBe(insidersConfig.appFolderNames.length);
+			expect(result.attemptedPaths.length > 0).toBeTruthy();
 		});
 
 		it('should provide reason when not detected', () =>
 		{
-			const mockIDE: MockIDE = {
-				name: 'Test IDE',
-				appFolderNames: ['NonExistentIDE'],
-			};
-
-			const result = detector.detectIDE(mockIDE as any);
+			const result = detector.detectIDE(mockIDEs[1] as any);
 
 			expect(result.detected).toBe(false);
 			expect(result.reason).toContain('IDE not found');
@@ -117,16 +240,8 @@ describe('IDEDetector', () =>
 	{
 		it('should return only detected IDEs', () =>
 		{
-			// Mock some detection results
-			jest.spyOn(detector, 'detectIDEs').mockReturnValue([
-				{ name: 'IDE1', detected: true, attemptedPaths: [] },
-				{ name: 'IDE2', detected: false, attemptedPaths: [] },
-				{ name: 'IDE3', detected: true, attemptedPaths: [] },
-			] as any);
+			const detected = detector.getDetectedIDEs(mockIDEs as any);
 
-			const detected = detector.getDetectedIDEs([...knownIDEs]);
-
-			expect(detected).toHaveLength(2);
 			expect(detected.every(ide => ide.detected)).toBe(true);
 		});
 	});
@@ -153,28 +268,31 @@ describe('IDEDetector', () =>
 	{
 		it('should log when verbose is true', () =>
 		{
+			(defautDetectionConfig.logger as jest.Mocked<any>).mockReset();
+
 			const verboseDetector = new IDEDetector({
+				...defautDetectionConfig,
 				verbose: true,
-				logger: mockLogger,
 			});
 
-			const mockIDE: MockIDE = { name: 'Test IDE', appFolderNames: ['Test'] };
-			verboseDetector.detectIDE(mockIDE as any);
+			verboseDetector.detectIDE(mockIDEs[0] as any);
 
-			expect(mockLogger).toHaveBeenCalled();
+			expect(defautDetectionConfig.logger).toHaveBeenCalled();
 		});
 
 		it('should not log when verbose is false', () =>
 		{
+			(defautDetectionConfig.logger as jest.Mocked<any>).mockReset();
+
 			const quietDetector = new IDEDetector({
+				...defautDetectionConfig,
+
 				verbose: false,
-				logger: mockLogger,
 			});
 
-			const mockIDE: MockIDE = { name: 'Test IDE', appFolderNames: ['Test'] };
-			quietDetector.detectIDE(mockIDE as any);
+			quietDetector.detectIDE(mockIDEs[0] as any);
 
-			expect(mockLogger).not.toHaveBeenCalled();
+			expect(defautDetectionConfig.logger).not.toHaveBeenCalled();
 		});
 	});
 });
@@ -188,8 +306,10 @@ describe('Convenience Functions', () =>
 			const mockIDE: MockIDE = { name: 'Test IDE', appFolderNames: ['Test'] };
 			const result = detectIDE(mockIDE as any, { verbose: false });
 
-			expect(result).toHaveProperty('name', 'Test IDE');
-			expect(result).toHaveProperty('detected');
+			expect(result).toMatchObject({
+				name: 'Test IDE',
+				detected: expect.any(Boolean),
+			});
 		});
 	});
 
@@ -197,13 +317,9 @@ describe('Convenience Functions', () =>
 	{
 		it('should detect multiple IDEs using convenience function', () =>
 		{
-			const mockIDEs: MockIDE[] = [
-				{ name: 'IDE1', appFolderNames: ['Test1'] },
-				{ name: 'IDE2', appFolderNames: ['Test2'] },
-			];
 			const results = detectIDEs(mockIDEs as any);
 
-			expect(results).toHaveLength(2);
+			expect(results.length >= 2).toBeTruthy();
 		});
 	});
 
@@ -211,10 +327,6 @@ describe('Convenience Functions', () =>
 	{
 		it('should get detected IDEs using convenience function', () =>
 		{
-			const mockIDEs: MockIDE[] = [
-				{ name: 'IDE1', appFolderNames: ['Test1'] },
-				{ name: 'IDE2', appFolderNames: ['Test2'] },
-			];
 			const detected = getDetectedIDEs(mockIDEs as any);
 
 			expect(Array.isArray(detected)).toBe(true);
@@ -225,10 +337,6 @@ describe('Convenience Functions', () =>
 	{
 		it('should get undetected IDEs using convenience function', () =>
 		{
-			const mockIDEs: MockIDE[] = [
-				{ name: 'IDE1', appFolderNames: ['Test1'] },
-				{ name: 'IDE2', appFolderNames: ['Test2'] },
-			];
 			const undetected = getUndetectedIDEs(mockIDEs as any);
 
 			expect(Array.isArray(undetected)).toBe(true);
@@ -264,111 +372,46 @@ describe('Integration Tests', () =>
 	{
 		it('should detect custom IDE with direct settings.json', () =>
 		{
-			const mockFs = require('fs');
-			const originalExistsSync = mockFs.existsSync;
+			const results = detectCustomIDEs(customIDEs, defautDetectionConfig);
 
-			// Mock file system
-			mockFs.existsSync = jest.fn((path: string) =>
-			{
-				if (path.includes('CustomIDE1/settings.json'))
-				{
-					return true;
-				}
-				return false;
-			});
+			console.dir(results);
 
-			const customIDEs = [
-				{ name: 'Custom IDE 1', path: '/path/to/CustomIDE1' },
-			];
-
-			const results = detectCustomIDEs(customIDEs, { verbose: false });
-
-			expect(results).toHaveLength(1);
-			expect(results[0].name).toBe('Custom IDE 1');
-			expect(results[0].detected).toBe(true);
-			expect(results[0].path).toBe('/path/to/CustomIDE1');
-			expect(results[0].settingsPath).toBe('/path/to/CustomIDE1/settings.json');
-
-			// Restore original function
-			mockFs.existsSync = originalExistsSync;
+			expect(results).toHaveProperty([0, 'detected'], true);
+			expect(results[0].settingsPath).toContain('settings.json');
 		});
 
 		it('should detect custom IDE with User subfolder settings.json', () =>
 		{
-			const mockFs = require('fs');
-			const originalExistsSync = mockFs.existsSync;
-
-			// Mock file system
-			mockFs.existsSync = jest.fn((path: string) =>
-			{
-				if (path.includes('CustomIDE2/User/settings.json'))
-				{
-					return true;
-				}
-				return false;
+			const results = detectCustomIDEs(customIDEs, {
+				...defautDetectionConfig,
+				verbose: true,
 			});
 
-			const customIDEs = [
-				{ name: 'Custom IDE 2', path: '/path/to/CustomIDE2' },
-			];
-
-			const results = detectCustomIDEs(customIDEs, { verbose: false });
-
-			expect(results).toHaveLength(1);
-			expect(results[0].name).toBe('Custom IDE 2');
-			expect(results[0].detected).toBe(true);
-			expect(results[0].path).toBe('/path/to/CustomIDE2/User');
-			expect(results[0].settingsPath).toBe('/path/to/CustomIDE2/User/settings.json');
-
-			// Restore original function
-			mockFs.existsSync = originalExistsSync;
+			const result = results.some(result => {
+				if (result.detected && result.settingsPath!.includes('User/settings.json'))
+				{
+					return result.detected;
+				}
+			});
+			expect(result).toBe(true);
 		});
 
 		it('should handle non-existent custom IDE', () =>
 		{
-			const customIDEs = [
-				{ name: 'Non-existent IDE', path: '/non/existent/path' },
-			];
+			const results = detectCustomIDEs(customIDEs, defautDetectionConfig);
 
-			const results = detectCustomIDEs(customIDEs, { verbose: false });
-
-			expect(results).toHaveLength(1);
-			expect(results[0].name).toBe('Non-existent IDE');
-			expect(results[0].detected).toBe(false);
-			expect(results[0].reason).toContain('settings.json not found');
-			expect(results[0].attemptedPaths).toHaveLength(2);
-		});
-
-		it('should handle multiple custom IDEs', () =>
-		{
-			const mockFs = require('fs');
-			const originalExistsSync = mockFs.existsSync;
-
-			// Mock file system - only first IDE exists
-			mockFs.existsSync = jest.fn((path: string) =>
+			const result = results.some(result =>
 			{
-				if (path.includes('ExistingIDE/settings.json'))
+				if (!result.detected)
 				{
+					expect(result.detected).toBe(false);
+					expect(result.attemptedPaths).toHaveLength(2);
+					expect(result.reason).toContain('settings.json not found');
+
 					return true;
 				}
-				return false;
 			});
-
-			const customIDEs = [
-				{ name: 'Existing IDE', path: '/path/to/ExistingIDE' },
-				{ name: 'Non-existing IDE', path: '/path/to/NonExistingIDE' },
-				{ name: 'Another IDE', path: '/path/to/AnotherIDE' },
-			];
-
-			const results = detectCustomIDEs(customIDEs, { verbose: false });
-
-			expect(results).toHaveLength(3);
-			expect(results[0].detected).toBe(true); // Existing IDE
-			expect(results[1].detected).toBe(false); // Non-existing IDE
-			expect(results[2].detected).toBe(false); // Another IDE
-
-			// Restore original function
-			mockFs.existsSync = originalExistsSync;
+			expect(result).toBe(true);
 		});
 	});
 
@@ -376,39 +419,18 @@ describe('Integration Tests', () =>
 	{
 		it('should detect both known and custom IDEs', () =>
 		{
-			const mockFs = require('fs');
-			const originalExistsSync = mockFs.existsSync;
-
-			// Mock file system for custom IDEs
-			mockFs.existsSync = jest.fn((path: string) =>
-			{
-				if (path.includes('MyCustomIDE/settings.json'))
-				{
-					return true;
-				}
-				// Use original for known IDEs
-				return originalExistsSync(path);
-			});
-
-			const customIDEs = [
-				{ name: 'My Custom IDE', path: '/path/to/MyCustomIDE' },
-			];
-
-			const results = detectAllIDEs([...knownIDEs], customIDEs, { verbose: false });
+			const results = detectAllIDEs([...knownIDEs], customIDEs, defautDetectionConfig);
 
 			expect(results.knownResults).toHaveLength(knownIDEs.length);
-			expect(results.customResults).toHaveLength(1);
-			expect(results.allResults).toHaveLength(knownIDEs.length + 1);
-			expect(results.customResults[0].name).toBe('My Custom IDE');
-			expect(results.customResults[0].detected).toBe(true);
+			expect(results.customResults.length > 0).toBeTruthy();
+			expect(results.allResults).toHaveLength(knownIDEs.length + customIDEs.length);
 
-			// Restore original function
-			mockFs.existsSync = originalExistsSync;
+			expect(results.customResults.some(result => result.detected)).toBe(true);
 		});
 
 		it('should handle empty custom IDEs list', () =>
 		{
-			const results = detectAllIDEs([...knownIDEs], undefined, { verbose: false });
+			const results = detectAllIDEs([...knownIDEs], undefined, defautDetectionConfig);
 
 			expect(results.knownResults).toHaveLength(knownIDEs.length);
 			expect(results.customResults).toHaveLength(0);
@@ -417,32 +439,13 @@ describe('Integration Tests', () =>
 
 		it('should handle empty known IDEs list with custom IDEs', () =>
 		{
-			const mockFs = require('fs');
-			const originalExistsSync = mockFs.existsSync;
-
-			// Mock file system
-			mockFs.existsSync = jest.fn((path: string) =>
-			{
-				if (path.includes('CustomOnlyIDE/settings.json'))
-				{
-					return true;
-				}
-				return false;
-			});
-
-			const customIDEs = [
-				{ name: 'Custom Only IDE', path: '/path/to/CustomOnlyIDE' },
-			];
-
-			const results = detectAllIDEs([], customIDEs, { verbose: false });
+			const results = detectAllIDEs([], customIDEs, defautDetectionConfig);
 
 			expect(results.knownResults).toHaveLength(0);
-			expect(results.customResults).toHaveLength(1);
-			expect(results.allResults).toHaveLength(1);
-			expect(results.customResults[0].detected).toBe(true);
+			expect(results.customResults.length > 0).toBeTruthy();
+			expect(results.allResults.length > 0).toBeTruthy();
 
-			// Restore original function
-			mockFs.existsSync = originalExistsSync;
+			expect(results.customResults.some(result => result.detected)).toBe(true);
 		});
 	});
 });

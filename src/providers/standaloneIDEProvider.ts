@@ -18,6 +18,7 @@ import {
 	getDetectedIDEs,
 	getUndetectedIDEs,
 } from '../utils/ideDetector';
+import { IPathType } from '@lazy-node/types-path';
 
 /**
  * IDE 資訊介面（獨立版本）
@@ -68,11 +69,7 @@ export interface ICustomIDEConfig
  */
 export interface IStandaloneProviderConfig extends IDetectionConfig
 {
-	/**
-	 * 自訂 IDE 列表
-	 * Custom IDE list
-	 */
-	customIDEs?: ICustomIDEConfig[];
+
 }
 
 /**

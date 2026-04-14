@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@lazy-node/types-path':
+        specifier: ^1.0.3
+        version: 1.0.3(ts-toolbelt@9.6.0)
       js-yaml:
         specifier: ^4.1.1
         version: 4.1.1
@@ -19,7 +22,7 @@ importers:
         version: 5.1.6
       path-is-same:
         specifier: ^1.0.26
-        version: 1.0.26
+        version: 1.0.26(ts-toolbelt@9.6.0)
       preact:
         specifier: ^10.28.4
         version: 10.28.4
@@ -29,6 +32,9 @@ importers:
       ts-type:
         specifier: ^3.0.1
         version: 3.0.1(ts-toolbelt@9.6.0)
+      upath2:
+        specifier: ^3.1.23
+        version: 3.1.23(ts-toolbelt@9.6.0)
     devDependencies:
       '@testing-library/preact':
         specifier: ^3.2.4
@@ -1994,9 +2000,6 @@ packages:
     resolution: {integrity: sha512-AVbw3UJ2e9bq64vSaS9Am0fje1Pa8pbGqTTsmXfaIiMpnr5DlDhfJOuLj9Sf95ZPVDAUerDfEk88MPmPe7UCQg==}
     engines: {node: '>=0.10.0'}
 
-  path-is-network-drive@1.0.21:
-    resolution: {integrity: sha512-B1PzE3CgxNKY0/69Urjw3KNi4K+4q4IBsvq02TwURsdNLZj2YUn0HGw2o26IrGV4YUffg7IHZiwKJ/EDhXMQyg==}
-
   path-is-network-drive@1.0.24:
     resolution: {integrity: sha512-sux7NWiMq/ul8EEQTQbdM1m/zr+Rrq11/P9tEBgxMgTnVHS8f54tQm0kfrTxkvPNg/OVkRjHNgSia5VxnawOZg==}
 
@@ -2013,9 +2016,6 @@ packages:
   path-scurry@1.11.1:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
     engines: {node: '>=16 || 14 >=14.18'}
-
-  path-strip-sep@1.0.18:
-    resolution: {integrity: sha512-IGC/vjHigvKV9RsE4ArZiGNkqNrb0tk1j/HO0TS49duEUqGSy1y464XhCWyTLFwqe7w7wFsdCX9fqUmAHoUaxA==}
 
   path-strip-sep@1.0.21:
     resolution: {integrity: sha512-V5Lvyhx0fE6/wEk/YseTtoRQIaD32cepnzrQ1b3kOzOxxDoSglry8IZ1b6LPObIeIbpC0+i9ygUsBNhkOttQKw==}
@@ -2502,9 +2502,6 @@ packages:
 
   unrs-resolver@1.11.1:
     resolution: {integrity: sha512-bSjt9pjaEBnNiGgc9rUiHGKv5l4/TGzDmYw3RhnkJGtLhbnnA/5qJj7x3dNDCRx/PJxu774LlH8lCOlB4hEfKg==}
-
-  upath2@3.1.20:
-    resolution: {integrity: sha512-g+t9q+MrIsX60eJzF4I/YNYmRmrT0HJnnEaenbUy/FFO1lY04YQoiJ/qS4Ou+a+D9WUPxN0cVUYXkkX9b1EAMw==}
 
   upath2@3.1.23:
     resolution: {integrity: sha512-HQ7CivlKonWnq7m7VZuZHIDXXUCHOoCoIqgVyCk/z/wsuB/agGwGFhFjGSTArGlvBddiejrW4ChW6SwEMhAURQ==}
@@ -3227,7 +3224,7 @@ snapshots:
   '@lazy-node/types-path@1.0.3(ts-toolbelt@9.6.0)':
     dependencies:
       '@types/node': 25.3.0
-      ts-type: 3.0.1(ts-toolbelt@9.6.0)
+      ts-type: 3.0.13(ts-toolbelt@9.6.0)
       tslib: 2.8.1
     transitivePeerDependencies:
       - ts-toolbelt
@@ -4782,18 +4779,16 @@ snapshots:
 
   path-is-absolute@1.0.1: {}
 
-  path-is-network-drive@1.0.21:
-    dependencies:
-      tslib: 2.8.1
-
   path-is-network-drive@1.0.24:
     dependencies:
       tslib: 2.8.1
 
-  path-is-same@1.0.26:
+  path-is-same@1.0.26(ts-toolbelt@9.6.0):
     dependencies:
       tslib: 2.8.1
-      upath2: 3.1.20
+      upath2: 3.1.23(ts-toolbelt@9.6.0)
+    transitivePeerDependencies:
+      - ts-toolbelt
 
   path-key@3.1.1: {}
 
@@ -4803,10 +4798,6 @@ snapshots:
     dependencies:
       lru-cache: 10.4.3
       minipass: 7.1.3
-
-  path-strip-sep@1.0.18:
-    dependencies:
-      tslib: 2.8.1
 
   path-strip-sep@1.0.21:
     dependencies:
@@ -5273,13 +5264,6 @@ snapshots:
       '@unrs/resolver-binding-win32-arm64-msvc': 1.11.1
       '@unrs/resolver-binding-win32-ia32-msvc': 1.11.1
       '@unrs/resolver-binding-win32-x64-msvc': 1.11.1
-
-  upath2@3.1.20:
-    dependencies:
-      '@types/node': 25.3.0
-      path-is-network-drive: 1.0.21
-      path-strip-sep: 1.0.18
-      tslib: 2.8.1
 
   upath2@3.1.23(ts-toolbelt@9.6.0):
     dependencies:
