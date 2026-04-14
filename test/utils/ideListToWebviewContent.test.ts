@@ -1,47 +1,43 @@
+/**
+ * 測試: IDE 清單轉換為 Webview 內容
+ * Test: IDE list to webview content
+ */
+
 import {
 	transformIDEListForWebview,
 	validateWebviewContent,
 	sanitizeForWebview,
 } from '../../src/utils/ideListToWebviewContent';
 import { IIDEInfo, EnumIDEInfoType } from '../../src/types';
-import { IdeSettingProvider } from '../../src/providers/ideSettingProvider';
 
-// Mock IdeSettingProvider
-jest.mock('../../src/providers/ideSettingProvider');
+// Default mock settings object
+const defaultMockSettings = {
+	valueOf: () => ({
+		'editor.fontFamily': 'Consolas, monospace',
+		'editor.fontSize': 14,
+		'editor.tabSize': 4,
+		'workbench.colorTheme': 'Dark+ (default dark)',
+		'terminal.integrated.shell.windows': 'C:\\Windows\\System32\\cmd.exe',
+		'editor.wordWrap': 'on',
+		'files.autoSave': 'afterDelay',
+		'git.enableSmartCommit': true,
+		'editor.rulers': [80, 120],
+		'editor.suggestSelection': 'first',
+	}),
+};
 
 describe('ideListToWebviewContent', () =>
 {
-	let mockSettingProvider: jest.Mocked<IdeSettingProvider>;
 	let mockIDEList: IIDEInfo[];
 
 	beforeEach(() =>
 	{
-		// Reset all mocks
-		jest.clearAllMocks();
-
-		// Create mock setting provider
-		mockSettingProvider = new IdeSettingProvider('test/path', 'test/native') as jest.Mocked<IdeSettingProvider>;
-
-		// Mock the load method to return a mock settings object
-		const mockSettings = {
-			valueOf: jest.fn().mockReturnValue({
-				'editor.fontFamily': 'Consolas, monospace',
-				'editor.fontSize': 14,
-				'editor.tabSize': 4,
-				'workbench.colorTheme': 'Dark+ (default dark)',
-				'terminal.integrated.shell.windows': 'C:\\Windows\\System32\\cmd.exe',
-				'editor.wordWrap': 'on',
-				'files.autoSave': 'afterDelay',
-				'git.enableSmartCommit': true,
-				'editor.rulers': [80, 120],
-				'editor.suggestSelection': 'first',
-			}),
+		// Create mock setting provider as plain object (no IdeSettingProvider)
+		const mockSettingProvider = {
+			load: () => defaultMockSettings,
 		};
 
-		// Mock the IdeSettingProvider's load method to return the mock settings
-		mockSettingProvider.load = jest.fn().mockReturnValue(mockSettings);
-
-		// Create mock IDE list
+		// Create mock IDE list using plain object
 		mockIDEList = [
 			{
 				name: 'Visual Studio Code',
@@ -113,7 +109,38 @@ describe('ideListToWebviewContent', () =>
 
 		it('should call load() on each IDE setting provider', () =>
 		{
-			transformIDEListForWebview(mockIDEList);
+			const mockSettingProvider = {
+				load: jest.fn().mockReturnValue(defaultMockSettings),
+			};
+
+			const testIDEList: IIDEInfo[] = [
+				{
+					uuid: 'test-1',
+					name: 'Test IDE 1',
+					type: EnumIDEInfoType.known,
+					available: true,
+					nativePath: '/path1',
+					settingProvider: mockSettingProvider as any,
+				},
+				{
+					uuid: 'test-2',
+					name: 'Test IDE 2',
+					type: EnumIDEInfoType.known,
+					available: true,
+					nativePath: '/path2',
+					settingProvider: mockSettingProvider as any,
+				},
+				{
+					uuid: 'test-3',
+					name: 'Test IDE 3',
+					type: EnumIDEInfoType.custom,
+					available: true,
+					nativePath: '/path3',
+					settingProvider: mockSettingProvider as any,
+				},
+			];
+
+			transformIDEListForWebview(testIDEList);
 
 			expect(mockSettingProvider.load).toHaveBeenCalledTimes(3);
 		});
@@ -404,11 +431,24 @@ describe('ideListToWebviewContent', () =>
 				'update.enableWindowsBackgroundUpdates': false,
 			};
 
-			mockSettingProvider.load = jest.fn().mockReturnValue({
-				valueOf: () => realSettings,
-			}) as any;
+			const mockSettingProvider = {
+				load: jest.fn().mockReturnValue({
+					valueOf: () => realSettings,
+				}),
+			};
 
-			const transformed = transformIDEListForWebview(mockIDEList);
+			const testIDEList: IIDEInfo[] = [
+				{
+					uuid: 'real-world',
+					name: 'Real World IDE',
+					type: EnumIDEInfoType.known,
+					available: true,
+					nativePath: '/real/path',
+					settingProvider: mockSettingProvider as any,
+				},
+			];
+
+			const transformed = transformIDEListForWebview(testIDEList);
 			const validation = validateWebviewContent(transformed);
 
 			expect(validation.isValid).toBe(true);
@@ -421,22 +461,28 @@ describe('ideListToWebviewContent', () =>
 
 		it('should handle problematic characters in IDE names and paths', () =>
 		{
+			const mockSettingProvider = {
+				load: jest.fn().mockReturnValue(defaultMockSettings),
+			};
+
 			const problematicIDEs: IIDEInfo[] = [
 				{
+					uuid: 'problem-1',
 					name: 'IDE with "quotes" & <brackets>',
 					type: EnumIDEInfoType.custom,
 					available: true,
 					nativePath: 'C:\\Path\\With "Quotes" & Brackets <test>',
-					settingProvider: mockSettingProvider,
+					settingProvider: mockSettingProvider as any,
 				},
 				{
+					uuid: 'problem-2',
 					name: "IDE with 'single quotes'",
 					type: EnumIDEInfoType.custom,
 					available: true,
 					nativePath: "D:\\Path\\With 'Single' Quotes",
-					settingProvider: mockSettingProvider,
+					settingProvider: mockSettingProvider as any,
 				},
-			] as any;
+			];
 
 			const transformed = transformIDEListForWebview(problematicIDEs);
 			const validation = validateWebviewContent(transformed);

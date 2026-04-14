@@ -3,6 +3,7 @@
 	"editor.renderWhitespace": "all",
 	"editor.fontSize": 14,
 	"editor.fontFamily": "Consolas",
+	"files.eol": "\n",
 	"terminal.integrated.commandsToSkipShell": [
 		"kilo-code.new.agentManagerOpen",
 		"kilo-code.new.agentManager.showTerminal"
@@ -24,5 +25,8 @@
 	"files.associations": {
 		"*.json5": "jsonc",
 		"*.jsonc": "jsonc"
-	}
+	},
+	"terminal.integrated.shell.windows": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+	"terminal.integrated.shell.osx": "/bin/zsh",
+	"terminal.integrated.shell.linux": "/bin/bash"
 }

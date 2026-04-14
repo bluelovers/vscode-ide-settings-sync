@@ -2,8 +2,8 @@
 
 exports[`ideListToWebviewContent Integration Tests should handle problematic characters in IDE names and paths 1`] = `
 {
-  "sanitized": "[{"name":"IDE with \\"quotes\\" \\u0026 \\u003cbrackets\\u003e","type":"custom","available":true,"nativePath":"C:\\\\Path\\\\With \\"Quotes\\" \\u0026 Brackets \\u003ctest\\u003e","settings":{"editor.fontFamily":"Consolas, monospace","editor.fontSize":14,"editor.tabSize":4,"workbench.colorTheme":"Dark+ (default dark)","terminal.integrated.shell.windows":"C:\\\\Windows\\\\System32\\\\cmd.exe","editor.wordWrap":"on","files.autoSave":"afterDelay","git.enableSmartCommit":true,"editor.rulers":[80,120],"editor.suggestSelection":"first"}},{"name":"IDE with \\u0027single quotes\\u0027","type":"custom","available":true,"nativePath":"D:\\\\Path\\\\With \\u0027Single\\u0027 Quotes","settings":{"editor.fontFamily":"Consolas, monospace","editor.fontSize":14,"editor.tabSize":4,"workbench.colorTheme":"Dark+ (default dark)","terminal.integrated.shell.windows":"C:\\\\Windows\\\\System32\\\\cmd.exe","editor.wordWrap":"on","files.autoSave":"afterDelay","git.enableSmartCommit":true,"editor.rulers":[80,120],"editor.suggestSelection":"first"}}]",
-  "stringify": "[{"name":"IDE with \\"quotes\\" & <brackets>","type":"custom","available":true,"nativePath":"C:\\\\Path\\\\With \\"Quotes\\" & Brackets <test>","settings":{"editor.fontFamily":"Consolas, monospace","editor.fontSize":14,"editor.tabSize":4,"workbench.colorTheme":"Dark+ (default dark)","terminal.integrated.shell.windows":"C:\\\\Windows\\\\System32\\\\cmd.exe","editor.wordWrap":"on","files.autoSave":"afterDelay","git.enableSmartCommit":true,"editor.rulers":[80,120],"editor.suggestSelection":"first"}},{"name":"IDE with 'single quotes'","type":"custom","available":true,"nativePath":"D:\\\\Path\\\\With 'Single' Quotes","settings":{"editor.fontFamily":"Consolas, monospace","editor.fontSize":14,"editor.tabSize":4,"workbench.colorTheme":"Dark+ (default dark)","terminal.integrated.shell.windows":"C:\\\\Windows\\\\System32\\\\cmd.exe","editor.wordWrap":"on","files.autoSave":"afterDelay","git.enableSmartCommit":true,"editor.rulers":[80,120],"editor.suggestSelection":"first"}}]",
+  "sanitized": "[{"uuid":"problem-1","name":"IDE with \\"quotes\\" \\u0026 \\u003cbrackets\\u003e","type":"custom","available":true,"nativePath":"C:\\\\Path\\\\With \\"Quotes\\" \\u0026 Brackets \\u003ctest\\u003e","settings":{"editor.fontFamily":"Consolas, monospace","editor.fontSize":14,"editor.tabSize":4,"workbench.colorTheme":"Dark+ (default dark)","terminal.integrated.shell.windows":"C:\\\\Windows\\\\System32\\\\cmd.exe","editor.wordWrap":"on","files.autoSave":"afterDelay","git.enableSmartCommit":true,"editor.rulers":[80,120],"editor.suggestSelection":"first"}},{"uuid":"problem-2","name":"IDE with \\u0027single quotes\\u0027","type":"custom","available":true,"nativePath":"D:\\\\Path\\\\With \\u0027Single\\u0027 Quotes","settings":{"editor.fontFamily":"Consolas, monospace","editor.fontSize":14,"editor.tabSize":4,"workbench.colorTheme":"Dark+ (default dark)","terminal.integrated.shell.windows":"C:\\\\Windows\\\\System32\\\\cmd.exe","editor.wordWrap":"on","files.autoSave":"afterDelay","git.enableSmartCommit":true,"editor.rulers":[80,120],"editor.suggestSelection":"first"}}]",
+  "stringify": "[{"uuid":"problem-1","name":"IDE with \\"quotes\\" & <brackets>","type":"custom","available":true,"nativePath":"C:\\\\Path\\\\With \\"Quotes\\" & Brackets <test>","settings":{"editor.fontFamily":"Consolas, monospace","editor.fontSize":14,"editor.tabSize":4,"workbench.colorTheme":"Dark+ (default dark)","terminal.integrated.shell.windows":"C:\\\\Windows\\\\System32\\\\cmd.exe","editor.wordWrap":"on","files.autoSave":"afterDelay","git.enableSmartCommit":true,"editor.rulers":[80,120],"editor.suggestSelection":"first"}},{"uuid":"problem-2","name":"IDE with 'single quotes'","type":"custom","available":true,"nativePath":"D:\\\\Path\\\\With 'Single' Quotes","settings":{"editor.fontFamily":"Consolas, monospace","editor.fontSize":14,"editor.tabSize":4,"workbench.colorTheme":"Dark+ (default dark)","terminal.integrated.shell.windows":"C:\\\\Windows\\\\System32\\\\cmd.exe","editor.wordWrap":"on","files.autoSave":"afterDelay","git.enableSmartCommit":true,"editor.rulers":[80,120],"editor.suggestSelection":"first"}}]",
   "transformed": [
     {
       "available": true,
@@ -25,6 +25,7 @@ exports[`ideListToWebviewContent Integration Tests should handle problematic cha
         "workbench.colorTheme": "Dark+ (default dark)",
       },
       "type": "custom",
+      "uuid": "problem-1",
     },
     {
       "available": true,
@@ -46,6 +47,7 @@ exports[`ideListToWebviewContent Integration Tests should handle problematic cha
         "workbench.colorTheme": "Dark+ (default dark)",
       },
       "type": "custom",
+      "uuid": "problem-2",
     },
   ],
   "validation": {

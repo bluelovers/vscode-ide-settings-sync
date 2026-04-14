@@ -6,8 +6,6 @@
  * Reusable test data and utilities
  */
 
-import { IdeSettingProvider } from '../../src/providers/ideSettingProvider';
-
 // ==================== 測試資料集 ====================
 
 export interface ISettingValueTestCase
@@ -43,6 +41,8 @@ export const settingValueTestGroups: ISettingValueTestGroup[] = [
 			{ title: 'string with braces: { }', key: ['braces'], expected: '{}' },
 			{ title: 'string with colon: :', key: ['key:value'], expected: 'http://example.com:8080' },
 			{ title: 'string with hyphen: -', key: ['hyphen'], expected: 'some-value-123' },
+			{ title: 'string with underscore: _', key: ['underscore'], expected: '__some_value_123__' },
+			{ title: 'string with files.eol', key: ['files.eol'], expected: '\n' },
 		],
 	},
 	{
@@ -134,104 +134,3 @@ export interface IIdeSettingProviderTestOptions
 	initialContent?: string;
 }
 
-/**
- * 建立測試用的 IdeSettingProvider
- * Create test IdeSettingProvider
- *
- * @param options - 測試選項
- * @returns 已載入的 IdeSettingProvider 實例
- */
-export function createTestProvider(options: IIdeSettingProviderTestOptions): IdeSettingProvider
-{
-	const { settingsJsonPath, settingsPath, initialContent = '{}' } = options;
-
-	// Mock fs existsSync
-	jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
-	// Mock fs readFileSync
-	jest.spyOn(require('fs'), 'readFileSync').mockReturnValue(initialContent);
-	// Mock fs writeFileSync
-	jest.spyOn(require('fs'), 'writeFileSync').mockImplementation(() => {});
-
-	const provider = new IdeSettingProvider(settingsJsonPath, settingsPath);
-	provider.load();
-
-	return provider;
-}
-
-/**
- * 測試設定值的同步（從 IDE A 到 IDE B）
- * Test setting value sync (from IDE A to IDE B)
- *
- * 這個測試模擬真實的同步場景：
- * 1. 從 IDE A 讀取設定值
- * 2. 同步到 IDE B
- * 3. 驗證 IDE B 的值是否與 IDE A 相同
- * 4. 檢查值是否有變化
- *
- * @param sourceProvider - 來源 IDE (IDE A)
- * @param targetProvider - 目標 IDE (IDE B)
- * @param testCase - 測試案例
- */
-export function testSettingSync(
-	sourceProvider: IdeSettingProvider,
-	targetProvider: IdeSettingProvider,
-	testCase: ISettingValueTestCase,
-): void
-{
-	// 步驟 1：從 IDE A 讀取設定值
-	const sourceValue = sourceProvider.get(testCase.key);
-
-	// 步驟 2：模擬同步過程 - 將值寫入 IDE B
-	// 這裡不應該直接用 set，而是模擬同步邏輯
-	targetProvider.set(testCase.key, sourceValue);
-
-	// 步驟 3：從 IDE B 讀取設定值
-	const targetValue = targetProvider.get(testCase.key);
-
-	// 步驟 4：驗證值是否正確同步（沒有變化）
-	expect(targetValue).toEqual(sourceValue);
-
-	// 步驟 5：驗證值是否與預期相同
-	expect(targetValue).toEqual(testCase.expected);
-}
-
-/**
- * 產生所有測試分組的 describe 區塊（同步測試）
- * Generate describe blocks for all test groups (sync test)
- *
- * @param sourceOptions - 來源 IDE 測試選項
- * @param targetOptions - 目標 IDE 測試選項
- * @param testFn - 測試函數
- */
-export function describeSettingValueTests(
-	sourceOptions: IIdeSettingProviderTestOptions,
-	targetOptions: IIdeSettingProviderTestOptions,
-	testFn: (
-		sourceProvider: IdeSettingProvider,
-		targetProvider: IdeSettingProvider,
-		testCase: ISettingValueTestCase,
-	) => void,
-): void
-{
-	for (const group of settingValueTestGroups)
-	{
-		describe(group.name, () =>
-		{
-			it.each(group.testCases)(
-				'should sync $title from IDE A to IDE B',
-				(testCase: ISettingValueTestCase) =>
-				{
-					// 建立來源 IDE (IDE A) 和目標 IDE (IDE B)
-					const sourceProvider = createTestProvider(sourceOptions);
-					const targetProvider = createTestProvider(targetOptions);
-
-					// 先在來源 IDE 設定值
-					sourceProvider.set(testCase.key, testCase.expected);
-
-					// 執行同步測試
-					testFn(sourceProvider, targetProvider, testCase);
-				},
-			);
-		});
-	}
-}

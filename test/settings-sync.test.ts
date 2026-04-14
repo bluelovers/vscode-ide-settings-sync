@@ -15,6 +15,7 @@ import { getVolumeFromFs } from 'memfs-extra';
 import { IdeSettingProvider } from '../src/providers/ideSettingProvider';
 import { _performSyncCore, _handleIDEListByIndexList } from '../src/utils/settingsSync';
 import { IDEProvider } from '../src/providers/ideProvider';
+import { settingValueTestGroups } from './fixtures/setting-value-types';
 
 // Mock fs module using Volume API
 // jest.mock('fs', () => require('memfs-extra/fs-extra'));
@@ -113,32 +114,34 @@ describe('Settings Sync Core', () =>
 	// ==================== _performSyncCore 測試 ====================
 	describe('_performSyncCore', () =>
 	{
-		test.each(testCases)(
-			'should sync $title from source to target',
-			async (testCase) =>
-			{
-				// 重新建立 providers
-				setupProviders('{}');
+		settingValueTestGroups.forEach((group) => {
+			describe(`${group.name} ${group.description}`, () => {
+				group.testCases.forEach((testCase) => {
+					test(`should sync ${testCase.title} from source to target`, async () => {
+						// 重新建立 providers
+						setupProviders('{}');
 
-				// 在 source IDE 中設置值
-				sourceProvider.set([testCase.key], testCase.expected);
+						// 在 source IDE 中設置值
+						sourceProvider.set(testCase.key, testCase.expected);
 
-				// 建立 mock IDEProvider
-				mockIdeProvider = createMockIdeProvider(0, [0, 1]);
+						// 建立 mock IDEProvider
+						mockIdeProvider = createMockIdeProvider(0, [0, 1]);
 
-				// 執行同步（使用 _performSyncCore）
-				await _performSyncCore(
-					mockIdeProvider,
-					0, // source index
-					[0, 1], // target indices
-					[testCase.key],
-				);
+						// 執行同步（使用 _performSyncCore）
+						await _performSyncCore(
+							mockIdeProvider,
+							0, // source index
+							[0, 1], // target indices
+							testCase.key,
+						);
 
-				// 驗證：target IDE 的值與 source IDE 相同
-				const result = targetProvider.get([testCase.key]);
-				expect(result).toEqual(testCase.expected);
-			},
-		);
+						// 驗證：target IDE 的值與 source IDE 相同
+						const result = targetProvider.get(testCase.key);
+						expect(result).toEqual(testCase.expected);
+					});
+				});
+			});
+		});
 
 		// ==================== 覆蓋同步測試 ====================
 		test('should overwrite existing value in target IDE', async () =>
