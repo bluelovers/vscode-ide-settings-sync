@@ -11,7 +11,7 @@
 
 import path from 'upath2';
 import { existsSync } from 'fs';
-import { IKnownIDE } from '../data/knownIDEs';
+import type { IKnownIDE } from '../data/knownIDEs';
 import { IPathType } from '@lazy-node/types-path';
 import { ITSPickExtra, ITSRequireAtLeastOne, ITSRequiredPick } from 'ts-type';
 

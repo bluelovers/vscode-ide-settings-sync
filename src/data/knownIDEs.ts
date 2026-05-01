@@ -40,6 +40,10 @@ export const knownIDEs = [
 		// Possible Windsurf folder name variations
 		appFolderNames: ['Windsurf'],
 	},
+	{
+	  name: 'kiro',
+	  appFolderNames: ['Kiro', 'kiro']
+	}
 ] as const;
 
 /**
