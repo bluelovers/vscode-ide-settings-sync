@@ -10,22 +10,21 @@
 
 import { vscode } from '../index';
 import { showMessage } from './messages';
+import { searchQuery, checkedSettingKeys } from '../store';
 
 /**
  * 從 `window.__INITIAL_STATE__` 恢復先前儲存的 UI 狀態
  * Restore previously saved UI state from `window.__INITIAL_STATE__`
  *
  * 恢復項目：
- * - 搜尋輸入框的文字
- * - 已勾選的 IDE 勾選框
- * - 已勾選的設定值勾選框
- * - 若搜尋框有值，自動觸發搜尋以立即顯示結果
+ * - 搜尋輸入框的文字（同步更新 searchQuery signal）
+ * - 已勾選的 IDE 勾選框（仍為 SSR 靜態 HTML，手動操作 DOM）
+ * - 已勾選的設定 key（更新 checkedSettingKeys signal，由 SettingItem 組件讀取）
  *
  * Restored items:
- * - Search input text
- * - Checked IDE checkboxes
- * - Checked setting checkboxes
- * - If search input has a value, automatically trigger search to immediately show results
+ * - Search input text (sync-updates searchQuery signal)
+ * - Checked IDE checkboxes (still SSR static HTML, manual DOM manipulation)
+ * - Checked setting keys (updates checkedSettingKeys signal, read by SettingItem components)
  */
 export function initializeMemory(): void
 {
@@ -38,21 +37,27 @@ export function initializeMemory(): void
 	const savedSelectedSettings: string[] = state.savedSelectedSettings ?? [];
 
 	/**
-	 * 恢復搜尋字串至輸入框
-	 * Restore search string to the input field
+	 * 恢復搜尋字串至輸入框，並更新 searchQuery signal
+	 * Restore search string to the input field and update searchQuery signal
+	 *
+	 * searchQuery signal 更新後，SearchResultsList 組件會自動重新渲染，
+	 * 不需要手動呼叫 searchSettings()。
+	 * After searchQuery signal updates, SearchResultsList component re-renders automatically,
+	 * no need to manually call searchSettings().
 	 */
 	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
 	if (searchInput && savedSearchHistory)
 	{
 		searchInput.value = savedSearchHistory;
+		searchQuery.value = savedSearchHistory;
 	}
 
 	/**
 	 * 恢復已勾選的 IDE 勾選框
 	 * Restore checked IDE checkboxes
 	 *
-	 * 使用 data-index 屬性定位對應的勾選框。
-	 * Uses the data-index attribute to locate the corresponding checkbox.
+	 * IDE 列表仍為 SSR 靜態 HTML，需手動操作 DOM。
+	 * The IDE list is still SSR static HTML, requiring manual DOM manipulation.
 	 */
 	savedSelectedIDEs.forEach(index =>
 	{
@@ -63,33 +68,22 @@ export function initializeMemory(): void
 	});
 
 	/**
-	 * 恢復已勾選的設定值勾選框
-	 * Restore checked setting checkboxes
+	 * 恢復已勾選的設定 key 至 checkedSettingKeys signal
+	 * Restore checked setting keys to checkedSettingKeys signal
 	 *
-	 * 設定 key 中的 `.` 替換為 `_` 以符合 HTML id 命名規則。
-	 * Dots in setting keys are replaced with `_` to comply with HTML id naming rules.
+	 * hydration 後 SettingItem 組件從 checkedSettingKeys signal 讀取初始勾選狀態，
+	 * 不需要手動操作 DOM checkbox。
+	 * After hydration, SettingItem components read initial checked state from checkedSettingKeys signal,
+	 * no need to manually manipulate DOM checkboxes.
+	 *
+	 * initStore() 已從 __INITIAL_STATE__.savedSelectedSettings 初始化此 signal，
+	 * 此處為防禦性確認，確保兩者一致。
+	 * initStore() already initializes this signal from __INITIAL_STATE__.savedSelectedSettings;
+	 * this is a defensive confirmation to ensure consistency.
 	 */
-	savedSelectedSettings.forEach(key =>
+	if (savedSelectedSettings.length > 0 && checkedSettingKeys.value.size === 0)
 	{
-		const settingId = 'setting-' + key.replace(/\./g, '_');
-		const checkbox = document.getElementById(settingId) as HTMLInputElement | null;
-		if (checkbox) checkbox.checked = true;
-	});
-
-	/**
-	 * 若搜尋框在初始化後已有值，自動觸發搜尋以立即顯示結果
-	 * If the search input has a value after initialization, automatically trigger search to immediately show results
-	 */
-	if (searchInput?.value?.trim())
-	{
-		try
-		{
-			(window as any).searchSettings?.();
-		}
-		catch (e)
-		{
-			console.error('searchSettings failed during initializeMemory:', e);
-		}
+		checkedSettingKeys.value = new Set(savedSelectedSettings);
 	}
 }
 
@@ -101,37 +95,23 @@ export function saveSearchHistory(): void
 {
 	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
 	const searchText = searchInput?.value ?? '';
-	/**
-	 * 同步更新 __INITIAL_STATE__ 確保本地狀態與 globalState 一致，
-	 * 避免頁面重載後恢復到舊的搜尋字串。
-	 * Sync-update __INITIAL_STATE__ to keep local state consistent with globalState,
-	 * preventing restoration to an old search string after page reload.
-	 */
 	const state = (window as any).__INITIAL_STATE__ ?? {};
 	state.savedSearchHistory = searchText;
 	vscode.postMessage({ command: 'saveSearchHistory', searchText });
 }
 
 /**
- * 將 `#searchResults` 中已勾選的設定儲存至 Extension host 的 globalState
- * Save the settings checked inside `#searchResults` to the Extension host's globalState
+ * 將 checkedSettingKeys signal 的當前值儲存至 Extension host 的 globalState
+ * Save the current value of checkedSettingKeys signal to the Extension host's globalState
  *
- * 僅收集搜尋結果區域的勾選框，不影響其他分頁的勾選狀態。
- * Only collects checkboxes in the search results area, does not affect checked state in other tabs.
+ * hydration 後 checkbox 狀態由 checkedSettingKeys signal 管理，
+ * 不再從 DOM 查詢 checkbox。
+ * After hydration, checkbox state is managed by checkedSettingKeys signal,
+ * no longer querying checkboxes from DOM.
  */
 export function saveSearchSelectedSettings(): void
 {
-	const selectedSettings: string[] = [];
-	document.querySelectorAll('#searchResults .setting-checkbox:checked').forEach(cb =>
-	{
-		selectedSettings.push((cb as HTMLInputElement).dataset.key ?? '');
-	});
-	/**
-	 * 同步更新 __INITIAL_STATE__ 讓 displaySelectedSettingsList() 能立即讀到最新值。
-	 * 若不更新，切換到 Selected 分頁時 getState() 仍回傳舊的空陣列。
-	 * Sync-update __INITIAL_STATE__ so displaySelectedSettingsList() can immediately read the latest value.
-	 * Without this update, getState() would still return the old empty array when switching to the Selected tab.
-	 */
+	const selectedSettings = Array.from(checkedSettingKeys.value);
 	const state = (window as any).__INITIAL_STATE__ ?? {};
 	state.savedSelectedSettings = selectedSettings;
 	vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings });
@@ -139,25 +119,17 @@ export function saveSearchSelectedSettings(): void
 }
 
 /**
- * 將 `#allSettings` 中已勾選的設定儲存至 Extension host 的 globalState
- * Save the settings checked inside `#allSettings` to the Extension host's globalState
+ * 將 checkedSettingKeys signal 的當前值儲存至 Extension host 的 globalState
+ * Save the current value of checkedSettingKeys signal to the Extension host's globalState
  *
- * 僅收集所有設定列表區域的勾選框，不影響其他分頁的勾選狀態。
- * Only collects checkboxes in the all settings list area, does not affect checked state in other tabs.
+ * saveSearchSelectedSettings 與 saveAllSelectedSettings 現在行為相同，
+ * 因為 checkedSettingKeys 是跨分頁的全域狀態。
+ * saveSearchSelectedSettings and saveAllSelectedSettings now behave identically,
+ * because checkedSettingKeys is global state shared across tabs.
  */
 export function saveAllSelectedSettings(): void
 {
-	const selectedSettings: string[] = [];
-	document.querySelectorAll('#allSettings .setting-checkbox:checked').forEach(cb =>
-	{
-		selectedSettings.push((cb as HTMLInputElement).dataset.key ?? '');
-	});
-	/**
-	 * 同步更新 __INITIAL_STATE__ 讓 displaySelectedSettingsList() 能立即讀到最新值。
-	 * 若不更新，切換到 Selected 分頁時 getState() 仍回傳舊的空陣列。
-	 * Sync-update __INITIAL_STATE__ so displaySelectedSettingsList() can immediately read the latest value.
-	 * Without this update, getState() would still return the old empty array when switching to the Selected tab.
-	 */
+	const selectedSettings = Array.from(checkedSettingKeys.value);
 	const state = (window as any).__INITIAL_STATE__ ?? {};
 	state.savedSelectedSettings = selectedSettings;
 	vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings });
@@ -176,12 +148,6 @@ export function saveSelectedIDEs(): void
 		const index = parseInt((cb as HTMLInputElement).dataset.index ?? '');
 		if (!isNaN(index)) selectedIDEs.push(index);
 	});
-	/**
-	 * 同步更新 __INITIAL_STATE__ 確保本地狀態與 globalState 一致，
-	 * 避免頁面重載後恢復到舊的 IDE 勾選狀態。
-	 * Sync-update __INITIAL_STATE__ to keep local state consistent with globalState,
-	 * preventing restoration to old IDE checked state after page reload.
-	 */
 	const state = (window as any).__INITIAL_STATE__ ?? {};
 	state.savedSelectedIDEs = selectedIDEs;
 	vscode.postMessage({ command: 'saveSelectedIDEs', selectedIDEs });

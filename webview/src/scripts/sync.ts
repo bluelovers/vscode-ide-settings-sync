@@ -10,24 +10,17 @@
 
 import { vscode } from '../index';
 import { showMessage } from './messages';
+import { checkedSettingKeys, sourceIDEUuid } from '../store';
 
 /**
  * 收集當前已勾選的 IDE 與設定，向 Extension host 發送 `syncSettings` 指令
  * Collect currently checked IDEs and settings, post a `syncSettings` command to the Extension host
- *
- * 前置條件：
- * - 至少需勾選 2 個 IDE（來源 + 至少 1 個目標）
- * - 至少需勾選 1 個設定 key
- *
- * Prerequisites:
- * - At least 2 IDEs must be checked (source + at least 1 target)
- * - At least 1 setting key must be checked
  */
 export function syncSettings(): void
 {
 	/**
-	 * 收集所有已勾選的 IDE 索引
-	 * Collect all checked IDE indices
+	 * 收集所有已勾選的 IDE 索引（IDE 列表仍為 SSR 靜態 HTML，從 DOM 讀取）
+	 * Collect all checked IDE indices (IDE list is still SSR static HTML, read from DOM)
 	 */
 	const selectedIDEs: number[] = [];
 	document.querySelectorAll('.ide-checkbox:checked').forEach(cb =>
@@ -37,29 +30,17 @@ export function syncSettings(): void
 	});
 
 	/**
-	 * 收集所有已勾選的設定 key
-	 * Collect all checked setting keys
+	 * 從 checkedSettingKeys signal 讀取已勾選的設定 key（單一來源，不依賴 DOM）
+	 * Read checked setting keys from checkedSettingKeys signal (single source of truth, no DOM dependency)
 	 */
-	const selectedSettings: string[] = [];
-	document.querySelectorAll('.setting-checkbox:checked').forEach(cb =>
-	{
-		selectedSettings.push((cb as HTMLInputElement).dataset.key ?? '');
-	});
+	const selectedSettings = Array.from(checkedSettingKeys.value);
 
-	/**
-	 * 驗證前置條件：至少需要 2 個 IDE
-	 * Validate prerequisite: at least 2 IDEs required
-	 */
 	if (selectedIDEs.length < 2)
 	{
 		showMessage('Please select at least 2 IDEs', 'error');
 		return;
 	}
 
-	/**
-	 * 驗證前置條件：至少需要 1 個設定
-	 * Validate prerequisite: at least 1 setting required
-	 */
 	if (selectedSettings.length === 0)
 	{
 		showMessage('Please select at least one setting to sync', 'error');
@@ -67,11 +48,25 @@ export function syncSettings(): void
 	}
 
 	/**
-	 * 取得來源 IDE 的索引，從目標列表中排除來源 IDE
-	 * Get the source IDE index, exclude the source IDE from the target list
+	 * 從 sourceIDEUuid signal 讀取來源 IDE UUID，再從 DOM 找對應的 index
+	 * Read source IDE UUID from signal, then find the corresponding index from DOM
 	 */
-	const sourceRadio = document.querySelector('.ide-source-radio:checked') as HTMLInputElement | null;
+	const uuid = sourceIDEUuid.value;
+	const sourceRadio = document.querySelector<HTMLInputElement>(`.ide-source-radio[value="${uuid}"]`);
 	const sourceIndex = sourceRadio?.dataset.index;
+
+	/**
+	 * 在發送 sync 指令前，先將 checkedSettingKeys 持久化至 globalState。
+	 * Extension host 在 syncComplete 後會整頁重繪（updateWebview），
+	 * 重繪後 Preact hydration 狀態全部重置，但 globalState 中的 savedSelectedSettings
+	 * 會被注入至 __INITIAL_STATE__，由 initStore() 恢復至 checkedSettingKeys signal。
+	 *
+	 * Before sending the sync command, persist checkedSettingKeys to globalState.
+	 * The Extension host performs a full page redraw (updateWebview) after syncComplete,
+	 * which resets all Preact hydration state. However, savedSelectedSettings in globalState
+	 * is injected into __INITIAL_STATE__ and restored to checkedSettingKeys signal by initStore().
+	 */
+	vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings });
 
 	vscode.postMessage({
 		command: 'syncSettings',
@@ -84,20 +79,12 @@ export function syncSettings(): void
 /**
  * 收集當前已勾選的 IDE 與設定，在使用者確認後向 Extension host 發送 `deleteSettings` 指令
  * Collect currently checked IDEs and settings, post a `deleteSettings` command to the Extension host after user confirmation
- *
- * 前置條件：
- * - 至少需勾選 1 個 IDE
- * - 至少需勾選 1 個設定 key
- *
- * Prerequisites:
- * - At least 1 IDE must be checked
- * - At least 1 setting key must be checked
  */
 export function deleteSettings(): void
 {
 	/**
-	 * 收集所有已勾選的 IDE 索引
-	 * Collect all checked IDE indices
+	 * 收集所有已勾選的 IDE 索引（IDE 列表仍為 SSR 靜態 HTML，從 DOM 讀取）
+	 * Collect all checked IDE indices (IDE list is still SSR static HTML, read from DOM)
 	 */
 	const selectedIDEs: number[] = [];
 	document.querySelectorAll('.ide-checkbox:checked').forEach(cb =>
@@ -107,39 +94,23 @@ export function deleteSettings(): void
 	});
 
 	/**
-	 * 收集所有已勾選的設定 key
-	 * Collect all checked setting keys
+	 * 從 checkedSettingKeys signal 讀取已勾選的設定 key（單一來源，不依賴 DOM）
+	 * Read checked setting keys from checkedSettingKeys signal (single source of truth, no DOM dependency)
 	 */
-	const selectedSettings: string[] = [];
-	document.querySelectorAll('.setting-checkbox:checked').forEach(cb =>
-	{
-		selectedSettings.push((cb as HTMLInputElement).dataset.key ?? '');
-	});
+	const selectedSettings = Array.from(checkedSettingKeys.value);
 
-	/**
-	 * 驗證前置條件：至少需要 1 個 IDE
-	 * Validate prerequisite: at least 1 IDE required
-	 */
 	if (selectedIDEs.length === 0)
 	{
 		showMessage('Please select at least one IDE', 'error');
 		return;
 	}
 
-	/**
-	 * 驗證前置條件：至少需要 1 個設定
-	 * Validate prerequisite: at least 1 setting required
-	 */
 	if (selectedSettings.length === 0)
 	{
 		showMessage('Please select at least one setting to delete', 'error');
 		return;
 	}
 
-	/**
-	 * 刪除為不可逆操作，需要使用者明確確認
-	 * Delete is an irreversible operation, requires explicit user confirmation
-	 */
 	if (confirm(`Delete ${selectedSettings.length} setting(s) from ${selectedIDEs.length} IDE(s)?`))
 	{
 		vscode.postMessage({

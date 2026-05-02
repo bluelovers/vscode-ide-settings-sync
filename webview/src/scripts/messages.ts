@@ -68,26 +68,23 @@ export function initMessageHandler(): void
 			case 'syncComplete':
 				showMessage('Settings synced successfully!', 'success');
 				/**
-				 * 同步完成後請求 Extension host 重新載入設定資料並重繪 Webview
-				 * After sync completes, request Extension host to reload settings data and redraw Webview
+				 * 同步完成後請求 Extension host 回傳最新的 IDE 設定資料。
+				 * 收到 dataRefreshed 回應後更新 ideList signal，
+				 * Preact 組件自動重新渲染，不需要整頁重繪。
+				 *
+				 * After sync completes, request the Extension host to return the latest IDE settings data.
+				 * When dataRefreshed response is received, update the ideList signal;
+				 * Preact components re-render automatically without a full page reload.
 				 */
 				vscode.postMessage({ command: 'refreshData' });
 				break;
 
 			case 'deleteComplete':
 				showMessage('Settings deleted successfully!', 'success');
-				/**
-				 * 刪除完成後請求 Extension host 重新載入設定資料並重繪 Webview
-				 * After delete completes, request Extension host to reload settings data and redraw Webview
-				 */
 				vscode.postMessage({ command: 'refreshData' });
 				break;
 
 			case 'addCustomIDEComplete':
-				/**
-				 * 根據 message.success 決定顯示成功或失敗訊息
-				 * Show success or failure message based on message.success
-				 */
 				if (message.success)
 				{
 					showMessage(`✓ Custom IDE "${message.name}" added successfully!`, 'success');
@@ -98,8 +95,10 @@ export function initMessageHandler(): void
 				}
 				break;
 
-			/** exportPathSelected, importPathSelected, exportComplete, importComplete 由 export-import.ts 處理 */
-			/** exportPathSelected, importPathSelected, exportComplete, importComplete are handled in export-import.ts */
+			/**
+			 * exportPathSelected, importPathSelected, exportComplete, importComplete 由 export-import.ts 處理
+			 * exportPathSelected, importPathSelected, exportComplete, importComplete are handled in export-import.ts
+			 */
 		}
 	});
 }

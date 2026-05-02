@@ -75,9 +75,6 @@ import {
 	saveSelectedIDEs,
 } from './scripts/memory';
 import {
-	searchSettings,
-	displayAllSettings,
-	displaySelectedSettingsList,
 	createSettingHTML,
 	getSettingDescription,
 	clearSearch,
@@ -105,7 +102,10 @@ import {
 	initExportImportMessageHandler,
 } from './scripts/export-import';
 import { effect } from '@preact/signals';
-import { initStore, sourceIDEUuid, sourceIDEName } from './store';
+import { hydrate } from 'preact';
+import { initStore, sourceIDEUuid, sourceIDEName, searchQuery } from './store';
+import { SearchResultsList, AllSettingsList, SelectedSettingsList } from './components/settings/SettingList';
+import { SourceIdeIndicator } from './components/ide/SourceIdeIndicator';
 
 /** ─── 掛載所有函數至 window / Mount all functions to window ─── */
 
@@ -142,12 +142,12 @@ Object.assign(window, {
 	/** 儲存已勾選的 IDE 索引 / Save checked IDE indices */
 	saveSelectedIDEs,
 
-	/** 依搜尋字串過濾並顯示設定 / Filter and display settings by search string */
-	searchSettings,
-	/** 顯示所有 IDE 的設定值 / Display all IDE setting values */
-	displayAllSettings,
-	/** 顯示已儲存的選取設定列表 / Display saved selected settings list */
-	displaySelectedSettingsList,
+	/** 依搜尋字串過濾並顯示設定（由 SearchResultsList 組件取代）/ Filter and display settings — replaced by SearchResultsList component */
+	// searchSettings: removed, handled by Preact component
+	/** 顯示所有 IDE 的設定值（由 AllSettingsList 組件取代）/ Display all IDE settings — replaced by AllSettingsList component */
+	// displayAllSettings: removed, handled by Preact component
+	/** 顯示已儲存的選取設定列表（由 SelectedSettingsList 組件取代）/ Display selected settings — replaced by SelectedSettingsList component */
+	// displaySelectedSettingsList: removed, handled by Preact component
 	/** 產生單一設定列的 HTML 字串 / Generate HTML string for a single setting row */
 	createSettingHTML,
 	/** 查找設定 key 的多語言描述 / Look up multilingual description for a setting key */
@@ -242,118 +242,97 @@ function initialize(): void
 	initStore();
 
 	/**
-	 * 註冊 sourceIDEUuid signal 的 effect：
-	 * 當來源 IDE 切換時，統一處理所有相關 DOM 更新。
+	 * ─── Preact Hydration ───
 	 *
-	 * Register effect for sourceIDEUuid signal:
-	 * When the source IDE changes, handle all related DOM updates centrally.
+	 * 將 SSR 靜態 HTML 的關鍵容器接管為 Preact 管理的 virtual DOM 樹。
+	 * hydrate() 複用現有 DOM 節點（不重建），避免首次渲染閃爍，
+	 * 並讓 @preact/signals 的自動更新機制生效。
 	 *
-	 * ─── 為什麼需要手動操作 DOM？/ Why manual DOM manipulation is necessary ───
+	 * Take over key containers from SSR static HTML into Preact-managed virtual DOM trees.
+	 * hydrate() reuses existing DOM nodes (no rebuild), avoiding first-render flicker,
+	 * and enables @preact/signals automatic update mechanism.
 	 *
-	 * `SourceIdeIndicator`、`.ide-item` 等元素是由 Extension host 透過
-	 * `preact-render-to-string` 做 SSR 產生的靜態 HTML 字串，
-	 * 在瀏覽器端沒有對應的 Preact 組件實例，也沒有 virtual DOM。
+	 * hydration 後，這些容器內的 signal 變化會自動觸發 Preact 重新渲染，
+	 * 不再需要手動 DOM 操作或 effect() 橋接。
 	 *
-	 * `SourceIdeIndicator` and `.ide-item` elements are static HTML strings
-	 * generated server-side by the Extension host via `preact-render-to-string`.
-	 * There are no corresponding Preact component instances or virtual DOM on the client side.
+	 * After hydration, signal changes within these containers automatically trigger
+	 * Preact re-renders, eliminating the need for manual DOM operations or effect() bridging.
+	 */
+
+	/**
+	 * Hydrate SourceIdeIndicator：
+	 * 接管後 sourceIDEUuid / sourceIDEName signal 改變時自動更新名稱與 UUID 文字。
 	 *
-	 * `@preact/signals` 的自動 DOM 更新（signal 直接作為 JSX 屬性）只在
-	 * Preact 管理的 virtual DOM 樹中有效。沒有 hydration，signal 改變時
-	 * Preact 無從得知哪個 DOM 節點需要更新，因此必須透過 effect() 手動橋接。
+	 * Hydrate SourceIdeIndicator:
+	 * After hydration, sourceIDEUuid / sourceIDEName signal changes automatically update
+	 * the name and UUID text.
+	 */
+	const sourceIndicatorEl = document.querySelector<HTMLElement>('.source-ide-indicator');
+	if (sourceIndicatorEl)
+	{
+		hydrate(<SourceIdeIndicator />, sourceIndicatorEl);
+	}
+
+	/**
+	 * Hydrate 搜尋結果列表（#searchResults）：
+	 * 接管後 searchQuery / ideList / sourceIDEUuid / checkedSettingKeys signal 改變時自動重新渲染。
+	 * checkbox 狀態由 checkedSettingKeys signal 管理，刷新後不會消失。
 	 *
-	 * The automatic DOM updates of `@preact/signals` (signals used directly as JSX props)
-	 * only work within a Preact-managed virtual DOM tree. Without hydration, Preact has
-	 * no knowledge of which DOM nodes to update when a signal changes, so we must
-	 * bridge the gap manually via effect().
+	 * Hydrate search results list (#searchResults):
+	 * After hydration, searchQuery / ideList / sourceIDEUuid / checkedSettingKeys signal changes
+	 * trigger automatic re-renders. Checkbox state is managed by checkedSettingKeys signal
+	 * and persists across refreshes.
+	 */
+	const searchResultsEl = document.getElementById('searchResults');
+	if (searchResultsEl)
+	{
+		hydrate(<SearchResultsList />, searchResultsEl);
+	}
+
+	/**
+	 * Hydrate 所有設定列表（#allSettings）：
+	 * 接管後 ideList / sourceIDEUuid / checkedSettingKeys signal 改變時自動重新渲染。
 	 *
-	 * 若未來引入 Preact client-side render（hydration），可將這些 DOM 操作
-	 * 移回組件內，讓 signal 直接驅動 JSX 重新渲染，消除手動橋接的需要。
+	 * Hydrate all settings list (#allSettings):
+	 * After hydration, ideList / sourceIDEUuid / checkedSettingKeys signal changes
+	 * trigger automatic re-renders.
+	 */
+	const allSettingsEl = document.getElementById('allSettings');
+	if (allSettingsEl)
+	{
+		hydrate(<AllSettingsList />, allSettingsEl);
+	}
+
+	/**
+	 * Hydrate 已選設定列表（#selectedSettingsList）：
+	 * 接管後 checkedSettingKeys / ideList signal 改變時自動重新渲染。
 	 *
-	 * If Preact client-side render (hydration) is introduced in the future,
-	 * these DOM operations can be moved back into components, letting signals
-	 * drive JSX re-renders directly and eliminating the need for manual bridging.
+	 * Hydrate selected settings list (#selectedSettingsList):
+	 * After hydration, checkedSettingKeys / ideList signal changes trigger automatic re-renders.
+	 */
+	const selectedSettingsEl = document.getElementById('selectedSettingsList');
+	if (selectedSettingsEl)
+	{
+		hydrate(<SelectedSettingsList />, selectedSettingsEl);
+	}
+
+	/**
+	 * .ide-item 的 source-ide class 切換仍需 effect()，
+	 * 因為 IDE 列表（.ide-list）尚未 hydrate，仍是 SSR 靜態 HTML。
+	 * 這是唯一保留的手動 DOM 操作。
 	 *
-	 * effect() 會在 signal 值改變時自動執行，不需要手動呼叫。
-	 * effect() runs automatically whenever the signal value changes.
+	 * .ide-item source-ide class toggling still requires effect(),
+	 * because the IDE list (.ide-list) is not yet hydrated and remains SSR static HTML.
+	 * This is the only remaining manual DOM operation.
 	 */
 	effect(() =>
 	{
 		const uuid = sourceIDEUuid.value;
-		/*
-		 * sourceIDEName 是 computed，讀取它會建立對 sourceIDEUuid 的間接依賴，
-		 * 但 effect 已直接依賴 sourceIDEUuid，所以這裡只是取值。
-		 * sourceIDEName is computed; reading it here just gets the derived value
-		 * since the effect already depends on sourceIDEUuid directly.
-		 */
-		const name = sourceIDEName.value;
-
-		/**
-		 * 1. 更新 SourceIdeIndicator 的名稱與 UUID
-		 *
-		 * SourceIdeIndicator 是 SSR 靜態 HTML，沒有 Preact 組件實例，
-		 * signal 改變不會自動觸發它重新渲染，必須手動更新對應的 DOM 節點。
-		 * 名稱（.source-name-text）與 UUID（.source-uuid）分開放在獨立 span，
-		 * 確保更新其中一個時不會覆蓋另一個的內容。
-		 *
-		 * 1. Update SourceIdeIndicator name and UUID
-		 *
-		 * SourceIdeIndicator is SSR static HTML with no Preact component instance;
-		 * signal changes do not trigger automatic re-renders, so we must update
-		 * the corresponding DOM nodes manually. Name (.source-name-text) and UUID
-		 * (.source-uuid) are in separate spans so updating one does not overwrite the other.
-		 */
-		document.querySelectorAll('.source-ide-indicator .source-name-text').forEach(el =>
-		{
-			(el as HTMLElement).textContent = name;
-		});
-		document.querySelectorAll('.source-ide-indicator .source-uuid').forEach(el =>
-		{
-			(el as HTMLElement).textContent = uuid;
-		});
-
-		/**
-		 * 2. 切換各 IDE 項目的 source-ide class
-		 *
-		 * 同上，.ide-item 是 SSR 靜態 HTML，需手動切換 class。
-		 *
-		 * 2. Toggle source-ide class on each IDE item
-		 *
-		 * Same reason — .ide-item is SSR static HTML, class must be toggled manually.
-		 */
 		document.querySelectorAll('.ide-item').forEach(item =>
 		{
 			const checkbox = item.querySelector<HTMLInputElement>('.ide-checkbox');
 			item.classList.toggle('source-ide', checkbox?.dataset.uuid === uuid);
 		});
-
-		/**
-		 * 3. 重新渲染當前可見分頁的設定列表
-		 *
-		 * 設定列表（searchSettings / displayAllSettings）是動態產生的 innerHTML，
-		 * 需要重新執行才能反映新的 sourceUuid（標記哪個 IDE 是來源）。
-		 * 僅重新渲染當前可見分頁，避免不必要的 DOM 操作。
-		 *
-		 * 3. Re-render the settings list for the currently visible tab
-		 *
-		 * The settings list (searchSettings / displayAllSettings) is dynamically generated
-		 * innerHTML that must be re-executed to reflect the new sourceUuid (marking which
-		 * IDE is the source). Only the currently visible tab is re-rendered to avoid
-		 * unnecessary DOM operations.
-		 */
-		const syncTab = document.getElementById('sync');
-		if (syncTab?.classList.contains('active'))
-		{
-			try { searchSettings(); }
-			catch (e) { console.error('searchSettings failed in sourceIDEUuid effect:', e); }
-		}
-
-		const valuesTab = document.getElementById('values');
-		if (valuesTab?.classList.contains('active'))
-		{
-			try { displayAllSettings(); }
-			catch (e) { console.error('displayAllSettings failed in sourceIDEUuid effect:', e); }
-		}
 	});
 
 	/**
@@ -363,11 +342,20 @@ function initialize(): void
 	initializeMemory();
 
 	/**
-	 * 為搜尋輸入框綁定 input 事件，即時儲存搜尋字串至 globalState
-	 * Bind input event to search input for real-time saving of search string to globalState
+	 * 為搜尋輸入框綁定 input 事件：
+	 * 1. 更新 searchQuery signal，驅動 SearchResultsList 自動重新渲染
+	 * 2. 儲存搜尋字串至 globalState（持久化）
+	 *
+	 * Bind input event to search input:
+	 * 1. Update searchQuery signal to drive SearchResultsList automatic re-render
+	 * 2. Save search string to globalState (persistence)
 	 */
 	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
-	searchInput?.addEventListener('input', saveSearchHistory);
+	searchInput?.addEventListener('input', (e) =>
+	{
+		searchQuery.value = (e.target as HTMLInputElement).value;
+		saveSearchHistory();
+	});
 
 	/**
 	 * 為所有 IDE 勾選框綁定 change 事件，自動儲存勾選狀態至 globalState
