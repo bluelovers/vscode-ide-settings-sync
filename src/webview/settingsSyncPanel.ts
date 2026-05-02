@@ -31,8 +31,10 @@ export class SettingsSyncPanel
 	{
 		this.context = context;
 		this.ideProvider = ideProvider;
-		// 使用工具函數取得預設語言配置，避免重複
-		// Use utility to get default language config to avoid duplication
+		/**
+		 * 使用工具函數取得預設語言配置，避免重複
+		 * Use utility to get default language config to avoid duplication
+		 */
 		this.languageConfig = languageConfig || getDefaultLanguageConfig();
 		this.currentLanguage = this.languageConfig.primary;
 
@@ -46,19 +48,21 @@ export class SettingsSyncPanel
 			{
 				enableScripts: true,
 				retainContextWhenHidden: true,
-				// 必須明確授權 Webview 存取 dist 資料夾
+				/** 必須明確授權 Webview 存取 dist 資料夾 */
 				localResourceRoots: [distUri],
 			},
 		);
 
 		this.panel.iconPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'icon.svg');
 
-		// 嘗試從檔案快取載入來源 IDE UUID
-		// Try to load source IDE UUID from file cache
+		/**
+		 * 嘗試從檔案快取載入來源 IDE UUID
+		 * Try to load source IDE UUID from file cache
+		 */
 		const cachedData = loadIDECache(context.extensionPath);
 		if (cachedData?.sourceIDEUuid)
 		{
-			// 如果 globalState 中沒有來源 IDE，則使用檔案快取中的值
+			/** 如果 globalState 中沒有來源 IDE，則使用檔案快取中的值 */
 			const globalSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid);
 			if (!globalSourceIDEUuid)
 			{
@@ -100,8 +104,10 @@ export class SettingsSyncPanel
 			await this.ideProvider.refreshIDEList();
 		}
 
-		// 儲存 IDE 列表到檔案快取
-		// Save IDE list to file cache
+		/**
+		 * 儲存 IDE 列表到檔案快取
+		 * Save IDE list to file cache
+		 */
 		const ideList = this.ideProvider.getIDEList();
 		const savedSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid) || '';
 		saveIDECache(this.context.extensionPath, ideList, savedSourceIDEUuid);
@@ -169,13 +175,13 @@ export class SettingsSyncPanel
 		const currentIDEName = vscode.env.appName;
 		const currentIDEUuid = ideList.find(ide => ide.name === currentIDEName)?.uuid;
 
-		// 👇 從 globalState 中獲取已保存的值
+		/** 👇 從 globalState 中獲取已保存的值 */
 		const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
 		const savedSelectedSettings = this.context.globalState.get<string[]>(EnumGlobalStateName.selectedSettings) || [];
 		const savedSelectedIDEs = this.context.globalState.get<number[]>(EnumGlobalStateName.selectedIDEs) || [];
 		const savedSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid) || '';
 
-		// 解析 webview script URI
+		/** 解析 webview script URI */
 		const scriptUri = this.panel.webview.asWebviewUri(
 			vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'webview', 'index.js'),
 		);
@@ -242,8 +248,10 @@ export class SettingsSyncPanel
 			{
 				switch (message.command)
 				{
-					/** 彈出 VS Code 輸入框，讓使用者輸入自訂 IDE 路徑與名稱
-					 *  Show VS Code input boxes for custom IDE path and name */
+					/**
+					 * 彈出 VS Code 輸入框，讓使用者輸入自訂 IDE 路徑與名稱
+					 *  Show VS Code input boxes for custom IDE path and name
+					 */
 					case WebviewCommand.RequestAddCustomIDE: {
 						const path = await vscode.window.showInputBox({
 							prompt: 'Enter the path to the IDE settings folder (containing settings.json)',
@@ -268,8 +276,10 @@ export class SettingsSyncPanel
 						break;
 					}
 
-					/** 直接新增自訂 IDE（含路徑與名稱，不彈出輸入框）
-					 *  Add custom IDE directly with path and name (no input box) */
+					/**
+					 * 直接新增自訂 IDE（含路徑與名稱，不彈出輸入框）
+					 *  Add custom IDE directly with path and name (no input box)
+					 */
 					case WebviewCommand.AddCustomIDE:
 						try
 						{
@@ -283,8 +293,10 @@ export class SettingsSyncPanel
 						}
 						break;
 
-					/** 移除指定的自訂 IDE 項目（需使用者確認）
-					 *  Remove the specified custom IDE entry (requires user confirmation) */
+					/**
+					 * 移除指定的自訂 IDE 項目（需使用者確認）
+					 *  Remove the specified custom IDE entry (requires user confirmation)
+					 */
 					case WebviewCommand.RemoveCustomIDE: {
 						const confirmRemove = await vscode.window.showWarningMessage(
 							`Remove custom IDE "${message.name}"?`,
@@ -300,16 +312,20 @@ export class SettingsSyncPanel
 						break;
 					}
 
-					/** 在 VS Code 編輯器中開啟指定 IDE 的 settings.json
-					 *  Open the specified IDE's settings.json in the VS Code editor */
+					/**
+					 * 在 VS Code 編輯器中開啟指定 IDE 的 settings.json
+					 *  Open the specified IDE's settings.json in the VS Code editor
+					 */
 					case WebviewCommand.OpenSettingsJson:
 						await this.openSettingsJsonFile(message.idePath, message.ideName);
 						break;
 
-					/** 將來源 IDE 的已選設定同步至目標 IDE 列表
+					/**
+					 * 將來源 IDE 的已選設定同步至目標 IDE 列表
 					 *  Sync selected settings from the source IDE to the target IDE list
 					 *  完成後使用 pushDataRefresh 推送最新資料（不整頁重繪）
-					 *  Uses pushDataRefresh after completion (no full page redraw) */
+					 *  Uses pushDataRefresh after completion (no full page redraw)
+					 */
 					case WebviewCommand.SyncSettings:
 						await this.performSync(
 							message.sourceIDE !== undefined ? parseInt(message.sourceIDE) : NaN,
@@ -320,30 +336,38 @@ export class SettingsSyncPanel
 						await this.pushDataRefresh();
 						break;
 
-					/** 從指定 IDE 列表中刪除已選設定
+					/**
+					 * 從指定 IDE 列表中刪除已選設定
 					 *  Delete selected settings from the specified IDE list
 					 *  完成後使用 pushDataRefresh 推送最新資料（不整頁重繪）
-					 *  Uses pushDataRefresh after completion (no full page redraw) */
+					 *  Uses pushDataRefresh after completion (no full page redraw)
+					 */
 					case WebviewCommand.DeleteSettings:
 						await this.performDelete(message.ideIndices, message.settings);
 						this.postToWebview({ command: HostCommand.DeleteComplete });
 						await this.pushDataRefresh();
 						break;
 
-					/** 重新掃描系統中的 IDE 安裝（IDE 列表結構可能改變，觸發整頁重繪）
-					 *  Re-scan IDE installations (IDE list structure may change, triggers full redraw) */
+					/**
+					 * 重新掃描系統中的 IDE 安裝（IDE 列表結構可能改變，觸發整頁重繪）
+					 *  Re-scan IDE installations (IDE list structure may change, triggers full redraw)
+					 */
 					case WebviewCommand.RefreshIDEs:
 						await this.updateWebview(true);
 						break;
 
-					/** 重新讀取各 IDE 的設定值（IDE 列表結構不變，使用 pushDataRefresh 推送更新）
-					 *  Reload setting values for each IDE (structure unchanged, uses pushDataRefresh) */
+					/**
+					 * 重新讀取各 IDE 的設定值（IDE 列表結構不變，使用 pushDataRefresh 推送更新）
+					 *  Reload setting values for each IDE (structure unchanged, uses pushDataRefresh)
+					 */
 					case WebviewCommand.RefreshData:
 						await this.pushDataRefresh();
 						break;
 
-					/** 變更 Webview 的主顯示語言
-					 *  Change the primary display language of the Webview */
+					/**
+					 * 變更 Webview 的主顯示語言
+					 *  Change the primary display language of the Webview
+					 */
 					case WebviewCommand.ChangePrimaryLanguage:
 						if (message.language)
 						{
@@ -352,14 +376,18 @@ export class SettingsSyncPanel
 						}
 						break;
 
-					/** 透過 VS Code 指令開啟語言設定面板
-					 *  Open the language configuration panel via VS Code command */
+					/**
+					 * 透過 VS Code 指令開啟語言設定面板
+					 *  Open the language configuration panel via VS Code command
+					 */
 					case WebviewCommand.OpenLanguageConfig:
 						vscode.commands.executeCommand('vscode-ide-settings-sync.configLanguage');
 						break;
 
-					/** 在系統檔案總管中開啟指定的 IDE 資料夾
-					 *  Reveal the specified IDE folder in the OS file explorer */
+					/**
+					 * 在系統檔案總管中開啟指定的 IDE 資料夾
+					 *  Reveal the specified IDE folder in the OS file explorer
+					 */
 					case WebviewCommand.OpenIDEFolder:
 						if (message.path)
 						{
@@ -367,32 +395,42 @@ export class SettingsSyncPanel
 						}
 						break;
 
-					/** 將搜尋輸入框的當前值儲存至 globalState
-					 *  Save the current search input value to globalState */
+					/**
+					 * 將搜尋輸入框的當前值儲存至 globalState
+					 *  Save the current search input value to globalState
+					 */
 					case WebviewCommand.SaveSearchHistory:
 						this.context.globalState.update(EnumGlobalStateName.searchHistory, message.searchText);
 						break;
 
-					/** 將已勾選的設定 key 列表儲存至 globalState
-					 *  Save the list of checked setting keys to globalState */
+					/**
+					 * 將已勾選的設定 key 列表儲存至 globalState
+					 *  Save the list of checked setting keys to globalState
+					 */
 					case WebviewCommand.SaveSelectedSettings:
 						this.context.globalState.update(EnumGlobalStateName.selectedSettings, message.selectedSettings);
 						break;
 
-					/** 將已勾選的 IDE 索引列表儲存至 globalState
-					 *  Save the list of checked IDE indices to globalState */
+					/**
+					 * 將已勾選的 IDE 索引列表儲存至 globalState
+					 *  Save the list of checked IDE indices to globalState
+					 */
 					case WebviewCommand.SaveSelectedIDEs:
 						this.context.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
 						break;
 
-					/** 選取來源 IDE 並將其 UUID 持久化至 globalState
-					 *  Select the source IDE and persist its UUID to globalState */
+					/**
+					 * 選取來源 IDE 並將其 UUID 持久化至 globalState
+					 *  Select the source IDE and persist its UUID to globalState
+					 */
 					case WebviewCommand.SelectSourceIDE:
 						this.context.globalState.update(EnumGlobalStateName.sourceIDEUuid, message.uuid);
 						break;
 
-					/** 開啟資料夾選擇對話框以選取匯出路徑，回傳所選路徑
-					 *  Open folder selection dialog for export path; return selected path */
+					/**
+					 * 開啟資料夾選擇對話框以選取匯出路徑，回傳所選路徑
+					 *  Open folder selection dialog for export path; return selected path
+					 */
 					case WebviewCommand.BrowseExportPath: {
 						const exportPath = await vscode.window.showOpenDialog({
 							canSelectFiles: false,
@@ -408,8 +446,10 @@ export class SettingsSyncPanel
 						break;
 					}
 
-					/** 開啟檔案選擇對話框以選取匯入檔案，回傳所選路徑
-					 *  Open file selection dialog for import file; return selected path */
+					/**
+					 * 開啟檔案選擇對話框以選取匯入檔案，回傳所選路徑
+					 *  Open file selection dialog for import file; return selected path
+					 */
 					case WebviewCommand.BrowseImportPath: {
 						const importPath = await vscode.window.showOpenDialog({
 							canSelectFiles: true,
@@ -426,8 +466,10 @@ export class SettingsSyncPanel
 						break;
 					}
 
-					/** 匯出自訂 IDE 設定至 JSON 檔案
-					 *  Export custom IDE configurations to a JSON file */
+					/**
+					 * 匯出自訂 IDE 設定至 JSON 檔案
+					 *  Export custom IDE configurations to a JSON file
+					 */
 					case WebviewCommand.ExportCustomIDEs:
 						try
 						{
@@ -440,8 +482,10 @@ export class SettingsSyncPanel
 						}
 						break;
 
-					/** 匯出使用者已選取的設定 key 列表至 JSON 檔案
-					 *  Export the user's selected setting key list to a JSON file */
+					/**
+					 * 匯出使用者已選取的設定 key 列表至 JSON 檔案
+					 *  Export the user's selected setting key list to a JSON file
+					 */
 					case WebviewCommand.ExportSelectedSettings:
 						try
 						{
@@ -454,8 +498,10 @@ export class SettingsSyncPanel
 						}
 						break;
 
-					/** 匯出所有設定（自訂 IDE + 已選設定）至 JSON 檔案
-					 *  Export all settings (custom IDEs + selected settings) to a JSON file */
+					/**
+					 * 匯出所有設定（自訂 IDE + 已選設定）至 JSON 檔案
+					 *  Export all settings (custom IDEs + selected settings) to a JSON file
+					 */
 					case WebviewCommand.ExportAll:
 						try
 						{
@@ -468,8 +514,10 @@ export class SettingsSyncPanel
 						}
 						break;
 
-					/** 從指定的 JSON 檔案匯入設定
-					 *  Import settings from the specified JSON file */
+					/**
+					 * 從指定的 JSON 檔案匯入設定
+					 *  Import settings from the specified JSON file
+					 */
 					case WebviewCommand.Import:
 						try
 						{
@@ -531,8 +579,10 @@ export class SettingsSyncPanel
 
 	async syncSelectedSettings(): Promise<void>
 	{
-		// This would be called by the extension when user clicks sync
-		// The actual sync is handled by the WebView message handler
+		/**
+		 * This would be called by the extension when user clicks sync
+		 * The actual sync is handled by the WebView message handler
+		 */
 	}
 
 	/**
@@ -544,10 +594,12 @@ export class SettingsSyncPanel
 	{
 		try
 		{
-			const path = require('path');
-			const fs = require('fs');
+			const path = require('path') as typeof import('path');
+			const fs = require('fs') as typeof import('fs');
 
-			// Try multiple possible settings.json paths
+			/**
+			 * Try multiple possible settings.json paths
+			 */
 			const possiblePaths = [
 				path.join(idePath, 'settings.json'),
 				path.join(idePath, 'User', 'settings.json'),
@@ -572,7 +624,7 @@ export class SettingsSyncPanel
 				return;
 			}
 
-			// Open the settings.json file in VS Code editor
+			/** Open the settings.json file in VS Code editor */
 			const document = await vscode.workspace.openTextDocument(settingsPath);
 			await vscode.window.showTextDocument(document);
 		}
