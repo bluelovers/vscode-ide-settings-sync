@@ -12,6 +12,7 @@
  */
 
 import { checkedSettingKeys, sourceIDEUuid } from '../../store';
+import { IWebviewWindow } from '../../types';
 
 /** ─── 型別定義 / Type definitions ─── */
 
@@ -178,7 +179,7 @@ export function SettingItem({
 
 	function handleRemove()
 	{
-		(window as any).removeFromSelectedSettings?.(settingKey);
+		(window as any as IWebviewWindow).removeFromSelectedSettings?.(settingKey);
 	}
 
 	return (

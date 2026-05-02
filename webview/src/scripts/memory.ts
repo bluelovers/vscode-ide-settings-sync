@@ -7,10 +7,11 @@ import { vscode } from '../index';
 import { showMessage } from './messages';
 import { searchQuery, checkedSettingKeys } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
+import { IWebviewWindow } from '../types';
 
 export function initializeMemory(): void
 {
-	const state = (window as any).__INITIAL_STATE__ ?? {};
+	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 	const savedSearchHistory: string = state.savedSearchHistory ?? '';
 	const savedSelectedIDEs: number[] = state.savedSelectedIDEs ?? [];
 	const savedSelectedSettings: string[] = state.savedSelectedSettings ?? [];
@@ -40,7 +41,7 @@ export function saveSearchHistory(): void
 {
 	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
 	const searchText = searchInput?.value ?? '';
-	const state = (window as any).__INITIAL_STATE__ ?? {};
+	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 	state.savedSearchHistory = searchText;
 	vscode.postMessage({ command: EnumWebviewCommand.SaveSearchHistory, searchText });
 }
@@ -48,7 +49,7 @@ export function saveSearchHistory(): void
 export function saveSearchSelectedSettings(): void
 {
 	const selectedSettings = Array.from(checkedSettingKeys.value);
-	const state = (window as any).__INITIAL_STATE__ ?? {};
+	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 	state.savedSelectedSettings = selectedSettings;
 	vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings });
 	showMessage('✓ Search settings saved', 'success');
@@ -57,7 +58,7 @@ export function saveSearchSelectedSettings(): void
 export function saveAllSelectedSettings(): void
 {
 	const selectedSettings = Array.from(checkedSettingKeys.value);
-	const state = (window as any).__INITIAL_STATE__ ?? {};
+	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 	state.savedSelectedSettings = selectedSettings;
 	vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings });
 	showMessage('✓ All settings saved', 'success');
@@ -71,7 +72,7 @@ export function saveSelectedIDEs(): void
 		const index = parseInt((cb as HTMLInputElement).dataset.index ?? '');
 		if (!isNaN(index)) selectedIDEs.push(index);
 	});
-	const state = (window as any).__INITIAL_STATE__ ?? {};
+	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 	state.savedSelectedIDEs = selectedIDEs;
 	vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedIDEs, selectedIDEs });
 }

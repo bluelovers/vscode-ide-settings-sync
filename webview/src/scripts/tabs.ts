@@ -11,6 +11,8 @@
  * accessed via `window` to avoid circular dependency.
  */
 
+import { IWebviewWindow } from '../types';
+
 /**
  * 分頁名稱至其對應 `.tab` 按鈕零基索引的對照表
  * Map from tab name to its zero-based index among `.tab` buttons
@@ -84,7 +86,7 @@ export function switchTab(tabName: string): void
 	{
 		try
 		{
-			(window as any).displayAllSettings?.();
+			(window as any as IWebviewWindow).displayAllSettings?.();
 		}
 		catch (e)
 		{
@@ -95,7 +97,7 @@ export function switchTab(tabName: string): void
 	{
 		try
 		{
-			(window as any).displaySelectedSettingsList?.();
+			(window as any as IWebviewWindow).displaySelectedSettingsList?.();
 		}
 		catch (e)
 		{

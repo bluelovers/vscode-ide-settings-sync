@@ -12,6 +12,7 @@ import { vscode } from '../index';
 import { showMessage } from './messages';
 import { sourceIDEUuid } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
+import { IWebviewState, IWebviewWindow } from '../types';
 
 /**
  * 取得注入的初始狀態物件的便捷存取器
@@ -20,9 +21,9 @@ import { EnumWebviewCommand } from '../webviewMessages';
  * 使用 `?? {}` fallback 確保在狀態尚未注入時不會拋出例外。
  * Uses `?? {}` fallback to ensure no exception is thrown when state has not yet been injected.
  */
-function getState(): any
+function getState(): IWebviewState
 {
-	return (window as any).__INITIAL_STATE__ ?? {};
+	return (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 }
 
 /** ─── 描述查找輔助函數 / Description lookup helpers ─── */
@@ -165,7 +166,7 @@ export function displayAllSettings(): void
 	if (!allSettingsDiv) return;
 	allSettingsDiv.innerHTML = '';
 
-	const ideList: any[] = getState().ideList ?? [];
+	const ideList: IWebviewState["ideList"] = getState().ideList ?? [];
 
 	/**
 	 * 步驟 1：收集所有 IDE 中出現過的唯一設定 key
@@ -236,7 +237,7 @@ export function searchSettings(): void
 
 	if (query.length === 0) return;
 
-	const ideList: any[] = getState().ideList ?? [];
+	const ideList: IWebviewState["ideList"] = getState().ideList ?? [];
 
 	/**
 	 * 步驟 1：收集所有 key 包含搜尋字串的唯一設定 key
@@ -316,7 +317,7 @@ export function displaySelectedSettingsList(): void
 
 	const state = getState();
 	const savedSelectedSettings: string[] = state.savedSelectedSettings ?? [];
-	const ideList: any[] = state.ideList ?? [];
+	const ideList: IWebviewState["ideList"] = state.ideList ?? [];
 	const currentIDEName: string = state.currentIDEName ?? '';
 
 	/**
@@ -409,7 +410,7 @@ export function clearSearch(): void
 	 * 儲存清空後的搜尋字串，確保 globalState 與 UI 同步
 	 * Save the cleared search string to ensure globalState is in sync with the UI
 	 */
-	(window as any).saveSearchHistory?.();
+	(window as any as IWebviewWindow).saveSearchHistory?.();
 }
 
 /**
@@ -431,7 +432,7 @@ export function removeFromSelectedSettings(key: string): void
 	{
 		savedSelectedSettings.splice(index, 1);
 		vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings: savedSelectedSettings });
-		(window as any).displaySelectedSettingsList?.();
+		(window as any as IWebviewWindow).displaySelectedSettingsList?.();
 		showMessage(`✓ Removed "${key}" from selected settings`, 'success');
 	}
 }
@@ -451,7 +452,7 @@ export function clearAllSelectedSettings(): void
 		 */
 		state.savedSelectedSettings = [];
 		vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings: [] });
-		(window as any).displaySelectedSettingsList?.();
+		(window as any as IWebviewWindow).displaySelectedSettingsList?.();
 		showMessage('✓ All selected settings cleared', 'success');
 	}
 }

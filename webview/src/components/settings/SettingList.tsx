@@ -18,7 +18,7 @@
 
 import { ideList, searchQuery, checkedSettingKeys, sourceIDEUuid } from '../../store';
 import { SettingItem, ISettingValueEntry } from './SettingItem';
-import { IIDEInfoWebview } from '../../types';
+import { IIDEInfoWebview, IWebviewWindow } from '../../types';
 
 /** ─── 輔助函數 / Helper functions ─── */
 
@@ -29,7 +29,7 @@ import { IIDEInfoWebview } from '../../types';
 function getDescriptionHtml(key: string): string
 {
 	const descriptions: Record<string, { primary: string; secondary?: string }> =
-		(window as any).__INITIAL_STATE__?.settingDescriptions ?? {};
+		(window as any as IWebviewWindow).__INITIAL_STATE__?.settingDescriptions ?? {};
 	const desc = descriptions[key];
 	if (!desc) return 'No description available';
 	if (desc.secondary)
@@ -99,7 +99,7 @@ export function SearchResultsList()
 {
 	const query = searchQuery.value.toLowerCase();
 	const ides = ideList.value;
-	const currentIDEName: string = (window as any).__INITIAL_STATE__?.currentIDEName ?? '';
+	const currentIDEName: string = (window as any as IWebviewWindow).__INITIAL_STATE__?.currentIDEName ?? '';
 
 	if (query.length === 0)
 	{
@@ -150,7 +150,7 @@ export function SearchResultsList()
 export function AllSettingsList()
 {
 	const ides = ideList.value;
-	const currentIDEName: string = (window as any).__INITIAL_STATE__?.currentIDEName ?? '';
+	const currentIDEName: string = (window as any as IWebviewWindow).__INITIAL_STATE__?.currentIDEName ?? '';
 
 	/**
 	 * 收集所有 IDE 中出現過的唯一設定 key
@@ -192,7 +192,7 @@ export function SelectedSettingsList()
 {
 	const checked = checkedSettingKeys.value;
 	const ides = ideList.value;
-	const currentIDEName: string = (window as any).__INITIAL_STATE__?.currentIDEName ?? '';
+	const currentIDEName: string = (window as any as IWebviewWindow).__INITIAL_STATE__?.currentIDEName ?? '';
 
 	if (checked.size === 0)
 	{

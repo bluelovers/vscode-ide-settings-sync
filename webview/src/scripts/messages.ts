@@ -13,9 +13,10 @@
  * are handled by `export-import.ts`.
  */
 
+import { IWebviewWindow } from '../types';
 import { vscode } from '../index';
 import { ideList } from '../store';
-import { EnumHostCommand } from '../webviewMessages';
+import { EnumHostCommand, IHostMessage, IWebviewWindowMessageEvent } from '../webviewMessages';
 
 /**
  * 在 `#message` 元素中顯示狀態訊息
@@ -61,9 +62,9 @@ export function showMessage(text: string, type: 'success' | 'error' | 'info'): v
  */
 export function initMessageHandler(): void
 {
-	window.addEventListener('message', (event: MessageEvent) =>
+	window.addEventListener('message', (event: IWebviewWindowMessageEvent) =>
 	{
-		const message = event.data;
+		const message = event.data as IHostMessage;
 
 		switch (message.command)
 		{
@@ -90,7 +91,7 @@ export function initMessageHandler(): void
 				if (message.ideList)
 				{
 					ideList.value = message.ideList;
-					const state = (window as any).__INITIAL_STATE__ ?? {};
+					const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 					state.ideList = message.ideList;
 				}
 				break;

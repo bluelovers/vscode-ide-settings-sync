@@ -8,6 +8,10 @@
  * ensuring the Webview bundle can run independently in the browser sandbox.
  */
 
+import { IIDEInfo } from '../../src/types';
+import { saveSearchHistory } from './scripts/memory';
+import { displayAllSettings, displaySelectedSettingsList, removeFromSelectedSettings, searchSettings } from './scripts/settings';
+
 /** ─── 語言相關型別 / Language-related types ─── */
 
 /**
@@ -41,18 +45,10 @@ export interface ILanguageConfig
  * 精簡版的 IDE 資訊，用於傳遞給前端組件，不含 VS Code 相依。
  * Simplified IDE information for passing to frontend components, without VS Code dependency.
  */
-export interface IIDEInfoWebview
+export interface IIDEInfoWebview extends Omit<IIDEInfo, 'settingProvider'>
 {
-	/** IDE 唯一識別符 / IDE unique identifier */
-	uuid: string;
-	/** IDE 顯示名稱 / IDE display name */
-	name: string;
-	/** IDE 類型（已知內建或使用者自訂）/ IDE type (known built-in or user-defined custom) */
-	type: string;
-	/** IDE 設定資料夾的實際路徑 / Actual path to the IDE settings folder */
-	nativePath: string;
 	/** IDE 的所有設定鍵值對 / All setting key-value pairs of the IDE */
-	settings?: Record<string, any>;
+	settings: Record<string, any>;
 }
 
 /**
@@ -88,7 +84,7 @@ export interface IUnavailableIDEInfoWebview
  * injected into the Webview via `window.__INITIAL_STATE__`,
  * allowing the frontend bundle to access all necessary initial data on load.
  */
-export interface IWebviewInitialState
+export interface IWebviewState
 {
 	/** 可用的 IDE 列表（含各 IDE 的設定鍵值對）/ List of available IDEs (including each IDE's setting key-value pairs) */
 	ideList: IIDEInfoWebview[];
@@ -116,6 +112,9 @@ export interface IWebviewInitialState
 	 * avoiding repeated language lookup logic on the Webview side.
 	 */
 	settingDescriptions: Record<string, { primary: string; secondary?: string }>;
+
+	/** 來源 IDE UUID / Source IDE UUID */
+	sourceIDEUuid: string;
 }
 
 /** ─── 匯出/匯入相關型別 / Export/Import related types ─── */
@@ -145,4 +144,18 @@ export interface IImportResult
 	errors: string[];
 	/** 警告訊息列表 / List of warning messages */
 	warnings: string[];
+}
+
+/**
+ * Webview 窗口接口，用于 TypeScript 类型安全
+ * Webview window interface for TypeScript type safety
+ */
+export type IWebviewWindow = Window & typeof globalThis & {
+	__INITIAL_STATE__: IWebviewState;
+
+	displayAllSettings: typeof displayAllSettings;
+	searchSettings: typeof searchSettings;
+	removeFromSelectedSettings: typeof removeFromSelectedSettings;
+	displaySelectedSettingsList: typeof displaySelectedSettingsList;
+	saveSearchHistory: typeof saveSearchHistory;
 }

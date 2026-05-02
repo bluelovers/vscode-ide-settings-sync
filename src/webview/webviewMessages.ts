@@ -640,3 +640,12 @@ export type IHostMessage =
 	| IMsg_ImportPathSelected
 	| IMsg_ExportComplete
 	| IMsg_ImportComplete;
+
+/**
+ * Message event interface for TypeScript type safety
+ */
+export interface IWebviewWindowMessageEvent
+{
+	data: IHostMessage;
+}
+

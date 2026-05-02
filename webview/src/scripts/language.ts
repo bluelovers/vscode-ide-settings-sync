@@ -3,6 +3,7 @@
  * Language configuration module
  */
 
+import { IWebviewWindow } from '../types';
 import { vscode } from '../index';
 import { EnumWebviewCommand } from '../webviewMessages';
 
@@ -17,11 +18,11 @@ export function changePrimaryLanguage(): void
 	const activeTab = document.querySelector('.tab.active');
 	if (activeTab?.textContent?.includes('All'))
 	{
-		(window as any).displayAllSettings?.();
+		(window as any as IWebviewWindow).displayAllSettings?.();
 	}
 	else
 	{
-		(window as any).searchSettings?.();
+		(window as any as IWebviewWindow).searchSettings?.();
 	}
 }
 

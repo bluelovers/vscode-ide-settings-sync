@@ -28,7 +28,7 @@ const mockIDEList: IIDEInfo[] = [
 				})
 			})
 		} as any,
-	},
+	} as any,
 	{
 		name: 'Visual Studio Code - Insiders',
 		type: EnumIDEInfoType.known,
@@ -45,7 +45,7 @@ const mockIDEList: IIDEInfo[] = [
 				})
 			})
 		} as any,
-	},
+	} as any,
 ];
 
 function demonstrateWebviewContent() {
@@ -65,7 +65,7 @@ function demonstrateWebviewContent() {
 		console.log('   ✗ Content validation failed:');
 		validation.errors.forEach(error => console.log(`     - ${error}`));
 	}
-	
+
 	if (validation.warnings.length > 0) {
 		console.log('   ⚠ Warnings:');
 		validation.warnings.forEach(warning => console.log(`     - ${warning}`));
@@ -110,14 +110,18 @@ function testPreactJSXCompatibility() {
 	// Simulate embedding in a Preact JSX template
 	const jsxTemplate = `
 <script>
-  // This is how it would be used in the actual webview
+  /**
+	 * This is how it would be used in the actual webview
+	 *
+	 * @type {IWebviewState["ideList"]}
+	 */
   let ideList = ${sanitized};
-  
+
   // Test accessing the data
   console.log('Available IDEs:', ideList.length);
   console.log('First IDE name:', ideList[0].name);
   console.log('First IDE settings:', Object.keys(ideList[0].settings));
-  
+
   // Test that settings are accessible
   const firstIDESettings = ideList[0].settings;
   console.log('Font family:', firstIDESettings['editor.fontFamily']);

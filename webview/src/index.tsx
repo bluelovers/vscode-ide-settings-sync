@@ -31,11 +31,11 @@
  */
 declare function acquireVsCodeApi(): {
 	/** 向 Extension host 發送訊息（跨進程通訊）/ Send a message to the Extension host (cross-process communication) */
-	postMessage(message: any): void;
+	postMessage(message: IWebviewMessage): void;
 	/** 讀取 Webview 的持久化狀態（頁面重載後仍保留）/ Read the Webview's persisted state (retained after page reload) */
-	getState(): any;
+	getState(): IWebviewState;
 	/** 寫入 Webview 的持久化狀態 / Write the Webview's persisted state */
-	setState(state: any): void;
+	setState(state: IWebviewState): void;
 };
 
 /**
@@ -106,6 +106,8 @@ import { hydrate } from 'preact';
 import { initStore, sourceIDEUuid, sourceIDEName, searchQuery } from './store';
 import { SearchResultsList, AllSettingsList, SelectedSettingsList } from './components/settings/SettingList';
 import { SourceIdeIndicator } from './components/ide/SourceIdeIndicator';
+import { IWebviewMessage } from './webviewMessages';
+import { IWebviewState } from './types';
 
 /** ─── 掛載所有函數至 window / Mount all functions to window ─── */
 

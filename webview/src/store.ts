@@ -13,7 +13,7 @@
  */
 
 import { signal, computed } from '@preact/signals';
-import { IWebviewInitialState, IIDEInfoWebview } from './types';
+import { IWebviewState, IIDEInfoWebview, IWebviewWindow } from './types';
 
 /** ─── 來源 IDE 狀態 / Source IDE state ─── */
 
@@ -93,7 +93,7 @@ export const checkedSettingKeys = signal<Set<string>>(new Set());
  */
 export function initStore(): void
 {
-	const state: Partial<IWebviewInitialState> = (window as any).__INITIAL_STATE__ ?? {};
+	const state: Partial<IWebviewState> = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 
 	/**
 	 * 初始化 IDE 列表
@@ -110,7 +110,7 @@ export function initStore(): void
 	 * fall back to the currently checked radio in the DOM
 	 */
 	const initialSourceUuid =
-		(state as any).sourceIDEUuid ??
+		state.sourceIDEUuid ??
 		document.querySelector<HTMLInputElement>('.ide-source-radio:checked')?.value ??
 		'';
 	sourceIDEUuid.value = initialSourceUuid;

@@ -1,6 +1,7 @@
 import { IIDEInfo } from '../types';
 import { IdeSettingProvider } from '../providers/ideSettingProvider';
 import { IRemoveCustomIDEParams } from '../webview/components/types';
+import { IIDEInfoWebview } from '../../webview/src/types';
 
 /**
  * Transforms IDE list for webview content by loading settings data
@@ -18,9 +19,7 @@ import { IRemoveCustomIDEParams } from '../webview/components/types';
  * const jsonContent = JSON.stringify(webviewContent);
  * ```
  */
-export function transformIDEListForWebview(ideList: IIDEInfo[]): (Omit<IIDEInfo, 'settingProvider'> & {
-	settings: Record<string, any>;
-})[]
+export function transformIDEListForWebview(ideList: IIDEInfo[]): IIDEInfoWebview[]
 {
 	return ideList.map(ide =>
 	{
