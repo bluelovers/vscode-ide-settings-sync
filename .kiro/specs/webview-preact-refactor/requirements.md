@@ -70,7 +70,7 @@
 
 #### Acceptance Criteria
 
-1. THE LanguageConfig_Component SHALL be a Preact JSX component located at `webview/src/components/LanguageConfig.tsx`
+1. THE LanguageConfig_Component SHALL be a Preact JSX component located at `webview/src/components/LanguageConfiguration.tsx`
 2. THE LanguageConfig_Component SHALL accept `languageConfig`, `supportedLanguages`, and `currentLanguage` as typed props
 3. WHEN rendered, THE LanguageConfig_Component SHALL produce HTML equivalent to the current language configuration section in `getWebviewContent()`
 4. THE LanguageConfig_Component SHALL use `onclick` string attributes (e.g., `onclick="changePrimaryLanguage()"`) consistent with the existing pattern used in other components
@@ -83,7 +83,7 @@
 #### Acceptance Criteria
 
 1. THE SyncTab_Component SHALL be a Preact JSX component at `webview/src/components/tabs/SyncTab.tsx` rendering the "Search & Sync Settings" panel
-2. THE ValuesTab_Component SHALL be a Preact JSX component at `webview/src/components/tabs/ValuesTab.tsx` rendering the "All IDE Settings" panel
+2. THE ValuesTab_Component SHALL be a Preact JSX component at `webview/src/components/tabs/AllSettingsTab.tsx` rendering the "All IDE Settings" panel
 3. THE SelectedTab_Component SHALL be a Preact JSX component at `webview/src/components/tabs/SelectedTab.tsx` rendering the "Selected Settings List" panel
 4. WHEN rendered server-side via `renderJsxToString`, THE Tab_Components SHALL produce HTML structurally identical to the current template literal output
 5. THE Tab_Components SHALL use `dangerouslySetInnerHTML` or string `onclick` attributes for inline event handlers, consistent with the existing component pattern
@@ -142,7 +142,7 @@
 
 #### Acceptance Criteria
 
-1. THE Existing_Components (PageHead, IDEList, IDEListSection, ExportImportPanel, SettingsNav, SourceIdeIndicator, and all sub-components) SHALL be accessible from the new `webview/src/` entry point
+1. THE Existing_Components (PageHead, IDEList, IDEListSection, ExportImportPanel, SettingsNavigation, SourceIdeIndicator, and all sub-components) SHALL be accessible from the new `webview/src/` entry point
 2. WHERE an existing component is used only for server-side rendering (SSR via `renderJsxToString`), THE Component SHALL remain in `src/webview/components/` and be imported by `SettingsSyncPanel`
 3. WHERE an existing component contains client-side JavaScript (e.g., `IDEListScript`, `ExportImportScript`), THE Script_Logic SHALL be migrated to the webview frontend bundle instead of being rendered as inline `<script>` strings
 4. THE Migration SHALL not break any existing unit tests in `src/webview/`

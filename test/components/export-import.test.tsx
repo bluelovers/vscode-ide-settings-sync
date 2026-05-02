@@ -82,11 +82,11 @@ describe('ExportImportPanel Components', () =>
 		});
 	});
 
-	describe('ActionBtn Component', () =>
+	describe('ActionButton Component', () =>
 	{
 		it('should render action button', () =>
 		{
-			const { ActionBtn } = require('../../webview/src/components/export-import/ActionBtn');
+			const { ActionButton } = require('../../webview/src/components/export-import/ActionButton');
 			const html = renderToString(
 				<ActionBtn
 					onClick="handleTest()"
@@ -104,7 +104,7 @@ describe('ExportImportPanel Components', () =>
 
 		it('should render disabled state', () =>
 		{
-			const { ActionBtn } = require('../../webview/src/components/export-import/ActionBtn');
+			const { ActionButton } = require('../../webview/src/components/export-import/ActionButton');
 			const html = renderToString(
 				<ActionBtn
 					onClick="handleTest()"
@@ -119,7 +119,7 @@ describe('ExportImportPanel Components', () =>
 
 		it('should render processing state', () =>
 		{
-			const { ActionBtn } = require('../../webview/src/components/export-import/ActionBtn');
+			const { ActionButton } = require('../../webview/src/components/export-import/ActionButton');
 			const html = renderToString(
 				<ActionBtn
 					onClick="handleTest()"

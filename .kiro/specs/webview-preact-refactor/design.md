@@ -28,11 +28,11 @@ Extension Host (Node.js)
     │    └─ App.tsx（新）
     │         ├─ PageHead（現有，含 CSP + style）
     │         ├─ IDEListSection（現有）
-    │         ├─ LanguageConfig（新）
+    │         ├─ LanguageConfiguration（新）
     │         ├─ SourceIdeIndicator（現有）
-    │         ├─ SettingsNav（現有）
+    │         ├─ SettingsNavigation（現有）
     │         ├─ SyncTab（新）
-    │         ├─ ValuesTab（新）
+    │         ├─ AllSettingsTab（新）
     │         ├─ SelectedTab（新）
     │         └─ ExportImportPanel（現有）
     │
@@ -94,7 +94,7 @@ interface IAppProps {
 
 `App` 組件負責組合所有 SSR 子組件，產生完整的 `<!DOCTYPE html>` 文件。它不包含任何 client-side 邏輯，純粹是 HTML 結構的組合。
 
-#### `webview/src/components/LanguageConfig.tsx`
+#### `webview/src/components/LanguageConfiguration.tsx`
 
 ```typescript
 interface ILanguageConfigProps {
@@ -116,7 +116,7 @@ interface ISyncTabProps {
 
 渲染「Search & Sync Settings」面板的靜態 HTML 骨架，包含搜尋輸入框、`#searchResults` 容器、操作按鈕。
 
-#### `webview/src/components/tabs/ValuesTab.tsx`
+#### `webview/src/components/tabs/AllSettingsTab.tsx`
 
 渲染「All IDE Settings」面板骨架，包含 `#allSettings` 容器與操作按鈕。
 
@@ -225,9 +225,9 @@ Webview 前端需要的型別（`ILanguageConfig`、`IIDEInfoWebview` 等）透�
 
 **Validates: Requirements 2.4, 3.5**
 
-### Property 3: LanguageConfig 組件的渲染正確性
+### Property 3: LanguageConfiguration 組件的渲染正確性
 
-*For any* 有效的 `ILanguageConfigProps`（包含任意 `languageConfig` 和 `supportedLanguages` 陣列），`LanguageConfig` 組件渲染的 HTML 應滿足：
+*For any* 有效的 `ILanguageConfigProps`（包含任意 `languageConfig` 和 `supportedLanguages` 陣列），`LanguageConfiguration` 組件渲染的 HTML 應滿足：
 - `<select id="primaryLang">` 包含與 `supportedLanguages` 數量相同的 `<option>` 元素
 - 對應 `languageConfig.primary` 的 `<option>` 具有 `selected` 屬性
 - 當 `showSecondary === true` 且 `secondary` 有值時，HTML 包含 secondary language 顯示列
@@ -239,7 +239,7 @@ Webview 前端需要的型別（`ILanguageConfig`、`IIDEInfoWebview` 等）透�
 
 *For any* 有效的 props，各 Tab 組件渲染的 HTML 應包含其對應的容器 ID 和操作按鈕：
 - `SyncTab`：包含 `#searchInput`、`#searchResults`、`#message`
-- `ValuesTab`：包含 `#allSettings`
+- `AllSettingsTab`：包含 `#allSettings`
 - `SelectedTab`：包含 `#selectedSettingsList`
 
 **Validates: Requirements 5.4**
@@ -312,8 +312,8 @@ document.getElementById('searchInput').addEventListener(...); // 可能 throw
 使用現有的 Jest 測試框架。
 
 **SSR 組件測試**（`src/webview/components/__tests__/`）：
-- 測試 `LanguageConfig` 組件在各種 `languageConfig` 輸入下的渲染輸出
-- 測試 `SyncTab`、`ValuesTab`、`SelectedTab` 的靜態 HTML 結構
+- 測試 `LanguageConfiguration` 組件在各種 `languageConfig` 輸入下的渲染輸出
+- 測試 `SyncTab`、`AllSettingsTab`、`SelectedTab` 的靜態 HTML 結構
 - 測試 `App` 組件整合渲染（驗證 Property 1）
 - 使用 `renderJsxToString` 渲染後以字串匹配或 HTML 解析驗證
 
@@ -356,13 +356,13 @@ fc.assert(fc.property(
 ), { numRuns: 100 });
 ```
 
-**Property 3 — LanguageConfig 渲染正確性**：
+**Property 3 — LanguageConfiguration 渲染正確性**：
 ```typescript
-// Tag: Feature: webview-preact-refactor, Property 3: LanguageConfig renders correct options
+// Tag: Feature: webview-preact-refactor, Property 3: LanguageConfiguration renders correct options
 fc.assert(fc.property(
   arbitraryLanguageConfigProps(),
   (props) => {
-    const html = renderJsxToString(LanguageConfig, props);
+    const html = renderJsxToString(LanguageConfiguration, props);
     const optionCount = (html.match(/<option/g) || []).length;
     expect(optionCount).toBe(props.supportedLanguages.length);
     expect(html).toContain(`value="${props.languageConfig.primary}" selected`);

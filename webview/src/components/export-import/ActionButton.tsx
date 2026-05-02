@@ -31,7 +31,7 @@ interface IActionBtnProps
  * @param title - 提示文字 / Tooltip text
  * @param processing - 是否處理中 / Whether processing
  */
-export function ActionBtn({ onClick, disabled = false, children, title, processing = false }: IActionBtnProps)
+export function ActionButton({ onClick, disabled = false, children, title, processing = false }: IActionBtnProps)
 {
 	return (
 		<>

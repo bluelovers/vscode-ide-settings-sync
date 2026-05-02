@@ -13,11 +13,11 @@
 
 import { IDEListSection } from './components/IDEList';
 import { ExportImportPanel } from './components/ExportImportPanel';
-import { SettingsNav } from './components/settings/SettingsPanel';
+import { SettingsNavigation } from './components/settings/SettingsNavigation';
 import { SourceIdeIndicator } from './components/ide/SourceIdeIndicator';
-import { LanguageConfig } from './components/LanguageConfig';
+import { LanguageConfiguration } from './components/LanguageConfiguration';
 import { SyncTab } from './components/tabs/SyncTab';
-import { ValuesTab } from './components/tabs/ValuesTab';
+import { AllSettingsTab } from './components/tabs/AllSettingsTab';
 import { SelectedTab } from './components/tabs/SelectedTab';
 import {
 	IIDEInfoWebview,
@@ -181,7 +181,7 @@ export function App({
 					/>
 
 					{/* 語言設定區塊：主語言下拉選單與 Fallback 列表 / Language config section: primary language dropdown and fallback list */}
-					<LanguageConfig
+					<LanguageConfiguration
 						languageConfig={languageConfig}
 						supportedLanguages={supportedLanguages}
 						currentLanguage={currentLanguage}
@@ -194,13 +194,13 @@ export function App({
 					/>
 
 					{/* 設定分頁導覽列 / Settings tab navigation bar */}
-					<SettingsNav />
+					<SettingsNavigation />
 
 					{/* Sync 分頁：搜尋與同步設定 / Sync tab: search and sync settings */}
 					<SyncTab />
 
 					{/* Values 分頁：檢視所有 IDE 設定值 / Values tab: view all IDE setting values */}
-					<ValuesTab />
+					<AllSettingsTab />
 
 					{/* Selected 分頁：已儲存的選取設定列表 / Selected tab: saved selected settings list */}
 					<SelectedTab />

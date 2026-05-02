@@ -8,7 +8,7 @@
 
 import { PathInput } from './PathInput';
 import { CheckboxOption } from './CheckboxOption';
-import { ActionBtn } from './ActionBtn';
+import { ActionButton } from './ActionButton';
 
 /** 匯出區塊的 Props 介面 / Props interface for the export section */
 interface IExportSectionProps
@@ -76,13 +76,13 @@ export function ExportSection({
 			)}
 
 			<div class="actions">
-				<ActionBtn
+				<ActionButton
 					onClick={actionOnClick}
 					title={actionTitle}
 					processing={isProcessing}
 				>
 					{actionText}
-				</ActionBtn>
+				</ActionButton>
 			</div>
 		</div>
 	);

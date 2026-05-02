@@ -197,7 +197,7 @@ export function MyComponent() {
       <MyComponentScript />
       <div class="my-component">
         <PathInput id="path1" placeholder="Enter path" />
-        <ActionBtn onclick="handleAction()" text="Action" />
+        <ActionButton onclick="handleAction()" text="Action" />
       </div>
     </>
   );
@@ -232,7 +232,7 @@ function PathInput({ id, placeholder }: { id: string; placeholder: string }) {
 }
 
 // 可重用的按鈕組件
-function ActionBtn({ onclick, children, disabled }: { 
+function ActionButton({ onclick, children, disabled }: { 
   onclick: string; 
   children: any; 
   disabled?: boolean; 

@@ -25,14 +25,14 @@
     - _Requirements: 1.6, 9.1, 9.2_
 
 - [x] 3. 新增 SSR 組件
-  - [x] 3.1 建立 `webview/src/components/LanguageConfig.tsx`
+  - [x] 3.1 建立 `webview/src/components/LanguageConfiguration.tsx`
     - 定義 `ILanguageConfigProps`（`languageConfig: ILanguageConfig`、`supportedLanguages`、`currentLanguage`）
     - 渲染 primary language `<select id="primaryLang">`，含 `onclick="changePrimaryLanguage()"` 字串屬性
     - 渲染 fallback 語言標籤列表
     - 條件性渲染 secondary language 列（`showSecondary === true` 且 `secondary` 有值時）
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
-  - [ ]* 3.2 為 LanguageConfig 撰寫屬性測試
-    - **Property 3: LanguageConfig 組件的渲染正確性**
+  - [ ]* 3.2 為 LanguageConfiguration 撰寫屬性測試
+    - **Property 3: LanguageConfiguration 組件的渲染正確性**
     - 使用 `fc.array` 產生任意 `supportedLanguages`，驗證 `<option>` 數量與陣列長度相同
     - 驗證對應 `languageConfig.primary` 的 `<option>` 具有 `selected` 屬性
     - 驗證 `showSecondary` 旗標控制 secondary language 列的顯示
@@ -42,7 +42,7 @@
     - 包含 `<input id="searchInput">`、`<div id="searchResults">`、`<div id="message">`
     - 包含操作按鈕（Refresh、Save Selected、Sync Selected、Delete Selected），使用 `onclick` 字串屬性
     - _Requirements: 5.1, 5.4, 5.5_
-  - [x] 3.4 建立 Tab 組件：`webview/src/components/tabs/ValuesTab.tsx`
+  - [x] 3.4 建立 Tab 組件：`webview/src/components/tabs/AllSettingsTab.tsx`
     - 渲染「All IDE Settings」面板骨架，包含 `<div id="allSettings">` 與操作按鈕
     - _Requirements: 5.2, 5.4, 5.5_
   - [x] 3.5 建立 Tab 組件：`webview/src/components/tabs/SelectedTab.tsx`
@@ -51,12 +51,12 @@
   - [ ]* 3.6 為 Tab 組件撰寫屬性測試
     - **Property 4: Tab 組件渲染包含必要的 DOM 元素**
     - 驗證 `SyncTab` 渲染包含 `id="searchInput"`、`id="searchResults"`、`id="message"`
-    - 驗證 `ValuesTab` 渲染包含 `id="allSettings"`
+    - 驗證 `AllSettingsTab` 渲染包含 `id="allSettings"`
     - 驗證 `SelectedTab` 渲染包含 `id="selectedSettingsList"`
     - **Validates: Requirements 5.4**
   - [x] 3.7 建立 `webview/src/app.tsx` — SSR 根組件
     - 定義 `IAppProps`（`ideList`、`unavailableIDEs`、`currentIDEName`、`sourceIDEUuid`、`languageConfig`、`supportedLanguages`、`currentLanguage`、`cssContent`、`cspSource`、`webviewScriptUri`、`initialState`）
-    - 組合所有 SSR 子組件：`PageHead`、`IDEListSection`、`LanguageConfig`、`SourceIdeIndicator`、`SettingsNav`、`SyncTab`、`ValuesTab`、`SelectedTab`、`ExportImportPanel`
+    - 組合所有 SSR 子組件：`PageHead`、`IDEListSection`、`LanguageConfiguration`、`SourceIdeIndicator`、`SettingsNavigation`、`SyncTab`、`AllSettingsTab`、`SelectedTab`、`ExportImportPanel`
     - 在 `<body>` 末尾注入 `<script>window.__INITIAL_STATE__ = {...};</script>` 與 `<script src={webviewScriptUri}>`
     - 產生完整的 `<!DOCTYPE html>` 文件
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_

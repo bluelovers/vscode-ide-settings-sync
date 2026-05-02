@@ -15,8 +15,8 @@ interface ILanguageSupportedItem
 }
 
 /**
- * LanguageConfig 組件的 Props 介面
- * Props interface for the LanguageConfig component
+ * LanguageConfiguration 組件的 Props 介面
+ * Props interface for the LanguageConfiguration component
  */
 interface ILanguageConfigProps
 {
@@ -46,7 +46,7 @@ interface ILanguageConfigProps
  * attributes to ensure preact-render-to-string outputs correct HTML attributes.
  * Actual event handling is handled by `language.ts` in the Webview bundle.
  */
-export function LanguageConfig({ languageConfig, supportedLanguages, currentLanguage }: ILanguageConfigProps)
+export function LanguageConfiguration({ languageConfig, supportedLanguages, currentLanguage }: ILanguageConfigProps)
 {
 	return (
 		<div className="section">

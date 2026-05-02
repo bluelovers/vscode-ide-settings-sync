@@ -7,7 +7,7 @@
  */
 
 import { PathInput } from './PathInput';
-import { ActionBtn } from './ActionBtn';
+import { ActionButton } from './ActionButton';
 
 /** 匯入區塊的 Props 介面 / Props interface for the import section */
 interface IImportSectionProps
@@ -47,13 +47,13 @@ export function ImportSection({
 			</div>
 
 			<div class="actions">
-				<ActionBtn
+				<ActionButton
 					onClick={actionOnClick}
 					title={actionTitle}
 					processing={isProcessing}
 				>
 					{actionText}
-				</ActionBtn>
+				</ActionButton>
 			</div>
 		</div>
 	);

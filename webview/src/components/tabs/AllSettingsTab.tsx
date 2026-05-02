@@ -1,4 +1,4 @@
-export function ValuesTab() {
+export function AllSettingsTab() {
 	return (
 		<div id="values" className="tab-content">
 			<div className="section">
