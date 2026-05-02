@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ExportImportCore, IStorageProvider, IFileSystemProvider, IDialogProvider } from '../core/exportImportCore';
 import { knownIDEs } from '../data/knownIDEs';
+import { EnumShowMessageType } from '../../webview/src/types';
 
 export class VSCodeStorageProvider implements IStorageProvider
 {
@@ -85,17 +86,17 @@ export class VSCodeDialogProvider implements IDialogProvider
 		return [selectedItems];
 	}
 
-	async showMessage(message: string, type: 'info' | 'warning' | 'error'): Promise<void>
+	async showMessage(message: string, type: EnumShowMessageType): Promise<void>
 	{
 		switch (type)
 		{
-			case 'info':
+			case EnumShowMessageType.INFO:
 				await vscode.window.showInformationMessage(message);
 				break;
-			case 'warning':
+			case EnumShowMessageType.WARNING:
 				await vscode.window.showWarningMessage(message);
 				break;
-			case 'error':
+			case EnumShowMessageType.ERROR:
 				await vscode.window.showErrorMessage(message);
 				break;
 		}

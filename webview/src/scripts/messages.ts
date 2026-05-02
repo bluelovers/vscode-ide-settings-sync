@@ -70,21 +70,21 @@ export function initMessageHandler(): void
 		switch (message.command)
 		{
 			case EnumHostCommand.SyncComplete:
-				showMessage('Settings synced successfully!', 'success');
+				showMessage('Settings synced successfully!', EnumShowMessageType.SUCCESS);
 				break;
 
 			case EnumHostCommand.DeleteComplete:
-				showMessage('Settings deleted successfully!', 'success');
+				showMessage('Settings deleted successfully!', EnumShowMessageType.SUCCESS);
 				break;
 
 			case EnumHostCommand.AddCustomIDEComplete:
 				if (message.success)
 				{
-					showMessage(`✓ Custom IDE "${message.name}" added successfully!`, 'success');
+					showMessage(`✓ Custom IDE "${message.name}" added successfully!`, EnumShowMessageType.SUCCESS);
 				}
 				else
 				{
-					showMessage(`✗ Failed to add IDE: ${message.error}`, 'error');
+					showMessage(`✗ Failed to add IDE: ${message.error}`, EnumShowMessageType.ERROR);
 				}
 				break;
 

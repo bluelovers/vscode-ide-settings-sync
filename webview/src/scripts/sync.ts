@@ -12,6 +12,7 @@ import { vscode } from '../index';
 import { showMessage } from './messages';
 import { checkedSettingKeys, sourceIDEUuid } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
+import { EnumShowMessageType } from 'src/types';
 
 /**
  * 收集當前已勾選的 IDE 與設定，向 Extension host 發送 `syncSettings` 指令
@@ -38,13 +39,13 @@ export function syncSettings(): void
 
 	if (selectedIDEs.length < 2)
 	{
-		showMessage('Please select at least 2 IDEs', 'error');
+		showMessage('Please select at least 2 IDEs', EnumShowMessageType.ERROR);
 		return;
 	}
 
 	if (selectedSettings.length === 0)
 	{
-		showMessage('Please select at least one setting to sync', 'error');
+		showMessage('Please select at least one setting to sync', EnumShowMessageType.ERROR);
 		return;
 	}
 
@@ -89,13 +90,13 @@ export function deleteSettings(): void
 
 	if (selectedIDEs.length === 0)
 	{
-		showMessage('Please select at least one IDE', 'error');
+		showMessage('Please select at least one IDE', EnumShowMessageType.ERROR);
 		return;
 	}
 
 	if (selectedSettings.length === 0)
 	{
-		showMessage('Please select at least one setting to delete', 'error');
+		showMessage('Please select at least one setting to delete', EnumShowMessageType.ERROR);
 		return;
 	}
 

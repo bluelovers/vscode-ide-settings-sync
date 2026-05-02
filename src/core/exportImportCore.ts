@@ -6,6 +6,7 @@
  * Core export/import logic independent of VSCode for testing and reusability
  */
 
+import { EnumShowMessageType } from '../../webview/src/types';
 import {
 	ExportImportType,
 	IExportImportData,
@@ -38,7 +39,7 @@ export interface IDialogProvider
 
 	showQuickPick(items: any[], options: any): Promise<any[] | undefined>;
 
-	showMessage(message: string, type: 'info' | 'warning' | 'error'): Promise<void>;
+	showMessage(message: string, type: EnumShowMessageType): Promise<void>;
 }
 
 export class ExportImportCore
@@ -351,14 +352,14 @@ export class ExportImportCore
 			try
 			{
 				await this.fileSystemProvider.writeFile(path, content);
-				await this.dialogProvider.showMessage(`匯出成功: ${path}`, 'info');
+				await this.dialogProvider.showMessage(`匯出成功: ${path}`, EnumShowMessageType.INFO);
 				return path;
 			}
 			catch (error)
 			{
 				await this.dialogProvider.showMessage(`儲存失敗: ${error instanceof Error
 					? error.message
-					: String(error)}`, 'error');
+					: String(error)}`, EnumShowMessageType.ERROR);
 			}
 		}
 
@@ -390,7 +391,7 @@ export class ExportImportCore
 			{
 				await this.dialogProvider.showMessage(`讀取失敗: ${error instanceof Error
 					? error.message
-					: String(error)}`, 'error');
+					: String(error)}`, EnumShowMessageType.ERROR);
 			}
 		}
 
@@ -425,7 +426,7 @@ export class ExportImportCore
 
 		if (options.length === 0)
 		{
-			await this.dialogProvider.showMessage('匯入檔案中沒有可匯入的資料', 'warning');
+			await this.dialogProvider.showMessage('匯入檔案中沒有可匯入的資料', EnumShowMessageType.WARNING);
 			return undefined;
 		}
 

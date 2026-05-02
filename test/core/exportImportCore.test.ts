@@ -10,6 +10,7 @@ import {
 	IDialogProvider,
 } from '../../src/core/exportImportCore';
 import { IImportOptions, IImportResult, ExportImportType } from '../../src/types';
+import { EnumShowMessageType } from '../../webview/src/types';
 
 // Mock providers for testing
 class MockStorageProvider implements IStorageProvider
@@ -122,7 +123,7 @@ class MockDialogProvider implements IDialogProvider
 		return this.quickPickResult;
 	}
 
-	async showMessage(message: string, type: 'info' | 'warning' | 'error'): Promise<void>
+	async showMessage(message: string, type: EnumShowMessageType): Promise<void>
 	{
 		this.messageLog.push({ message, type });
 	}

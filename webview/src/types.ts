@@ -16,7 +16,8 @@ export const enum EnumShowMessageType
 {
 	SUCCESS = 'success',
 	ERROR = 'error',
-	INFO = 'info'
+	INFO = 'info',
+	WARNING = 'warning'
 }
 
 /** ─── 語言相關型別 / Language-related types ─── */
