@@ -11,7 +11,7 @@
  * accessed via `window` to avoid circular dependency.
  */
 
-import { IWebviewWindow } from '../types';
+import { IWebviewWindow } from '../global/window-this';
 
 /**
  * 分頁名稱至其對應 `.tab` 按鈕零基索引的對照表

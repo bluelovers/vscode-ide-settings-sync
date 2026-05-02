@@ -18,7 +18,8 @@
 
 import { ideList, searchQuery, checkedSettingKeys, sourceIDEUuid } from '../../store';
 import { SettingItem, ISettingValueEntry } from './SettingItem';
-import { IIDEInfoWebview, IWebviewWindow } from '../../types';
+import { IIDEInfoWebview } from '../../types';
+import { IWebviewWindow } from '../../global/window-this';
 
 /** ─── 輔助函數 / Helper functions ─── */
 

@@ -13,7 +13,8 @@
  */
 
 import { signal, computed } from '@preact/signals';
-import { IWebviewState, IIDEInfoWebview, IWebviewWindow } from './types';
+import { IWebviewState, IIDEInfoWebview } from './types';
+import { IWebviewWindow } from './global/window-this';
 
 /** ─── 來源 IDE 狀態 / Source IDE state ─── */
 

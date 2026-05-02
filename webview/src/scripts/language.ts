@@ -3,7 +3,7 @@
  * Language configuration module
  */
 
-import { IWebviewWindow } from '../types';
+import { IWebviewWindow } from '../global/window-this';
 import { vscode } from '../index';
 import { EnumWebviewCommand } from '../webviewMessages';
 

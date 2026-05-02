@@ -13,7 +13,8 @@
  * are handled by `export-import.ts`.
  */
 
-import { EnumShowMessageType, IWebviewWindow } from '../types';
+import { EnumShowMessageType } from '../types';
+import { IWebviewWindow } from '../global/window-this';
 import { vscode } from '../index';
 import { ideList } from '../store';
 import { EnumHostCommand, IHostMessage, IWebviewWindowMessageEvent } from '../webviewMessages';

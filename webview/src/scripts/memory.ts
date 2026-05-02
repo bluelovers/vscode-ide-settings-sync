@@ -7,7 +7,8 @@ import { vscode } from '../index';
 import { showMessage } from './messages';
 import { searchQuery, checkedSettingKeys } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
-import { EnumShowMessageType, IWebviewWindow } from '../types';
+import { EnumShowMessageType } from '../types';
+import { IWebviewWindow } from '../global/window-this';
 
 export function initializeMemory(): void
 {

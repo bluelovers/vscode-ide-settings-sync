@@ -12,7 +12,8 @@ import { vscode } from '../index';
 import { showMessage } from './messages';
 import { sourceIDEUuid } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
-import { EnumShowMessageType, IWebviewState, IWebviewWindow } from '../types';
+import { EnumShowMessageType, IWebviewState } from '../types';
+import { IWebviewWindow } from '../global/window-this';
 import { EnumWebviewElemSelector, queryWebviewElem } from './elem-get';
 
 /**

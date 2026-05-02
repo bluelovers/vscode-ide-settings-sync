@@ -153,18 +153,3 @@ export interface IImportResult
 	warnings: string[];
 }
 
-/**
- * Webview 窗口接口，用于 TypeScript 类型安全
- * Webview window interface for TypeScript type safety
- */
-export type IWebviewWindow = Window & typeof globalThis & {
-	__INITIAL_STATE__: IWebviewState;
-} & IWebviewWindowApi;
-
-export type IWebviewWindowApi = {
-	displayAllSettings: typeof displayAllSettings;
-	searchSettings: typeof searchSettings;
-	removeFromSelectedSettings: typeof removeFromSelectedSettings;
-	displaySelectedSettingsList: typeof displaySelectedSettingsList;
-	saveSearchHistory: typeof saveSearchHistory;
-}
