@@ -25,6 +25,7 @@ import {
 	ILanguageConfig,
 	IWebviewState,
 } from './types';
+import { IIDEInfo } from '../../src/types';
 
 /** ─── 型別定義 / Type definitions ─── */
 
@@ -35,7 +36,7 @@ import {
 export interface IAppProps
 {
 	/** 可用的 IDE 列表 / List of available IDEs */
-	ideList: IIDEInfoWebview[];
+	availableIDEs: IIDEInfoWebview[];
 	/** 不可用的 IDE 列表（已知但未偵測到）/ List of unavailable IDEs (known but not detected) */
 	unavailableIDEs: IUnavailableIDEInfoWebview[];
 	/** 當前執行此擴充功能的 IDE 名稱 / Name of the IDE currently running this extension */
@@ -127,7 +128,7 @@ function ContentSecurityPolicy({ cspSource }: { cspSource: string })
  * 2. Webview bundle: Loads all client-side interaction logic
  */
 export function App({
-	ideList,
+	availableIDEs,
 	unavailableIDEs,
 	currentIDEName,
 	sourceIDEUuid,
@@ -173,7 +174,7 @@ export function App({
 
 					{/* IDE 列表區塊：顯示可用與不可用的 IDE / IDE list section: shows available and unavailable IDEs */}
 					<IDEListSection
-						availableIDEs={ideList}
+						availableIDEs={availableIDEs}
 						unavailableIDEs={unavailableIDEs}
 						currentIDEName={currentIDEName}
 						sourceIDEUuid={sourceIDEUuid}

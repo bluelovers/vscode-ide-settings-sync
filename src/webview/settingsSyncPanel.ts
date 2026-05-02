@@ -166,14 +166,14 @@ export class SettingsSyncPanel
 
 	private getWebviewContent(): string
 	{
-		const ideList = this.ideProvider.getIDEList();
+		const availableIDEs = this.ideProvider.getIDEListToWebviewContent();
 		const unavailableIDEs = this.ideProvider.getUnavailableIDEs();
 		/**
 		 * Determine which IDE corresponds to the running host (by name)
 		 * e.g. "Visual Studio Code" or "Visual Studio Code - Insiders"
 		 */
 		const currentIDEName = vscode.env.appName;
-		const currentIDEUuid = ideList.find(ide => ide.name === currentIDEName)?.uuid;
+		const currentIDEUuid = availableIDEs.find(ide => ide.name === currentIDEName)?.uuid;
 
 		/** 👇 從 globalState 中獲取已保存的值 */
 		const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
@@ -192,7 +192,7 @@ export class SettingsSyncPanel
 		}
 
 		const props: IAppProps = {
-			ideList,
+			availableIDEs,
 			unavailableIDEs,
 			currentIDEName,
 			sourceIDEUuid: savedSourceIDEUuid,

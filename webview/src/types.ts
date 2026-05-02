@@ -114,7 +114,7 @@ export interface IWebviewState
 	settingDescriptions: Record<string, { primary: string; secondary?: string }>;
 
 	/** 來源 IDE UUID / Source IDE UUID */
-	sourceIDEUuid: string;
+	sourceIDEUuid?: string;
 }
 
 /** ─── 匯出/匯入相關型別 / Export/Import related types ─── */
