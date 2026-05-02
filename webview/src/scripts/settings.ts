@@ -10,6 +10,7 @@
 
 import { vscode } from '../index';
 import { showMessage } from './messages';
+import { sourceIDEUuid } from '../store';
 
 /**
  * 取得注入的初始狀態物件的便捷存取器
@@ -277,11 +278,14 @@ export function searchSettings(): void
 	});
 
 	/**
-	 * 取得當前選擇的來源 IDE UUID，用於在結果中標記來源 IDE
-	 * Get the currently selected source IDE UUID, used to mark the source IDE in results
+	 * 從 signal 取得當前選擇的來源 IDE UUID，用於在結果中標記來源 IDE
+	 * 比從 DOM 查詢 radio 更可靠：signal 在 handleSourceIDEChange 時即時更新，
+	 * 不依賴 DOM 狀態，也不會因為 radio 尚未渲染而取不到值。
+	 * Get the currently selected source IDE UUID from signal, used to mark the source IDE in results.
+	 * More reliable than querying the radio from DOM: signal is updated immediately in handleSourceIDEChange,
+	 * does not depend on DOM state, and won't fail if the radio hasn't rendered yet.
 	 */
-	const sourceUuid = (document.querySelector('.ide-source-radio:checked') as HTMLInputElement | null)
-		?.dataset.uuid;
+	const currentSourceUuid = sourceIDEUuid.value;
 
 	/**
 	 * 步驟 3：依字母順序排序並渲染
@@ -290,7 +294,7 @@ export function searchSettings(): void
 	const sortedKeys = Array.from(matchedKeys).sort();
 	sortedKeys.forEach(key =>
 	{
-		resultsDiv.innerHTML += createSettingHTML(key, settingMap.get(key)!, sourceUuid, ideRecord);
+		resultsDiv.innerHTML += createSettingHTML(key, settingMap.get(key)!, currentSourceUuid, ideRecord);
 	});
 }
 

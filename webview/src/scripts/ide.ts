@@ -9,6 +9,7 @@
  */
 
 import { vscode } from '../index';
+import { sourceIDEName, sourceIDEUuid } from '../store';
 
 /** ─── IDE 管理操作 / IDE management operations ─── */
 
@@ -94,44 +95,21 @@ export function refreshIDEs(): void
 export function handleSourceIDEChange(event: Event): void
 {
 	const target = event.target as HTMLInputElement;
-	const sourceUuid = target.value;
-	/**
-	 * 優先從 data-name 屬性取得名稱，找不到時從最近的 .ide-item 中的 .ide-checkbox 取得
-	 * Prefer getting name from data-name attribute; fall back to .ide-checkbox in the nearest .ide-item
-	 */
-	const sourceName =
-		target.dataset.name ||
-		target.closest('.ide-item')?.querySelector<HTMLInputElement>('.ide-checkbox')?.dataset.name;
+	const newSourceUuid = target.value;
 
 	/**
-	 * 更新所有來源 IDE 指示器的顯示名稱
-	 * Update the display name of all source IDE indicators
+	 * 只寫入 signal，所有 DOM 更新由 index.tsx 的 effect() 統一處理。
+	 * 這確保 SourceIdeIndicator、.ide-item class、設定列表的更新
+	 * 都由同一個響應式來源驅動，不散落在各處。
+	 *
+	 * Only write to the signal; all DOM updates are handled centrally
+	 * by the effect() in index.tsx. This ensures SourceIdeIndicator,
+	 * .ide-item class toggling, and settings list re-rendering are all
+	 * driven by the same reactive source.
 	 */
-	document.querySelectorAll('.source-ide-indicator .source-name').forEach(indicator =>
-	{
-		(indicator as HTMLElement).textContent = sourceName || 'Not selected';
-	});
+	sourceIDEUuid.value = newSourceUuid;
 
-	/**
-	 * 切換各 IDE 項目的 source-ide class：
-	 * 與選取 UUID 相符的項目加上 class，其餘移除
-	 * Toggle source-ide class on each IDE item:
-	 * add class to items matching the selected UUID, remove from others
-	 */
-	document.querySelectorAll('.ide-item').forEach(item =>
-	{
-		const checkbox = item.querySelector<HTMLInputElement>('.ide-checkbox');
-		if (checkbox?.dataset.uuid === sourceUuid)
-		{
-			item.classList.add('source-ide');
-		}
-		else
-		{
-			item.classList.remove('source-ide');
-		}
-	});
-
-	vscode.postMessage({ command: 'selectSourceIDE', uuid: sourceUuid, name: sourceName });
+	vscode.postMessage({ command: 'selectSourceIDE', uuid: newSourceUuid });
 }
 
 /** ─── 初始化 / Initialization ─── */
@@ -145,11 +123,16 @@ export function handleSourceIDEChange(event: Event): void
  */
 export function initIDEEventListeners(): void
 {
-	document.addEventListener('DOMContentLoaded', () =>
+	/**
+	 * 此函數在 index.tsx 的 initialize() 中呼叫，
+	 * 而 initialize() 已確保在 DOM 就緒後才執行，
+	 * 因此直接綁定事件，不需要再套 DOMContentLoaded。
+	 * This function is called from initialize() in index.tsx,
+	 * which already ensures execution after DOM is ready,
+	 * so we bind events directly without wrapping in DOMContentLoaded.
+	 */
+	document.querySelectorAll('.ide-source-radio').forEach(radio =>
 	{
-		document.querySelectorAll('.ide-source-radio').forEach(radio =>
-		{
-			radio.addEventListener('change', handleSourceIDEChange);
-		});
+		radio.addEventListener('change', handleSourceIDEChange);
 	});
 }
