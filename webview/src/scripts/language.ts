@@ -4,7 +4,7 @@
  */
 
 import { vscode } from '../index';
-import { WebviewCommand } from '../webviewMessages';
+import { EnumWebviewCommand } from '../webviewMessages';
 
 export function changePrimaryLanguage(): void
 {
@@ -12,7 +12,7 @@ export function changePrimaryLanguage(): void
 	const newLang = select?.value;
 	if (!newLang) return;
 
-	vscode.postMessage({ command: WebviewCommand.ChangePrimaryLanguage, language: newLang });
+	vscode.postMessage({ command: EnumWebviewCommand.ChangePrimaryLanguage, language: newLang });
 
 	const activeTab = document.querySelector('.tab.active');
 	if (activeTab?.textContent?.includes('All'))
@@ -27,5 +27,5 @@ export function changePrimaryLanguage(): void
 
 export function openLanguageConfig(): void
 {
-	vscode.postMessage({ command: WebviewCommand.OpenLanguageConfig });
+	vscode.postMessage({ command: EnumWebviewCommand.OpenLanguageConfig });
 }

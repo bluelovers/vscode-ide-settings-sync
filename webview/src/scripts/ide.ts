@@ -5,7 +5,7 @@
 
 import { vscode } from '../index';
 import { sourceIDEUuid } from '../store';
-import { WebviewCommand } from '../webviewMessages';
+import { EnumWebviewCommand } from '../webviewMessages';
 
 export function removeCustomIDE(params: {
 	index: number;
@@ -14,27 +14,27 @@ export function removeCustomIDE(params: {
 	nativePath: string;
 }): void
 {
-	vscode.postMessage({ command: WebviewCommand.RemoveCustomIDE, ...params });
+	vscode.postMessage({ command: EnumWebviewCommand.RemoveCustomIDE, ...params });
 }
 
 export function openIDEFolder(folderPath: string): void
 {
-	vscode.postMessage({ command: WebviewCommand.OpenIDEFolder, path: folderPath });
+	vscode.postMessage({ command: EnumWebviewCommand.OpenIDEFolder, path: folderPath });
 }
 
 export function openSettingsJson(idePath: string, ideName: string): void
 {
-	vscode.postMessage({ command: WebviewCommand.OpenSettingsJson, idePath, ideName });
+	vscode.postMessage({ command: EnumWebviewCommand.OpenSettingsJson, idePath, ideName });
 }
 
 export function addCustomIDE(): void
 {
-	vscode.postMessage({ command: WebviewCommand.RequestAddCustomIDE });
+	vscode.postMessage({ command: EnumWebviewCommand.RequestAddCustomIDE });
 }
 
 export function refreshIDEs(): void
 {
-	vscode.postMessage({ command: WebviewCommand.RefreshIDEs });
+	vscode.postMessage({ command: EnumWebviewCommand.RefreshIDEs });
 }
 
 export function handleSourceIDEChange(event: Event): void
@@ -48,7 +48,7 @@ export function handleSourceIDEChange(event: Event): void
 	 */
 	sourceIDEUuid.value = newSourceUuid;
 
-	vscode.postMessage({ command: WebviewCommand.SelectSourceIDE, uuid: newSourceUuid });
+	vscode.postMessage({ command: EnumWebviewCommand.SelectSourceIDE, uuid: newSourceUuid });
 }
 
 export function initIDEEventListeners(): void

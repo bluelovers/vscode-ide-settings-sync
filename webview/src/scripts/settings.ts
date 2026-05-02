@@ -11,7 +11,7 @@
 import { vscode } from '../index';
 import { showMessage } from './messages';
 import { sourceIDEUuid } from '../store';
-import { WebviewCommand } from '../webviewMessages';
+import { EnumWebviewCommand } from '../webviewMessages';
 
 /**
  * 取得注入的初始狀態物件的便捷存取器
@@ -430,7 +430,7 @@ export function removeFromSelectedSettings(key: string): void
 	if (index > -1)
 	{
 		savedSelectedSettings.splice(index, 1);
-		vscode.postMessage({ command: WebviewCommand.SaveSelectedSettings, selectedSettings: savedSelectedSettings });
+		vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings: savedSelectedSettings });
 		(window as any).displaySelectedSettingsList?.();
 		showMessage(`✓ Removed "${key}" from selected settings`, 'success');
 	}
@@ -450,7 +450,7 @@ export function clearAllSelectedSettings(): void
 		 * Clear the array and sync to Extension host's globalState
 		 */
 		state.savedSelectedSettings = [];
-		vscode.postMessage({ command: WebviewCommand.SaveSelectedSettings, selectedSettings: [] });
+		vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings: [] });
 		(window as any).displaySelectedSettingsList?.();
 		showMessage('✓ All selected settings cleared', 'success');
 	}
@@ -462,6 +462,6 @@ export function clearAllSelectedSettings(): void
  */
 export function refreshSettings(): void
 {
-	vscode.postMessage({ command: WebviewCommand.RefreshData });
+	vscode.postMessage({ command: EnumWebviewCommand.RefreshData });
 	showMessage('⟳ Settings refreshed', 'info');
 }

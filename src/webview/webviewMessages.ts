@@ -42,7 +42,7 @@ import { IIDEInfoWebview } from '../../webview/src/types';
  *  Webview → Extension host command enum
  * ═══════════════════════════════════════════════════════════ */
 
-export const enum WebviewCommand
+export const enum EnumWebviewCommand
 {
 	/**
 	 * 請求 Extension host 彈出 VS Code 輸入框，讓使用者輸入自訂 IDE 路徑與名稱
@@ -176,7 +176,7 @@ export const enum WebviewCommand
  *  Extension host → Webview command enum
  * ═══════════════════════════════════════════════════════════ */
 
-export const enum HostCommand
+export const enum EnumHostCommand
 {
 	/**
 	 * 設定同步操作完成，Webview 顯示成功訊息
@@ -240,7 +240,7 @@ export const enum HostCommand
  */
 export interface IMsg_RequestAddCustomIDE
 {
-	command: WebviewCommand.RequestAddCustomIDE;
+	command: EnumWebviewCommand.RequestAddCustomIDE;
 }
 
 /**
@@ -249,7 +249,7 @@ export interface IMsg_RequestAddCustomIDE
  */
 export interface IMsg_AddCustomIDE
 {
-	command: WebviewCommand.AddCustomIDE;
+	command: EnumWebviewCommand.AddCustomIDE;
 	/** 自訂 IDE 的顯示名稱 / Display name for the custom IDE */
 	name: string;
 	/** IDE 設定資料夾的絕對路徑 / Absolute path to the IDE settings folder */
@@ -262,7 +262,7 @@ export interface IMsg_AddCustomIDE
  */
 export interface IMsg_RemoveCustomIDE
 {
-	command: WebviewCommand.RemoveCustomIDE;
+	command: EnumWebviewCommand.RemoveCustomIDE;
 	/** IDE 在列表中的索引 / IDE index in the list */
 	index: number;
 	/** IDE 唯一識別符 / IDE unique identifier */
@@ -279,7 +279,7 @@ export interface IMsg_RemoveCustomIDE
  */
 export interface IMsg_OpenIDEFolder
 {
-	command: WebviewCommand.OpenIDEFolder;
+	command: EnumWebviewCommand.OpenIDEFolder;
 	/** IDE 資料夾的絕對路徑 / Absolute path to the IDE folder */
 	path: string;
 }
@@ -290,7 +290,7 @@ export interface IMsg_OpenIDEFolder
  */
 export interface IMsg_OpenSettingsJson
 {
-	command: WebviewCommand.OpenSettingsJson;
+	command: EnumWebviewCommand.OpenSettingsJson;
 	/** IDE 設定資料夾的絕對路徑 / Absolute path to the IDE settings folder */
 	idePath: string;
 	/** IDE 顯示名稱（用於錯誤訊息）/ IDE display name (used in error messages) */
@@ -303,7 +303,7 @@ export interface IMsg_OpenSettingsJson
  */
 export interface IMsg_SyncSettings
 {
-	command: WebviewCommand.SyncSettings;
+	command: EnumWebviewCommand.SyncSettings;
 	/**
 	 * 來源 IDE 的索引字串（從 DOM radio 的 data-index 讀取，Extension host 端需 parseInt）
 	 *  Source IDE index string (read from DOM radio data-index; Extension host must parseInt)
@@ -321,7 +321,7 @@ export interface IMsg_SyncSettings
  */
 export interface IMsg_DeleteSettings
 {
-	command: WebviewCommand.DeleteSettings;
+	command: EnumWebviewCommand.DeleteSettings;
 	/** 要刪除設定的 IDE 索引列表 / List of IDE indices to delete settings from */
 	ideIndices: number[];
 	/** 要刪除的設定 key 列表 / List of setting keys to delete */
@@ -334,7 +334,7 @@ export interface IMsg_DeleteSettings
  */
 export interface IMsg_RefreshIDEs
 {
-	command: WebviewCommand.RefreshIDEs;
+	command: EnumWebviewCommand.RefreshIDEs;
 }
 
 /**
@@ -343,7 +343,7 @@ export interface IMsg_RefreshIDEs
  */
 export interface IMsg_RefreshData
 {
-	command: WebviewCommand.RefreshData;
+	command: EnumWebviewCommand.RefreshData;
 }
 
 /**
@@ -352,7 +352,7 @@ export interface IMsg_RefreshData
  */
 export interface IMsg_ChangePrimaryLanguage
 {
-	command: WebviewCommand.ChangePrimaryLanguage;
+	command: EnumWebviewCommand.ChangePrimaryLanguage;
 	/** 新的語言代碼（如 'en'、'zh-tw'）/ New language code (e.g. 'en', 'zh-tw') */
 	language: string;
 }
@@ -363,7 +363,7 @@ export interface IMsg_ChangePrimaryLanguage
  */
 export interface IMsg_OpenLanguageConfig
 {
-	command: WebviewCommand.OpenLanguageConfig;
+	command: EnumWebviewCommand.OpenLanguageConfig;
 }
 
 /**
@@ -372,7 +372,7 @@ export interface IMsg_OpenLanguageConfig
  */
 export interface IMsg_SaveSearchHistory
 {
-	command: WebviewCommand.SaveSearchHistory;
+	command: EnumWebviewCommand.SaveSearchHistory;
 	/** 要儲存的搜尋字串 / Search string to save */
 	searchText: string;
 }
@@ -383,7 +383,7 @@ export interface IMsg_SaveSearchHistory
  */
 export interface IMsg_SaveSelectedSettings
 {
-	command: WebviewCommand.SaveSelectedSettings;
+	command: EnumWebviewCommand.SaveSelectedSettings;
 	/** 已勾選的設定 key 列表 / List of checked setting keys */
 	selectedSettings: string[];
 }
@@ -394,7 +394,7 @@ export interface IMsg_SaveSelectedSettings
  */
 export interface IMsg_SaveSelectedIDEs
 {
-	command: WebviewCommand.SaveSelectedIDEs;
+	command: EnumWebviewCommand.SaveSelectedIDEs;
 	/** 已勾選的 IDE 索引列表 / List of checked IDE indices */
 	selectedIDEs: number[];
 }
@@ -405,7 +405,7 @@ export interface IMsg_SaveSelectedIDEs
  */
 export interface IMsg_SelectSourceIDE
 {
-	command: WebviewCommand.SelectSourceIDE;
+	command: EnumWebviewCommand.SelectSourceIDE;
 	/** 來源 IDE 的唯一識別符 / UUID of the source IDE */
 	uuid: string;
 	/** 來源 IDE 的顯示名稱（可選，用於 UI 顯示）/ Source IDE display name (optional, for UI display) */
@@ -418,7 +418,7 @@ export interface IMsg_SelectSourceIDE
  */
 export interface IMsg_BrowseExportPath
 {
-	command: WebviewCommand.BrowseExportPath;
+	command: EnumWebviewCommand.BrowseExportPath;
 }
 
 /**
@@ -427,7 +427,7 @@ export interface IMsg_BrowseExportPath
  */
 export interface IMsg_BrowseImportPath
 {
-	command: WebviewCommand.BrowseImportPath;
+	command: EnumWebviewCommand.BrowseImportPath;
 }
 
 /**
@@ -436,7 +436,7 @@ export interface IMsg_BrowseImportPath
  */
 export interface IMsg_ExportCustomIDEs
 {
-	command: WebviewCommand.ExportCustomIDEs;
+	command: EnumWebviewCommand.ExportCustomIDEs;
 	/** 是否包含已知的內建 IDE / Whether to include known built-in IDEs */
 	includeKnownIDEs: boolean;
 	/** 自訂匯出路徑（未指定時由 Extension host 彈出對話框）/ Custom export path (Extension host shows dialog if not specified) */
@@ -449,7 +449,7 @@ export interface IMsg_ExportCustomIDEs
  */
 export interface IMsg_ExportSelectedSettings
 {
-	command: WebviewCommand.ExportSelectedSettings;
+	command: EnumWebviewCommand.ExportSelectedSettings;
 	/** 自訂匯出路徑（未指定時由 Extension host 彈出對話框）/ Custom export path (Extension host shows dialog if not specified) */
 	customPath?: string;
 }
@@ -460,7 +460,7 @@ export interface IMsg_ExportSelectedSettings
  */
 export interface IMsg_ExportAll
 {
-	command: WebviewCommand.ExportAll;
+	command: EnumWebviewCommand.ExportAll;
 	/** 是否包含已知的內建 IDE / Whether to include known built-in IDEs */
 	includeKnownIDEs: boolean;
 	/** 自訂匯出路徑（未指定時由 Extension host 彈出對話框）/ Custom export path (Extension host shows dialog if not specified) */
@@ -473,7 +473,7 @@ export interface IMsg_ExportAll
  */
 export interface IMsg_Import
 {
-	command: WebviewCommand.Import;
+	command: EnumWebviewCommand.Import;
 	/**
 	 * 自訂匯入檔案路徑（未指定時由 Extension host 彈出對話框）
 	 * Custom import file path (Extension host shows dialog if not specified)
@@ -524,7 +524,7 @@ export type IWebviewMessage =
  */
 export interface IMsg_SyncComplete
 {
-	command: HostCommand.SyncComplete;
+	command: EnumHostCommand.SyncComplete;
 }
 
 /**
@@ -536,7 +536,7 @@ export interface IMsg_SyncComplete
  */
 export interface IMsg_DeleteComplete
 {
-	command: HostCommand.DeleteComplete;
+	command: EnumHostCommand.DeleteComplete;
 }
 
 /**
@@ -545,7 +545,7 @@ export interface IMsg_DeleteComplete
  */
 export interface IMsg_AddCustomIDEComplete
 {
-	command: HostCommand.AddCustomIDEComplete;
+	command: EnumHostCommand.AddCustomIDEComplete;
 	/** 操作是否成功 / Whether the operation succeeded */
 	success: boolean;
 	/** 成功時：新增的 IDE 顯示名稱 / On success: display name of the added IDE */
@@ -568,7 +568,7 @@ export interface IMsg_AddCustomIDEComplete
  */
 export interface IMsg_DataRefreshed
 {
-	command: HostCommand.DataRefreshed;
+	command: EnumHostCommand.DataRefreshed;
 	/** 最新的 IDE 列表（含各 IDE 的設定鍵值對）/ Latest IDE list (including each IDE's setting key-value pairs) */
 	ideList: IIDEInfoWebview[];
 }
@@ -582,7 +582,7 @@ export interface IMsg_DataRefreshed
  */
 export interface IMsg_ExportPathSelected
 {
-	command: HostCommand.ExportPathSelected;
+	command: EnumHostCommand.ExportPathSelected;
 	/** 使用者選取的資料夾絕對路徑 / Absolute path of the folder selected by the user */
 	path: string;
 }
@@ -596,7 +596,7 @@ export interface IMsg_ExportPathSelected
  */
 export interface IMsg_ImportPathSelected
 {
-	command: HostCommand.ImportPathSelected;
+	command: EnumHostCommand.ImportPathSelected;
 	/** 使用者選取的檔案絕對路徑 / Absolute path of the file selected by the user */
 	path: string;
 }
@@ -607,7 +607,7 @@ export interface IMsg_ImportPathSelected
  */
 export interface IMsg_ExportComplete
 {
-	command: HostCommand.ExportComplete;
+	command: EnumHostCommand.ExportComplete;
 	/** 操作是否成功 / Whether the operation succeeded */
 	success: boolean;
 	/** 失敗時：錯誤訊息字串 / On failure: error message string */
@@ -620,7 +620,7 @@ export interface IMsg_ExportComplete
  */
 export interface IMsg_ImportComplete
 {
-	command: HostCommand.ImportComplete;
+	command: EnumHostCommand.ImportComplete;
 	/** 操作是否成功 / Whether the operation succeeded */
 	success: boolean;
 	/** 失敗時：錯誤訊息字串 / On failure: error message string */

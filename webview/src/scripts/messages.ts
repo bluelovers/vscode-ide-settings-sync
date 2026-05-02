@@ -15,7 +15,7 @@
 
 import { vscode } from '../index';
 import { ideList } from '../store';
-import { HostCommand } from '../webviewMessages';
+import { EnumHostCommand } from '../webviewMessages';
 
 /**
  * 在 `#message` 元素中顯示狀態訊息
@@ -67,15 +67,15 @@ export function initMessageHandler(): void
 
 		switch (message.command)
 		{
-			case HostCommand.SyncComplete:
+			case EnumHostCommand.SyncComplete:
 				showMessage('Settings synced successfully!', 'success');
 				break;
 
-			case HostCommand.DeleteComplete:
+			case EnumHostCommand.DeleteComplete:
 				showMessage('Settings deleted successfully!', 'success');
 				break;
 
-			case HostCommand.AddCustomIDEComplete:
+			case EnumHostCommand.AddCustomIDEComplete:
 				if (message.success)
 				{
 					showMessage(`✓ Custom IDE "${message.name}" added successfully!`, 'success');
@@ -86,7 +86,7 @@ export function initMessageHandler(): void
 				}
 				break;
 
-			case HostCommand.DataRefreshed:
+			case EnumHostCommand.DataRefreshed:
 				if (message.ideList)
 				{
 					ideList.value = message.ideList;
