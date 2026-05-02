@@ -13,7 +13,7 @@
  * are handled by `export-import.ts`.
  */
 
-import { IWebviewWindow } from '../types';
+import { EnumShowMessageType, IWebviewWindow } from '../types';
 import { vscode } from '../index';
 import { ideList } from '../store';
 import { EnumHostCommand, IHostMessage, IWebviewWindowMessageEvent } from '../webviewMessages';
@@ -28,7 +28,7 @@ import { EnumHostCommand, IHostMessage, IWebviewWindowMessageEvent } from '../we
  * @param text - 要顯示的訊息文字 / The message text to display
  * @param type - 視覺樣式類型 / Visual style type: 'success' | 'error' | 'info'
  */
-export function showMessage(text: string, type: 'success' | 'error' | 'info'): void
+export function showMessage(text: string, type: EnumShowMessageType): void
 {
 	const messageDiv = document.getElementById('message');
 	if (!messageDiv) return;

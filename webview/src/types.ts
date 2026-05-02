@@ -12,6 +12,13 @@ import { IIDEInfo } from '../../src/types';
 import { saveSearchHistory } from './scripts/memory';
 import { displayAllSettings, displaySelectedSettingsList, removeFromSelectedSettings, searchSettings } from './scripts/settings';
 
+export const enum EnumShowMessageType
+{
+	SUCCESS = 'success',
+	ERROR = 'error',
+	INFO = 'info'
+}
+
 /** ─── 語言相關型別 / Language-related types ─── */
 
 /**
@@ -152,7 +159,9 @@ export interface IImportResult
  */
 export type IWebviewWindow = Window & typeof globalThis & {
 	__INITIAL_STATE__: IWebviewState;
+} & IWebviewWindowApi;
 
+export type IWebviewWindowApi = {
 	displayAllSettings: typeof displayAllSettings;
 	searchSettings: typeof searchSettings;
 	removeFromSelectedSettings: typeof removeFromSelectedSettings;

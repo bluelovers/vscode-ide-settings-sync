@@ -203,7 +203,7 @@ export class SettingsSyncPanel
 			cspSource: this.panel.webview.cspSource,
 			webviewScriptUri: scriptUri?.toString() ?? '',
 			initialState: {
-				ideList: this.ideProvider.getIDEListToWebviewContent(),
+				ideList: availableIDEs,
 				currentLanguage: this.currentLanguage,
 				languageConfig: this.languageConfig,
 				currentIDEName,

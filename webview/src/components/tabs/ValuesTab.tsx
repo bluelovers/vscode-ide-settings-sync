@@ -8,7 +8,7 @@ export function ValuesTab() {
 					{/* @ts-ignore */}
 					<button className="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
 					{/* @ts-ignore */}
-					<button className="btn" onclick="saveAllSelectedSettings()" title="Save checked settings">💾 Save Selected Settings</button>
+					<button className="btn" onclick="addSelectedSettingsListOnAllPanel()" title="Add selected settings">💾 Add Selected Settings</button>
 					{/* @ts-ignore */}
 					<button className="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
 					{/* @ts-ignore */}

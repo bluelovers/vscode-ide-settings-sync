@@ -7,7 +7,7 @@ import { vscode } from '../index';
 import { showMessage } from './messages';
 import { searchQuery, checkedSettingKeys } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
-import { IWebviewWindow } from '../types';
+import { EnumShowMessageType, IWebviewWindow } from '../types';
 
 export function initializeMemory(): void
 {
@@ -46,22 +46,30 @@ export function saveSearchHistory(): void
 	vscode.postMessage({ command: EnumWebviewCommand.SaveSearchHistory, searchText });
 }
 
-export function saveSearchSelectedSettings(): void
+export function _saveSelectedSettingsListCore(selectedSettingsList: Iterable<string>, message: string, messageType: EnumShowMessageType): void
 {
-	const selectedSettings = Array.from(checkedSettingKeys.value);
+	const selectedSettings = Array.from(new Set(selectedSettingsList));
+
 	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 	state.savedSelectedSettings = selectedSettings;
+
 	vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings });
-	showMessage('✓ Search settings saved', 'success');
+
+	showMessage(message, messageType);
 }
 
-export function saveAllSelectedSettings(): void
+export function addSelectedSettingsListOnSearchPanel(): void
 {
-	const selectedSettings = Array.from(checkedSettingKeys.value);
 	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
-	state.savedSelectedSettings = selectedSettings;
-	vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings });
-	showMessage('✓ All settings saved', 'success');
+
+	_saveSelectedSettingsListCore([...state.savedSelectedSettings, ...checkedSettingKeys.value], '✓ Selected settings added', EnumShowMessageType.SUCCESS);
+}
+
+export function addSelectedSettingsListOnAllPanel(): void
+{
+	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
+
+	_saveSelectedSettingsListCore([...state.savedSelectedSettings, ...checkedSettingKeys.value], '✓ Selected settings added', EnumShowMessageType.SUCCESS);
 }
 
 export function saveSelectedIDEs(): void

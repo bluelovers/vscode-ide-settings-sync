@@ -70,8 +70,8 @@ import { changePrimaryLanguage, openLanguageConfig } from './scripts/language';
 import {
 	initializeMemory,
 	saveSearchHistory,
-	saveSearchSelectedSettings,
-	saveAllSelectedSettings,
+	addSelectedSettingsListOnSearchPanel,
+	addSelectedSettingsListOnAllPanel,
 	saveSelectedIDEs,
 } from './scripts/memory';
 import {
@@ -107,7 +107,8 @@ import { initStore, sourceIDEUuid, sourceIDEName, searchQuery } from './store';
 import { SearchResultsList, AllSettingsList, SelectedSettingsList } from './components/settings/SettingList';
 import { SourceIdeIndicator } from './components/ide/SourceIdeIndicator';
 import { IWebviewMessage } from './webviewMessages';
-import { IWebviewState } from './types';
+import { IWebviewState, IWebviewWindowApi } from './types';
+import { EnumWebviewElemSelector, queryWebviewElem } from './scripts/elem-get';
 
 /** ─── 掛載所有函數至 window / Mount all functions to window ─── */
 
@@ -124,7 +125,7 @@ import { IWebviewState } from './types';
  * Therefore all functions must be mounted to `window` when the bundle loads,
  * ensuring events can be triggered correctly.
  */
-Object.assign(window, {
+((extendsApi: IWebviewWindowApi) => Object.assign(window, extendsApi))({
 	/** UI 分頁切換 / UI tab switching */
 	switchTab,
 	/** 顯示狀態訊息 / Display status message */
@@ -137,10 +138,10 @@ Object.assign(window, {
 
 	/** 儲存搜尋字串至 globalState / Save search string to globalState */
 	saveSearchHistory,
-	/** 儲存搜尋結果中已勾選的設定 / Save checked settings from search results */
-	saveSearchSelectedSettings,
-	/** 儲存所有設定列表中已勾選的設定 / Save checked settings from all settings list */
-	saveAllSelectedSettings,
+	/** 儲存搜尋結果中已勾選的設定並添加到 globalState / Save checked settings from search results and add to globalState */
+	addSelectedSettingsListOnSearchPanel,
+	/** 儲存所有設定列表中已勾選的設定並添加到 globalState / Save checked settings from all settings list and add to globalState */
+	addSelectedSettingsListOnAllPanel,
 	/** 儲存已勾選的 IDE 索引 / Save checked IDE indices */
 	saveSelectedIDEs,
 
@@ -285,7 +286,7 @@ function initialize(): void
 	 * trigger automatic re-renders. Checkbox state is managed by checkedSettingKeys signal
 	 * and persists across refreshes.
 	 */
-	const searchResultsEl = document.getElementById('searchResults');
+	const searchResultsEl = queryWebviewElem<HTMLDivElement>(EnumWebviewElemSelector.searchResults);
 	if (searchResultsEl)
 	{
 		hydrate(<SearchResultsList />, searchResultsEl);

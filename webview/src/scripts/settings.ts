@@ -12,7 +12,8 @@ import { vscode } from '../index';
 import { showMessage } from './messages';
 import { sourceIDEUuid } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
-import { IWebviewState, IWebviewWindow } from '../types';
+import { EnumShowMessageType, IWebviewState, IWebviewWindow } from '../types';
+import { EnumWebviewElemSelector, queryWebviewElem } from './elem-get';
 
 /**
  * 取得注入的初始狀態物件的便捷存取器
@@ -231,7 +232,7 @@ export function searchSettings(): void
 {
 	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
 	const query = searchInput?.value?.toLowerCase() ?? '';
-	const resultsDiv = document.getElementById('searchResults');
+	const resultsDiv = queryWebviewElem<HTMLDivElement>(EnumWebviewElemSelector.searchResults);
 	if (!resultsDiv) return;
 	resultsDiv.innerHTML = '';
 
@@ -404,7 +405,7 @@ export function clearSearch(): void
 {
 	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
 	if (searchInput) searchInput.value = '';
-	const searchResults = document.getElementById('searchResults');
+	const searchResults = queryWebviewElem<HTMLDivElement>(EnumWebviewElemSelector.searchResults);
 	if (searchResults) searchResults.innerHTML = '';
 	/**
 	 * 儲存清空後的搜尋字串，確保 globalState 與 UI 同步
@@ -433,7 +434,7 @@ export function removeFromSelectedSettings(key: string): void
 		savedSelectedSettings.splice(index, 1);
 		vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings: savedSelectedSettings });
 		(window as any as IWebviewWindow).displaySelectedSettingsList?.();
-		showMessage(`✓ Removed "${key}" from selected settings`, 'success');
+		showMessage(`✓ Removed "${key}" from selected settings`, EnumShowMessageType.SUCCESS);
 	}
 }
 
@@ -453,7 +454,7 @@ export function clearAllSelectedSettings(): void
 		state.savedSelectedSettings = [];
 		vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings: [] });
 		(window as any as IWebviewWindow).displaySelectedSettingsList?.();
-		showMessage('✓ All selected settings cleared', 'success');
+		showMessage('✓ All selected settings cleared', EnumShowMessageType.SUCCESS);
 	}
 }
 
@@ -464,5 +465,5 @@ export function clearAllSelectedSettings(): void
 export function refreshSettings(): void
 {
 	vscode.postMessage({ command: EnumWebviewCommand.RefreshData });
-	showMessage('⟳ Settings refreshed', 'info');
+	showMessage('⟳ Settings refreshed', EnumShowMessageType.INFO);
 }
