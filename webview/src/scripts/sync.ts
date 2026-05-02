@@ -11,6 +11,7 @@
 import { vscode } from '../index';
 import { showMessage } from './messages';
 import { checkedSettingKeys, sourceIDEUuid } from '../store';
+import { WebviewCommand } from '../webviewMessages';
 
 /**
  * 收集當前已勾選的 IDE 與設定，向 Extension host 發送 `syncSettings` 指令
@@ -56,7 +57,7 @@ export function syncSettings(): void
 	const sourceIndex = sourceRadio?.dataset.index;
 
 	vscode.postMessage({
-		command: 'syncSettings',
+		command: WebviewCommand.SyncSettings,
 		sourceIDE: sourceIndex,
 		targetIDEs: selectedIDEs.filter(index => String(index) !== sourceIndex),
 		settings: selectedSettings,
@@ -101,7 +102,7 @@ export function deleteSettings(): void
 	if (confirm(`Delete ${selectedSettings.length} setting(s) from ${selectedIDEs.length} IDE(s)?`))
 	{
 		vscode.postMessage({
-			command: 'deleteSettings',
+			command: WebviewCommand.DeleteSettings,
 			ideIndices: selectedIDEs,
 			settings: selectedSettings,
 		});

@@ -13,6 +13,7 @@ import cssContent from './settingsSyncPanel.scss';
 import { renderJsxToString } from '../utils/render-jsx';
 import { saveIDECache, loadIDECache, exportIDECache, importIDECache } from '../utils/ideCache';
 import { _performSyncCore } from '../utils/settingsSync';
+import { WebviewCommand, HostCommand, IWebviewMessage, IHostMessage } from './webviewMessages';
 // @ts-ignore — webview/src/app.tsx uses automatic JSX; imported here for SSR only
 import { App, IAppProps } from '../../webview/src/app';
 
@@ -87,6 +88,11 @@ export class SettingsSyncPanel
 	 *
 	 * @param refreshIDEList whether to refresh the IDE list (default true)
 	 */
+	private postToWebview(message: IHostMessage): void
+	{
+		this.panel.webview.postMessage(message);
+	}
+
 	private async updateWebview(refreshIDEList: boolean = true): Promise<void>
 	{
 		if (refreshIDEList)
@@ -146,8 +152,8 @@ export class SettingsSyncPanel
 		 * Push data to Webview: messages.ts on the Webview side receives this,
 		 * updates the ideList signal, and Preact components re-render automatically.
 		 */
-		this.panel.webview.postMessage({
-			command: 'dataRefreshed',
+		this.postToWebview({
+			command: HostCommand.DataRefreshed,
 			ideList,
 		});
 	}
@@ -232,114 +238,91 @@ export class SettingsSyncPanel
 	private setupMessageHandler(): void
 	{
 		this.panel.webview.onDidReceiveMessage(
-			async (message) =>
+			async (message: IWebviewMessage) =>
 			{
 				switch (message.command)
 				{
-					case 'requestAddCustomIDE':
-						// 使用 VS Code 的輸入框來取得路徑
-						// Use VS Code's input box to get path
+					case WebviewCommand.RequestAddCustomIDE: {
 						const path = await vscode.window.showInputBox({
 							prompt: 'Enter the path to the IDE settings folder (containing settings.json)',
 							placeHolder: 'e.g., C:\\Users\\User\\AppData\\Roaming\\Code\\User',
 						});
 						if (!path) break;
-
-						// 取得名稱
-						// Get name
 						const name = await vscode.window.showInputBox({
 							prompt: 'Enter a name for this IDE',
 							placeHolder: 'e.g., My VS Code',
 						});
 						if (!name) break;
-
-						// 新增 IDE
-						// Add IDE
 						try
 						{
 							await this.ideProvider.addCustomIDE(name, path);
 							await this.updateWebview();
-							this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: true, name });
+							this.postToWebview({ command: HostCommand.AddCustomIDEComplete, success: true, name });
 						}
 						catch (error)
 						{
-							const errorMessage = error instanceof Error ? error.message : String(error);
-							this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: false, error: errorMessage });
+							this.postToWebview({ command: HostCommand.AddCustomIDEComplete, success: false, error: String(error instanceof Error ? error.message : error) });
 						}
 						break;
+					}
 
-					case 'addCustomIDE':
+					case WebviewCommand.AddCustomIDE:
 						try
 						{
 							await this.ideProvider.addCustomIDE(message.name, message.path);
 							await this.updateWebview();
-							this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: true, name: message.name });
+							this.postToWebview({ command: HostCommand.AddCustomIDEComplete, success: true, name: message.name });
 						}
 						catch (error)
 						{
-							const errorMessage = error instanceof Error ? error.message : String(error);
-							this.panel.webview.postMessage({ command: 'addCustomIDEComplete', success: false, error: errorMessage });
+							this.postToWebview({ command: HostCommand.AddCustomIDEComplete, success: false, error: String(error instanceof Error ? error.message : error) });
 						}
 						break;
 
-					case 'removeCustomIDE':
-						const confirm = await vscode.window.showWarningMessage(
+					case WebviewCommand.RemoveCustomIDE: {
+						const confirmRemove = await vscode.window.showWarningMessage(
 							`Remove custom IDE "${message.name}"?`,
 							{ modal: true },
 							'Remove',
 							'Cancel',
 						);
-						if (confirm === 'Remove')
+						if (confirmRemove === 'Remove')
 						{
 							await this.ideProvider.removeCustomIDEByUuid(message.uuid);
 							await this.updateWebview();
 						}
 						break;
+					}
 
-					case 'openSettingsJson':
+					case WebviewCommand.OpenSettingsJson:
 						await this.openSettingsJsonFile(message.idePath, message.ideName);
 						break;
 
-					case 'syncSettings':
-						await this.performSync(message.sourceIDE, message.targetIDEs, message.settings);
-						this.panel.webview.postMessage({ command: 'syncComplete' });
-						/**
-						 * sync 後只有設定值改變，IDE 列表結構不變，
-						 * 使用 pushDataRefresh 推送最新資料，避免整頁重繪。
-						 * After sync, only setting values change; IDE list structure is unchanged.
-						 * Use pushDataRefresh to push latest data, avoiding full page redraw.
-						 */
+					case WebviewCommand.SyncSettings:
+						await this.performSync(
+							message.sourceIDE !== undefined ? parseInt(message.sourceIDE) : NaN,
+							message.targetIDEs,
+							message.settings,
+						);
+						this.postToWebview({ command: HostCommand.SyncComplete });
 						await this.pushDataRefresh();
 						break;
 
-					case 'deleteSettings':
+					case WebviewCommand.DeleteSettings:
 						await this.performDelete(message.ideIndices, message.settings);
-						this.panel.webview.postMessage({ command: 'deleteComplete' });
-						/**
-						 * delete 後只有設定值改變，IDE 列表結構不變，
-						 * 使用 pushDataRefresh 推送最新資料，避免整頁重繪。
-						 * After delete, only setting values change; IDE list structure is unchanged.
-						 * Use pushDataRefresh to push latest data, avoiding full page redraw.
-						 */
+						this.postToWebview({ command: HostCommand.DeleteComplete });
 						await this.pushDataRefresh();
 						break;
 
-					case 'refreshIDEs':
-						// full refresh: re-scan for IDE installations (IDE list structure may change)
+					case WebviewCommand.RefreshIDEs:
 						await this.updateWebview(true);
 						break;
 
-					case 'refreshData':
-						/**
-						 * 使用者手動刷新：只有設定值可能改變，IDE 列表結構不變，
-						 * 使用 pushDataRefresh 推送最新資料，避免整頁重繪。
-						 * User-triggered refresh: only setting values may change; IDE list structure unchanged.
-						 * Use pushDataRefresh to push latest data, avoiding full page redraw.
-						 */
+					case WebviewCommand.RefreshData:
 						await this.pushDataRefresh();
 						break;
 
-					case 'changePrimaryLanguage':
+					case WebviewCommand.ChangePrimaryLanguage:
 						if (message.language)
 						{
 							this.languageConfig.primary = message.language as ILanguageCode;
@@ -347,35 +330,34 @@ export class SettingsSyncPanel
 						}
 						break;
 
-					case 'openLanguageConfig':
+					case WebviewCommand.OpenLanguageConfig:
 						vscode.commands.executeCommand('vscode-ide-settings-sync.configLanguage');
 						break;
 
-					case 'openIDEFolder':
+					case WebviewCommand.OpenIDEFolder:
 						if (message.path)
 						{
 							vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(message.path));
 						}
 						break;
 
-					case 'saveSearchHistory':
+					case WebviewCommand.SaveSearchHistory:
 						this.context.globalState.update(EnumGlobalStateName.searchHistory, message.searchText);
 						break;
 
-					case 'saveSelectedSettings':
+					case WebviewCommand.SaveSelectedSettings:
 						this.context.globalState.update(EnumGlobalStateName.selectedSettings, message.selectedSettings);
 						break;
 
-					case 'saveSelectedIDEs':
+					case WebviewCommand.SaveSelectedIDEs:
 						this.context.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
 						break;
 
-					case 'selectSourceIDE':
-						// 儲存來源 IDE UUID 到 globalState，實現持久化
+					case WebviewCommand.SelectSourceIDE:
 						this.context.globalState.update(EnumGlobalStateName.sourceIDEUuid, message.uuid);
 						break;
 
-					case 'browseExportPath':
+					case WebviewCommand.BrowseExportPath: {
 						const exportPath = await vscode.window.showOpenDialog({
 							canSelectFiles: false,
 							canSelectFolders: true,
@@ -385,94 +367,72 @@ export class SettingsSyncPanel
 						});
 						if (exportPath && exportPath[0])
 						{
-							this.panel.webview.postMessage({
-								command: 'exportPathSelected',
-								path: exportPath[0].fsPath,
-							});
+							this.postToWebview({ command: HostCommand.ExportPathSelected, path: exportPath[0].fsPath });
 						}
 						break;
+					}
 
-					case 'browseImportPath':
+					case WebviewCommand.BrowseImportPath: {
 						const importPath = await vscode.window.showOpenDialog({
 							canSelectFiles: true,
 							canSelectFolders: false,
 							canSelectMany: false,
-							filters: {
-								'JSON Files': ['json'],
-							},
+							filters: { 'JSON Files': ['json'] },
 							openLabel: 'Select Import File',
 							title: 'Select file to import',
 						});
 						if (importPath && importPath[0])
 						{
-							this.panel.webview.postMessage({
-								command: 'importPathSelected',
-								path: importPath[0].fsPath,
-							});
+							this.postToWebview({ command: HostCommand.ImportPathSelected, path: importPath[0].fsPath });
 						}
 						break;
+					}
 
-					case 'exportCustomIDEs':
+					case WebviewCommand.ExportCustomIDEs:
 						try
 						{
 							await vscode.commands.executeCommand('ide-sync.exportCustomIDEs');
-							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
+							this.postToWebview({ command: HostCommand.ExportComplete, success: true });
 						}
 						catch (error)
 						{
-							this.panel.webview.postMessage({
-								command: 'exportComplete',
-								success: false,
-								error: error instanceof Error ? error.message : String(error),
-							});
+							this.postToWebview({ command: HostCommand.ExportComplete, success: false, error: String(error instanceof Error ? error.message : error) });
 						}
 						break;
 
-					case 'exportSelectedSettings':
+					case WebviewCommand.ExportSelectedSettings:
 						try
 						{
 							await vscode.commands.executeCommand('ide-sync.exportSelectedSettings');
-							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
+							this.postToWebview({ command: HostCommand.ExportComplete, success: true });
 						}
 						catch (error)
 						{
-							this.panel.webview.postMessage({
-								command: 'exportComplete',
-								success: false,
-								error: error instanceof Error ? error.message : String(error),
-							});
+							this.postToWebview({ command: HostCommand.ExportComplete, success: false, error: String(error instanceof Error ? error.message : error) });
 						}
 						break;
 
-					case 'exportAll':
+					case WebviewCommand.ExportAll:
 						try
 						{
 							await vscode.commands.executeCommand('ide-sync.exportAll');
-							this.panel.webview.postMessage({ command: 'exportComplete', success: true });
+							this.postToWebview({ command: HostCommand.ExportComplete, success: true });
 						}
 						catch (error)
 						{
-							this.panel.webview.postMessage({
-								command: 'exportComplete',
-								success: false,
-								error: error instanceof Error ? error.message : String(error),
-							});
+							this.postToWebview({ command: HostCommand.ExportComplete, success: false, error: String(error instanceof Error ? error.message : error) });
 						}
 						break;
 
-					case 'import':
+					case WebviewCommand.Import:
 						try
 						{
 							await vscode.commands.executeCommand('ide-sync.import');
-							this.panel.webview.postMessage({ command: 'importComplete', success: true });
+							this.postToWebview({ command: HostCommand.ImportComplete, success: true });
 						}
 						catch (error)
 						{
-							this.panel.webview.postMessage({
-								command: 'importComplete',
-								success: false,
-								error: error instanceof Error ? error.message : String(error),
-							});
+							this.postToWebview({ command: HostCommand.ImportComplete, success: false, error: String(error instanceof Error ? error.message : error) });
 						}
 						break;
 				}

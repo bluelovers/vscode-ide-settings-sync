@@ -15,6 +15,7 @@
 
 import { vscode } from '../index';
 import { ideList } from '../store';
+import { HostCommand } from '../webviewMessages';
 
 /**
  * 在 `#message` 元素中顯示狀態訊息
@@ -66,21 +67,15 @@ export function initMessageHandler(): void
 
 		switch (message.command)
 		{
-			case 'syncComplete':
+			case HostCommand.SyncComplete:
 				showMessage('Settings synced successfully!', 'success');
-				/**
-				 * syncComplete 之後 Extension host 會緊接著推送 dataRefreshed，
-				 * 由 dataRefreshed handler 更新 ideList signal，不需要在此重新請求資料。
-				 * After syncComplete the Extension host immediately pushes dataRefreshed;
-				 * the dataRefreshed handler updates the ideList signal — no need to request data here.
-				 */
 				break;
 
-			case 'deleteComplete':
+			case HostCommand.DeleteComplete:
 				showMessage('Settings deleted successfully!', 'success');
 				break;
 
-			case 'addCustomIDEComplete':
+			case HostCommand.AddCustomIDEComplete:
 				if (message.success)
 				{
 					showMessage(`✓ Custom IDE "${message.name}" added successfully!`, 'success');
@@ -91,33 +86,10 @@ export function initMessageHandler(): void
 				}
 				break;
 
-			/**
-			 * Extension host 推送最新的 IDE 設定資料（不整頁重繪）
-			 * Extension host pushes the latest IDE settings data (no full page redraw)
-			 *
-			 * 觸發時機：syncSettings、deleteSettings、refreshData 完成後
-			 * Triggered after: syncSettings, deleteSettings, refreshData complete
-			 *
-			 * 更新 ideList signal 後：
-			 * - SearchResultsList、AllSettingsList、SelectedSettingsList 自動重新渲染
-			 * - checkedSettingKeys signal 保持不變，checkbox 勾選狀態完整保留
-			 * - 分頁位置、搜尋字串等 UI 狀態不受影響
-			 *
-			 * After updating ideList signal:
-			 * - SearchResultsList, AllSettingsList, SelectedSettingsList re-render automatically
-			 * - checkedSettingKeys signal unchanged, checkbox state fully preserved
-			 * - Tab position, search string, and other UI state unaffected
-			 */
-			case 'dataRefreshed':
+			case HostCommand.DataRefreshed:
 				if (message.ideList)
 				{
 					ideList.value = message.ideList;
-					/**
-					 * 同步更新 __INITIAL_STATE__ 確保其他仍使用 getState() 的模組
-					 * 也能讀到最新資料（向後相容）。
-					 * Sync-update __INITIAL_STATE__ so other modules still using getState()
-					 * can also read the latest data (backward compatibility).
-					 */
 					const state = (window as any).__INITIAL_STATE__ ?? {};
 					state.ideList = message.ideList;
 				}
