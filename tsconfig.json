@@ -8,7 +8,6 @@
     "module": "preserve",
     "declaration": true,
     "outDir": "./out",
-    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -18,6 +17,6 @@
     "preserveConstEnums": true,
     "types": ["node"]
   },
-  "include": ["src"],
+  "include": ["src", "webview/src"],
   "exclude": ["node_modules", ".vscode-test"]
 }

@@ -186,113 +186,17 @@ function UnavailableIDEItem(props: {
 	</>)
 }
 
+/**
+ * @deprecated JS 邏輯已遷移至 `webview/src/scripts/ide.ts`，由 esbuild bundle 提供。
+ * 組件本身已移至 `webview/src/components/IDEList.tsx`。
+ * @deprecated JS logic has been migrated to `webview/src/scripts/ide.ts`, provided by the esbuild bundle.
+ * The component itself has been moved to `webview/src/components/IDEList.tsx`.
+ */
 export function IDEListScript()
 {
-	const js = `
-	/**
-	 * 移除自訂 IDE
-	 * Remove custom IDE
-	 *
-	 * @param params - 移除參數物件，包含 index, uuid, name, nativePath
-	 */
-	function removeCustomIDE(params)
-	{
-		vscode.postMessage({ command: 'removeCustomIDE', ...params });
-	}
-
-	function openIDEFolder(folderPath)
-	{
-		vscode.postMessage({ command: 'openIDEFolder', path: folderPath });
-	}
-
-	function openSettingsJson(idePath, ideName)
-	{
-		vscode.postMessage({ command: 'openSettingsJson', idePath, ideName });
-	}
-
-	function addCustomIDE()
-	{
-		// 使用 VS Code 的輸入框來取得路徑和名稱
-		// Use VS Code's input box to get path and name
-		vscode.postMessage({ command: 'requestAddCustomIDE' });
-	}
-
-	/**
-	 * Ask the extension to re-scan the system for IDE installations.
-	 * This will update the IDE list itself and then rebuild the webview.
-	 * 請求擴充套件重新掃描 IDE 安裝，更新 IDE 列表並重建視窗。
-	 *
-	 * @jsdoc
-	 */
-	function refreshIDEs()
-	{
-		vscode.postMessage({ command: 'refreshIDEs' });
-	}
-
-	/**
-	 * 處理來源 IDE 選擇變更
-	 * 當使用者點擊 radio 按鈕選擇來源 IDE 時觸發
-	 * 使用 UUID 而非 index，以確保持久化
-	 */
-	function handleSourceIDEChange(event)
-	{
-		const sourceUuid = event.target.value;
-		const sourceName = event.target.dataset.name || event.target.closest('.ide-item')?.querySelector('.ide-checkbox')?.dataset.name;
-
-		// 更新來源 IDE 指示器顯示
-		const indicators = document.querySelectorAll('.source-ide-indicator .source-name');
-		indicators.forEach((indicator) =>
-		{
-			if (indicator)
-			{
-				indicator.textContent = sourceName || 'Not selected';
-			}
-		});
-
-		// 更新所有 IDE 項目的 source-ide 類別
-		const allItems = document.querySelectorAll('.ide-item');
-		allItems.forEach((item) =>
-		{
-			const checkbox = item.querySelector('.ide-checkbox');
-			if (checkbox && checkbox.dataset.uuid === sourceUuid)
-			{
-				item.classList.add('source-ide');
-			}
-			else
-			{
-				item.classList.remove('source-ide');
-			}
-		});
-
-		// 發送訊息到 VS Code 擴充套件（使用 UUID 而非 index）
-		vscode.postMessage({ command: 'selectSourceIDE', uuid: sourceUuid, name: sourceName });
-	}
-
-	// 初始化來源 IDE radio 的事件監聽
-	document.addEventListener('DOMContentLoaded', function()
-	{
-		const sourceRadios = document.querySelectorAll('.ide-source-radio');
-		sourceRadios.forEach(radio =>
-		{
-			radio.addEventListener('change', handleSourceIDEChange);
-		});
-	});
-	`;
-
-	return (<script dangerouslySetInnerHTML={{ __html: js }} />)
+	return null;
 }
 
-/**
- * IDE 列表組件
- * 渲染可用和不可用的 IDE 列表
- *
- * 設計說明：
- * 由於需要使用原生 HTML onclick 屬性來呼叫全局 JavaScript 函數，
- * 內部使用 HTML 字串拼接而非 JSX，以確保正確的屬性輸出。
- *
- * @param props - IDE 列表屬性
- * @returns 渲染的 IDE 列表容器
- */
 export function IDEList({
 	availableIDEs,
 	unavailableIDEs,
@@ -300,7 +204,6 @@ export function IDEList({
 	sourceIDEUuid,
 }: IIDEListProps)
 {
-	// 計算預設來源 IDE UUID（如果未指定，則選擇第一個可用 IDE）
 	const defaultSourceUuid = sourceIDEUuid ?? (availableIDEs.length > 0 ? availableIDEs[0].uuid : undefined);
 
 	return (<>
@@ -322,13 +225,11 @@ export function IDEListSection({
 	sourceIDEUuid,
 }: IIDEListProps)
 {
-	// 計算預設來源 IDE UUID（如果未指定，則選擇第一個可用 IDE）
 	const defaultSourceUuid = sourceIDEUuid ?? (availableIDEs.length > 0 ? availableIDEs[0].uuid : undefined);
 	const sourceIDE = availableIDEs.find(ide => ide.uuid === defaultSourceUuid);
 	const sourceIDEName = sourceIDE?.name;
 
 	return (<>
-		<IDEListScript />
 		<div className="section">
 			<h2>Select IDEs</h2>
 			<IDEList availableIDEs={availableIDEs} unavailableIDEs={unavailableIDEs} currentIDEName={currentIDEName}

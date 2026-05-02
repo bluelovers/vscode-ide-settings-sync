@@ -10,13 +10,19 @@ interface IExportImportPanelProps
 	isProcessing?: boolean;
 }
 
+/**
+ * 匯出/匯入面板組件（SSR 版本，保留供 src/ 內部使用）
+ * Export/Import panel component (SSR version, kept for internal use within src/)
+ *
+ * @deprecated 請改用 webview/src/components/ExportImportPanel.tsx
+ * @deprecated Use webview/src/components/ExportImportPanel.tsx instead
+ */
 export function ExportImportPanel({
 	importResult,
 	isProcessing = false,
 }: IExportImportPanelProps)
 {
 	return (<>
-		<ExportImportScript />
 		<div class="export-import-section">
 			<div class="section">
 				<h2>Export / Import Settings</h2>
@@ -66,102 +72,4 @@ export function ExportImportPanel({
 			</div>
 		</div>
 	</>);
-}
-
-export function ExportImportScript()
-{
-	const js = `
-		// Handle path selection responses
-		window.addEventListener('message', event => {
-			const message = event.data;
-			
-			switch (message.command) {
-				case 'exportPathSelected':
-					// Fill all export path inputs with the selected path
-					document.getElementById('exportCustomPath').value = message.path;
-					document.getElementById('exportSelectedPath').value = message.path;
-					document.getElementById('exportAllPath').value = message.path;
-					break;
-					
-				case 'importPathSelected':
-					// Fill import path input with the selected path
-					document.getElementById('importPath').value = message.path;
-					break;
-					
-				case 'exportComplete':
-					// Handle export completion
-					if (message.success) {
-						console.log('Export completed successfully');
-					} else {
-						console.error('Export failed:', message.error);
-					}
-					break;
-					
-				case 'importComplete':
-					// Handle import completion
-					if (message.success) {
-						console.log('Import completed successfully');
-					} else {
-						console.error('Import failed:', message.error);
-					}
-					break;
-			}
-		});
-
-		function handleExportCustomIDEs()
-		{
-			const customPath = document.getElementById('exportCustomPath').value;
-			const includeKnownIDEs = document.getElementById('exportIncludeKnownIDEs').checked;
-			
-			vscode.postMessage({ 
-				command: 'exportCustomIDEs', 
-				includeKnownIDEs: includeKnownIDEs,
-				customPath: customPath || undefined
-			});
-		}
-
-		function handleExportSelectedSettings()
-		{
-			const customPath = document.getElementById('exportSelectedPath').value;
-			
-			vscode.postMessage({ 
-				command: 'exportSelectedSettings',
-				customPath: customPath || undefined
-			});
-		}
-
-		function handleExportAll()
-		{
-			const customPath = document.getElementById('exportAllPath').value;
-			const includeKnownIDEs = document.getElementById('exportAllIncludeKnownIDEs').checked;
-			
-			vscode.postMessage({ 
-				command: 'exportAll', 
-				includeKnownIDEs: includeKnownIDEs,
-				customPath: customPath || undefined
-			});
-		}
-
-		function handleImport()
-		{
-			const customPath = document.getElementById('importPath').value;
-			
-			vscode.postMessage({ 
-				command: 'import',
-				customPath: customPath || undefined
-			});
-		}
-
-		function handleBrowseExportPath()
-		{
-			vscode.postMessage({ command: 'browseExportPath' });
-		}
-
-		function handleBrowseImportPath()
-		{
-			vscode.postMessage({ command: 'browseImportPath' });
-		}
-	`;
-
-	return (<script dangerouslySetInnerHTML={{ __html: js }} />)
 }

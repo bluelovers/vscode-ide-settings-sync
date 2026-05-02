@@ -8,20 +8,27 @@
  * 資料夾名稱的優先順序：
  * - 請將最常見或最可能成功的名稱放在前面
  * - 系統會依序嘗試各個名稱
+ *
+ * 範例：
+ * - C:\Users\User\AppData\Roaming\<IDE Folder Name>\User
  */
 export const knownIDEs = [
 	{
 		name: 'Visual Studio Code',
-		// 標準的 VS Code 資料夾名稱
-		// Standard VS Code folder name
+		/**
+		 * 標準的 VS Code 資料夾名稱
+		 * Standard VS Code folder name
+		 */
 		appFolderNames: ['Code'],
 	},
 	{
 		name: 'Visual Studio Code - Insiders',
-		// VS Code Insiders 可能使用 "Code - Insiders" 或 "Code-Insiders"
-		// VS Code Insiders may use "Code - Insiders" or "Code-Insiders"
-		// 重要：空格版本 "Code - Insiders" 應優先嘗試
-		// Important: Space version "Code - Insiders" should be tried first
+		/**
+		 * VS Code Insiders 可能使用 "Code - Insiders" 或 "Code-Insiders"
+		 * VS Code Insiders may use "Code - Insiders" or "Code-Insiders"
+		 * 重要：空格版本 "Code - Insiders" 應優先嘗試
+		 * Important: Space version "Code - Insiders" should be tried first
+		 */
 		appFolderNames: ['Code - Insiders', 'Code-Insiders', 'CodeInsiders'],
 	},
 	{
@@ -30,19 +37,24 @@ export const knownIDEs = [
 	},
 	{
 		name: 'CodeBuddy CN',
-		// CodeBuddy CN 可能使用空格或連字符
-		// CodeBuddy CN may use spaces or hyphens
+		/**
+		 * CodeBuddy CN 可能使用空格或連字符
+		 * CodeBuddy CN may use spaces or hyphens
+		 */
 		appFolderNames: ['CodeBuddy CN', 'CodeBuddy-CN', 'CodeBuddyCN'],
 	},
 	{
 		name: 'Windsurf',
-		// Windsurf 可能的資料夾名稱變化
-		// Possible Windsurf folder name variations
 		appFolderNames: ['Windsurf'],
 	},
 	{
-	  name: 'kiro',
-	  appFolderNames: ['Kiro', 'kiro']
+		name: 'kiro',
+		appFolderNames: ['Kiro', 'kiro']
+	}
+	,
+	{
+		name: 'Cursor',
+		appFolderNames: ['Cursor'],
 	}
 ] as const;
 

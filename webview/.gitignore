@@ -1,0 +1,4 @@
+# tsc 副產物（webview 使用 noEmit，實際打包由 esbuild 負責）
+# tsc artifacts (webview uses noEmit, actual bundling is handled by esbuild)
+src/**/*.js
+src/**/*.d.ts

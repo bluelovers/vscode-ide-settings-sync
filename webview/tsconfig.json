@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "lib": ["ES2020", "ES2021", "DOM", "DOM.Iterable"],
+    "outDir": "../dist/webview",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "preact": ["../node_modules/preact"],
+      "preact/*": ["../node_modules/preact/*"]
+    }
+  },
+  "include": ["src/**/*", "../src/**/*"],
+  "exclude": ["node_modules", "../node_modules"]
+}

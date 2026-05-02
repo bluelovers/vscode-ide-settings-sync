@@ -1,6 +1,9 @@
 /**
  * Export/Import 組件測試
  * Export/Import Component Tests
+ *
+ * 測試 webview/src/components/ 下的匯出/匯入相關組件。
+ * Tests export/import related components under webview/src/components/.
  */
 
 /** @jsx h */
@@ -8,8 +11,8 @@
 
 import { h, Fragment } from 'preact';
 import { render as renderToString } from 'preact-render-to-string';
-import { ExportImportPanel } from '../../src/webview/components/ExportImportPanel';
-import { IImportResult } from '../../src/types';
+import { ExportImportPanel } from '../../webview/src/components/ExportImportPanel';
+import { IImportResult } from '../../webview/src/types';
 
 describe('ExportImportPanel Components', () =>
 {
@@ -17,7 +20,7 @@ describe('ExportImportPanel Components', () =>
 	{
 		it('should render path input with browse button', () =>
 		{
-			const { PathInput } = require('../../src/webview/components/export-import/PathInput');
+			const { PathInput } = require('../../webview/src/components/export-import/PathInput');
 			const html = renderToString(
 				<PathInput
 					id="test-path"
@@ -35,7 +38,7 @@ describe('ExportImportPanel Components', () =>
 
 		it('should render with default browse handler', () =>
 		{
-			const { PathInput } = require('../../src/webview/components/export-import/PathInput');
+			const { PathInput } = require('../../webview/src/components/export-import/PathInput');
 			const html = renderToString(
 				<PathInput
 					id="test-path"
@@ -51,7 +54,7 @@ describe('ExportImportPanel Components', () =>
 	{
 		it('should render checkbox with label', () =>
 		{
-			const { CheckboxOption } = require('../../src/webview/components/export-import/CheckboxOption');
+			const { CheckboxOption } = require('../../webview/src/components/export-import/CheckboxOption');
 			const html = renderToString(
 				<CheckboxOption
 					id="test-checkbox"
@@ -66,7 +69,7 @@ describe('ExportImportPanel Components', () =>
 
 		it('should render with checked state', () =>
 		{
-			const { CheckboxOption } = require('../../src/webview/components/export-import/CheckboxOption');
+			const { CheckboxOption } = require('../../webview/src/components/export-import/CheckboxOption');
 			const html = renderToString(
 				<CheckboxOption
 					id="test-checkbox"
@@ -83,7 +86,7 @@ describe('ExportImportPanel Components', () =>
 	{
 		it('should render action button', () =>
 		{
-			const { ActionBtn } = require('../../src/webview/components/export-import/ActionBtn');
+			const { ActionBtn } = require('../../webview/src/components/export-import/ActionBtn');
 			const html = renderToString(
 				<ActionBtn
 					onClick="handleTest()"
@@ -101,7 +104,7 @@ describe('ExportImportPanel Components', () =>
 
 		it('should render disabled state', () =>
 		{
-			const { ActionBtn } = require('../../src/webview/components/export-import/ActionBtn');
+			const { ActionBtn } = require('../../webview/src/components/export-import/ActionBtn');
 			const html = renderToString(
 				<ActionBtn
 					onClick="handleTest()"
@@ -116,7 +119,7 @@ describe('ExportImportPanel Components', () =>
 
 		it('should render processing state', () =>
 		{
-			const { ActionBtn } = require('../../src/webview/components/export-import/ActionBtn');
+			const { ActionBtn } = require('../../webview/src/components/export-import/ActionBtn');
 			const html = renderToString(
 				<ActionBtn
 					onClick="handleTest()"
@@ -176,16 +179,19 @@ describe('ExportImportPanel Components', () =>
 			expect(html).toContain('⏳ Processing...');
 		});
 
-		it('should include ExportImportScript', () =>
+		it('should not include inline script tags (JS logic is in webview bundle)', () =>
 		{
+			/**
+			 * ExportImportPanel 不應包含 inline <script> 標籤，
+			 * 所有 JS 邏輯由 webview bundle（dist/webview/index.js）提供。
+			 * ExportImportPanel should not contain inline <script> tags;
+			 * all JS logic is provided by the webview bundle (dist/webview/index.js).
+			 */
 			const html = renderToString(
 				<ExportImportPanel />,
 			);
 
-			expect(html).toContain('<script');
-			expect(html).toContain('handleExportCustomIDEs');
-			expect(html).toContain('handleImport');
-			expect(html).toContain('window.addEventListener');
+			expect(html).not.toContain('<script');
 		});
 	});
 });
