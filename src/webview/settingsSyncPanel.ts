@@ -103,6 +103,55 @@ export class SettingsSyncPanel
 		this.panel.webview.html = this.getWebviewContent();
 	}
 
+	/**
+	 * 推送最新的 IDE 設定資料至 Webview，不重繪整頁 HTML。
+	 * Push the latest IDE settings data to the Webview without redrawing the entire HTML.
+	 *
+	 * 適用於只有設定值改變（sync / delete / refreshData）的情況：
+	 * - IDE 列表結構不變（沒有新增/移除 IDE）
+	 * - Webview 端收到 `dataRefreshed` 訊息後更新 `ideList` signal
+	 * - Preact 組件自動重新渲染，checkbox 勾選狀態保留
+	 * - 分頁位置、搜尋字串等 UI 狀態不受影響
+	 *
+	 * Use when only setting values change (sync / delete / refreshData):
+	 * - IDE list structure unchanged (no IDEs added or removed)
+	 * - Webview receives `dataRefreshed` message and updates the `ideList` signal
+	 * - Preact components re-render automatically, checkbox state preserved
+	 * - Tab position, search string, and other UI state unaffected
+	 *
+	 * 若需要重新掃描 IDE 安裝或 IDE 列表結構改變，仍需呼叫 updateWebview()。
+	 * If IDE installations need to be re-scanned or the IDE list structure changes,
+	 * updateWebview() must still be called.
+	 */
+	private async pushDataRefresh(): Promise<void>
+	{
+		/**
+		 * 重新讀取各 IDE 的 settings.json（完整重新掃描，確保資料最新）
+		 * Reload each IDE's settings.json (full re-scan to ensure data is up to date)
+		 */
+		await this.ideProvider.refreshIDEList();
+
+		const ideList = this.ideProvider.getIDEListToWebviewContent();
+		const savedSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid) || '';
+
+		/**
+		 * 儲存 IDE 列表到檔案快取（與 updateWebview 保持一致）
+		 * Save IDE list to file cache (consistent with updateWebview)
+		 */
+		saveIDECache(this.context.extensionPath, this.ideProvider.getIDEList(), savedSourceIDEUuid);
+
+		/**
+		 * 推送資料至 Webview：Webview 端的 messages.ts 收到後
+		 * 更新 ideList signal，Preact 組件自動重新渲染。
+		 * Push data to Webview: messages.ts on the Webview side receives this,
+		 * updates the ideList signal, and Preact components re-render automatically.
+		 */
+		this.panel.webview.postMessage({
+			command: 'dataRefreshed',
+			ideList,
+		});
+	}
+
 	private getWebviewContent(): string
 	{
 		const ideList = this.ideProvider.getIDEList();
@@ -254,23 +303,40 @@ export class SettingsSyncPanel
 					case 'syncSettings':
 						await this.performSync(message.sourceIDE, message.targetIDEs, message.settings);
 						this.panel.webview.postMessage({ command: 'syncComplete' });
-						await this.updateWebview();
+						/**
+						 * sync 後只有設定值改變，IDE 列表結構不變，
+						 * 使用 pushDataRefresh 推送最新資料，避免整頁重繪。
+						 * After sync, only setting values change; IDE list structure is unchanged.
+						 * Use pushDataRefresh to push latest data, avoiding full page redraw.
+						 */
+						await this.pushDataRefresh();
 						break;
 
 					case 'deleteSettings':
 						await this.performDelete(message.ideIndices, message.settings);
 						this.panel.webview.postMessage({ command: 'deleteComplete' });
-						await this.updateWebview();
+						/**
+						 * delete 後只有設定值改變，IDE 列表結構不變，
+						 * 使用 pushDataRefresh 推送最新資料，避免整頁重繪。
+						 * After delete, only setting values change; IDE list structure is unchanged.
+						 * Use pushDataRefresh to push latest data, avoiding full page redraw.
+						 */
+						await this.pushDataRefresh();
 						break;
 
 					case 'refreshIDEs':
-						// full refresh: re-scan for IDE installations
+						// full refresh: re-scan for IDE installations (IDE list structure may change)
 						await this.updateWebview(true);
 						break;
 
 					case 'refreshData':
-						// data-only refresh: reload settings from existing IDEs
-						await this.updateWebview(false);
+						/**
+						 * 使用者手動刷新：只有設定值可能改變，IDE 列表結構不變，
+						 * 使用 pushDataRefresh 推送最新資料，避免整頁重繪。
+						 * User-triggered refresh: only setting values may change; IDE list structure unchanged.
+						 * Use pushDataRefresh to push latest data, avoiding full page redraw.
+						 */
+						await this.pushDataRefresh();
 						break;
 
 					case 'changePrimaryLanguage':

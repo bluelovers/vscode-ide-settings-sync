@@ -55,19 +55,6 @@ export function syncSettings(): void
 	const sourceRadio = document.querySelector<HTMLInputElement>(`.ide-source-radio[value="${uuid}"]`);
 	const sourceIndex = sourceRadio?.dataset.index;
 
-	/**
-	 * 在發送 sync 指令前，先將 checkedSettingKeys 持久化至 globalState。
-	 * Extension host 在 syncComplete 後會整頁重繪（updateWebview），
-	 * 重繪後 Preact hydration 狀態全部重置，但 globalState 中的 savedSelectedSettings
-	 * 會被注入至 __INITIAL_STATE__，由 initStore() 恢復至 checkedSettingKeys signal。
-	 *
-	 * Before sending the sync command, persist checkedSettingKeys to globalState.
-	 * The Extension host performs a full page redraw (updateWebview) after syncComplete,
-	 * which resets all Preact hydration state. However, savedSelectedSettings in globalState
-	 * is injected into __INITIAL_STATE__ and restored to checkedSettingKeys signal by initStore().
-	 */
-	vscode.postMessage({ command: 'saveSelectedSettings', selectedSettings });
-
 	vscode.postMessage({
 		command: 'syncSettings',
 		sourceIDE: sourceIndex,
