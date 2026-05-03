@@ -6,23 +6,13 @@
  *
  * ─── SSR vs Client-side ───
  *
- * 此組件同時用於 SSR（app.tsx）與 client-side hydration（index.tsx）。
+ * SSR（app.tsx）：`SourceIdeIndicator` 渲染完整結構（含外層 div）。
+ * Client-side（index.tsx hydration）：`SourceIdeIndicatorContent` 只渲染內層內容，
+ * hydrate 至 `.source-ide-indicator` 容器，不重複外層 div。
  *
- * SSR 模式（app.tsx）：Preact SSR 在 Node.js 環境執行，
- * 此時 window 不存在，signals 無法使用，因此接收靜態 props 產生初始 HTML。
- *
- * Client-side 模式（hydration 後）：Preact 接管 DOM，
- * 組件直接讀取 sourceIDEUuid / sourceIDEName signals，
- * signal 改變時 Preact 自動重新渲染，props 不再使用。
- *
- * This component is used for both SSR (app.tsx) and client-side hydration (index.tsx).
- *
- * SSR mode (app.tsx): Preact SSR runs in Node.js where window doesn't exist and signals
- * can't be used, so it receives static props to generate the initial HTML.
- *
- * Client-side mode (after hydration): Preact takes over the DOM; the component reads
- * sourceIDEUuid / sourceIDEName signals directly. Preact re-renders automatically when
- * signals change — props are no longer used.
+ * SSR (app.tsx): `SourceIdeIndicator` renders the full structure (including outer div).
+ * Client-side (index.tsx hydration): `SourceIdeIndicatorContent` renders only inner content,
+ * hydrated into `.source-ide-indicator` container without duplicating the outer div.
  */
 
 import { sourceIDEName, sourceIDEUuid } from '../../store';
@@ -46,14 +36,36 @@ export interface ISourceIdeIndicatorProps
 }
 
 /**
- * 來源 IDE 指示器組件
- * Source IDE indicator component
+ * 來源 IDE 指示器內層內容（Client-side hydration 用）
+ * Source IDE indicator inner content (for client-side hydration)
  *
- * SSR 時讀 props（window 不存在，signals 不可用）。
- * hydration 後讀 signals（Preact 自動追蹤依賴，signal 改變時自動重新渲染）。
+ * 只渲染 `.source-ide-indicator` 容器的子內容，不含外層 div。
+ * Renders only the children of `.source-ide-indicator`, without the outer div.
+ * hydrate 至 `.source-ide-indicator` 後 Preact 接管，signal 改變時自動重新渲染。
+ * After hydrating into `.source-ide-indicator`, Preact takes over and re-renders on signal change.
+ */
+export function SourceIdeIndicatorContent()
+{
+	const name = sourceIDEName.value;
+	const uuid = sourceIDEUuid.value;
+
+	return (
+		<>
+			<span className="source-label">Source IDE:</span>
+			<span className="source-name">
+				<span className="source-name-text">{name || 'Not selected'}</span>
+				&nbsp;(<span className="source-uuid">{uuid}</span>)
+			</span>
+		</>
+	);
+}
+
+/**
+ * 來源 IDE 指示器完整組件（SSR 用）
+ * Source IDE indicator full component (for SSR)
  *
- * During SSR reads props (window doesn't exist, signals unavailable).
- * After hydration reads signals (Preact auto-tracks dependencies, re-renders on signal change).
+ * 渲染完整結構（含外層 div），用於 app.tsx SSR 渲染。
+ * Renders the full structure (including outer div), used for SSR in app.tsx.
  */
 export function SourceIdeIndicator(props: ISourceIdeIndicatorProps)
 {

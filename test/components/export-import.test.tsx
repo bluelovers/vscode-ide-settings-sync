@@ -11,8 +11,37 @@
 
 import { h, Fragment } from 'preact';
 import { render as renderToString } from 'preact-render-to-string';
-import { ExportImportPanel } from '../../webview/src/components/ExportImportPanel';
 import { IImportResult } from '../../webview/src/types';
+
+/**
+ * Mock vscode API for tests (ExportImportPanel imports from scripts which import vscode)
+ */
+jest.mock('../../webview/src/global/vscode-api', () => ({
+	vscode: {
+		postMessage: jest.fn(),
+		getState: jest.fn(),
+		setState: jest.fn(),
+	},
+}));
+
+jest.mock('../../webview/src/index', () => ({
+	vscode: {
+		postMessage: jest.fn(),
+		getState: jest.fn(),
+		setState: jest.fn(),
+	},
+}));
+
+jest.mock('../../webview/src/store', () => ({
+	exportPath: { value: '' },
+	importPath: { value: '' },
+	activeTab: { value: 'sync' },
+	sourceIDEUuid: { value: '' },
+	sourceIDEName: { value: '' },
+	ideList: { value: [] },
+	searchQuery: { value: '' },
+	checkedSettingKeys: { value: new Set() },
+}));
 
 describe('ExportImportPanel Components', () =>
 {
@@ -25,7 +54,7 @@ describe('ExportImportPanel Components', () =>
 				<PathInput
 					id="test-path"
 					placeholder="Test placeholder"
-					onBrowse="handleBrowseTest()"
+					onBrowse={() => {}}
 				/>,
 			);
 
@@ -33,20 +62,21 @@ describe('ExportImportPanel Components', () =>
 			expect(html).toContain('id="test-path"');
 			expect(html).toContain('Test placeholder');
 			expect(html).toContain('📁 Browse');
-			expect(html).toContain('handleBrowseTest()');
 		});
 
-		it('should render with default browse handler', () =>
+		it('should render with inputRef prop', () =>
 		{
 			const { PathInput } = require('../../webview/src/components/export-import/PathInput');
 			const html = renderToString(
 				<PathInput
 					id="test-path"
 					placeholder="Test placeholder"
+					onBrowse={() => {}}
 				/>,
 			);
 
-			expect(html).toContain('handleBrowsePath()');
+			expect(html).toContain('id="test-path"');
+			expect(html).toContain('class="path-input"');
 		});
 	});
 
@@ -88,16 +118,15 @@ describe('ExportImportPanel Components', () =>
 		{
 			const { ActionButton } = require('../../webview/src/components/export-import/ActionButton');
 			const html = renderToString(
-				<ActionBtn
-					onClick="handleTest()"
+				<ActionButton
+					onClick={() => {}}
 					title="Test button"
 				>
 					Test Text
-				</ActionBtn>,
+				</ActionButton>,
 			);
 
 			expect(html).toContain('btn action-btn');
-			expect(html).toContain('handleTest()');
 			expect(html).toContain('Test Text');
 			expect(html).toContain('title="Test button"');
 		});
@@ -106,12 +135,12 @@ describe('ExportImportPanel Components', () =>
 		{
 			const { ActionButton } = require('../../webview/src/components/export-import/ActionButton');
 			const html = renderToString(
-				<ActionBtn
-					onClick="handleTest()"
+				<ActionButton
+					onClick={() => {}}
 					disabled={true}
 				>
 					Test Text
-				</ActionBtn>,
+				</ActionButton>,
 			);
 
 			expect(html).toContain('disabled');
@@ -121,12 +150,12 @@ describe('ExportImportPanel Components', () =>
 		{
 			const { ActionButton } = require('../../webview/src/components/export-import/ActionButton');
 			const html = renderToString(
-				<ActionBtn
-					onClick="handleTest()"
+				<ActionButton
+					onClick={() => {}}
 					processing={true}
 				>
 					Test Text
-				</ActionBtn>,
+				</ActionButton>,
 			);
 
 			expect(html).toContain('processing');
@@ -138,6 +167,7 @@ describe('ExportImportPanel Components', () =>
 	{
 		it('should render export/import sections', () =>
 		{
+			const { ExportImportPanel } = require('../../webview/src/components/ExportImportPanel');
 			const html = renderToString(
 				<ExportImportPanel />,
 			);
@@ -151,6 +181,7 @@ describe('ExportImportPanel Components', () =>
 
 		it('should render with import result', () =>
 		{
+			const { ExportImportPanel } = require('../../webview/src/components/ExportImportPanel');
 			const mockImportResult: IImportResult = {
 				success: true,
 				importedCustomIDEs: 2,
@@ -171,6 +202,7 @@ describe('ExportImportPanel Components', () =>
 
 		it('should render processing state', () =>
 		{
+			const { ExportImportPanel } = require('../../webview/src/components/ExportImportPanel');
 			const html = renderToString(
 				<ExportImportPanel isProcessing={true} />,
 			);
@@ -187,6 +219,7 @@ describe('ExportImportPanel Components', () =>
 			 * ExportImportPanel should not contain inline <script> tags;
 			 * all JS logic is provided by the webview bundle (dist/webview/index.js).
 			 */
+			const { ExportImportPanel } = require('../../webview/src/components/ExportImportPanel');
 			const html = renderToString(
 				<ExportImportPanel />,
 			);

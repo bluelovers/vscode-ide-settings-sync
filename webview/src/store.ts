@@ -14,7 +14,38 @@
 
 import { signal, computed } from '@preact/signals';
 import { IWebviewState, IIDEInfoWebview } from './types';
-import { IWebviewWindow } from './global/window-this';
+import { IWebviewWindow } from './global/window-types';
+
+/** ─── Tab 狀態 / Tab state ─── */
+
+/**
+ * 合法的分頁名稱聯合型別
+ * Union type of valid tab names
+ */
+export type TabName = 'sync' | 'values' | 'selected' | 'export-import';
+
+/**
+ * 當前活躍的分頁名稱
+ * Name of the currently active tab
+ *
+ * 由 `SettingsNavigation` 在使用者點擊 Tab 按鈕時更新。
+ * Updated by `SettingsNavigation` when the user clicks a tab button.
+ */
+export const activeTab = signal<TabName>('sync');
+
+/** ─── Export/Import 路徑狀態 / Export/Import path state ─── */
+
+/**
+ * 匯出路徑（由 message handler 在收到 exportPathSelected 時更新）
+ * Export path (updated by message handler when exportPathSelected is received)
+ */
+export const exportPath = signal<string>('');
+
+/**
+ * 匯入路徑（由 message handler 在收到 importPathSelected 時更新）
+ * Import path (updated by message handler when importPathSelected is received)
+ */
+export const importPath = signal<string>('');
 
 /** ─── 來源 IDE 狀態 / Source IDE state ─── */
 
@@ -101,6 +132,12 @@ export function initStore(): void
 	 * Initialize IDE list
 	 */
 	ideList.value = state.ideList ?? [];
+
+	/**
+	 * 初始化活躍分頁（預設為 'sync'）
+	 * Initialize active tab (defaults to 'sync')
+	 */
+	activeTab.value = 'sync';
 
 	/**
 	 * 初始化來源 IDE UUID：

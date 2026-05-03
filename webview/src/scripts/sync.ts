@@ -8,11 +8,11 @@
  * Logic migrated from the inline `<script>` in settingsSyncPanel.ts.
  */
 
-import { vscode } from '../index';
+import { vscode } from '../global/vscode-api';
 import { showMessage } from './messages';
 import { checkedSettingKeys, sourceIDEUuid } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
-import { EnumShowMessageType } from 'src/types';
+import { EnumShowMessageType } from '../types';
 
 /**
  * 收集當前已勾選的 IDE 與設定，向 Extension host 發送 `syncSettings` 指令

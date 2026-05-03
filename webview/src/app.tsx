@@ -194,7 +194,9 @@ export function App({
 					/>
 
 					{/* 設定分頁導覽列 / Settings tab navigation bar */}
-					<SettingsNavigation />
+					<div class="tabs">
+						<SettingsNavigation />
+					</div>
 
 					{/* Sync 分頁：搜尋與同步設定 / Sync tab: search and sync settings */}
 					<SyncTab />

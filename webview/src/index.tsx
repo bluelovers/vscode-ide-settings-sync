@@ -10,82 +10,75 @@
 
 import { vscode } from './global/vscode-api';
 
-export { vscode }
+export { vscode };
 
-/** ─── Import 所有腳本模組 / Import all script modules ─── */
+/** ─── Import 腳本模組 / Import script modules ─── */
 
 import { initMessageHandler, showMessage } from './scripts/messages';
-import { switchTab } from './scripts/tabs';
+import { initializeMemory, saveSelectedIDEs, saveSearchHistory, addSelectedSettingsListOnSearchPanel, addSelectedSettingsListOnAllPanel } from './scripts/memory';
+import { initIDEEventListeners } from './scripts/ide';
+import { initExportImportMessageHandler } from './scripts/export-import';
+import { clearSearch, refreshSettings, clearAllSelectedSettings, removeFromSelectedSettings } from './scripts/settings';
+import { syncSettings, deleteSettings } from './scripts/sync';
 import { changePrimaryLanguage, openLanguageConfig } from './scripts/language';
-import {
-	initializeMemory,
+import { addCustomIDE, refreshIDEs, removeCustomIDE, openIDEFolder, openSettingsJson } from './scripts/ide';
+import { handleExportCustomIDEs, handleExportSelectedSettings, handleExportAll, handleImport, handleBrowseExportPath, handleBrowseImportPath } from './scripts/export-import';
+import { switchTab } from './scripts/tabs';
+
+/** ─── Import Preact / Import Preact ─── */
+
+import { effect } from '@preact/signals';
+import { hydrate } from 'preact';
+import { initStore, sourceIDEUuid, searchQuery, activeTab, TabName } from './store';
+
+/** ─── Import 組件 / Import components ─── */
+
+import { SearchResultsList, AllSettingsList, SelectedSettingsList } from './components/settings/SettingList';
+import { SettingsNavigation } from './components/settings/SettingsNavigation';
+import { SourceIdeIndicatorContent } from './components/ide/SourceIdeIndicator';
+import { EnumWebviewElemSelector, queryWebviewElem } from './scripts/elem-get';
+
+/** ─── 掛載至 window / Mount to window ─── */
+
+/**
+ * 將仍需從 HTML onclick 字串呼叫的函數掛載至 window
+ * Mount functions still needed from HTML onclick strings to window
+ */
+Object.assign(window, {
+	switchTab,
+	showMessage,
+	changePrimaryLanguage,
+	openLanguageConfig,
 	saveSearchHistory,
 	addSelectedSettingsListOnSearchPanel,
 	addSelectedSettingsListOnAllPanel,
 	saveSelectedIDEs,
-} from './scripts/memory';
-import {
-	createSettingHTML,
-	getSettingDescription,
 	clearSearch,
 	removeFromSelectedSettings,
 	clearAllSelectedSettings,
 	refreshSettings,
-} from './scripts/settings';
-import { syncSettings, deleteSettings } from './scripts/sync';
-import {
+	syncSettings,
+	deleteSettings,
 	removeCustomIDE,
 	openIDEFolder,
 	openSettingsJson,
 	addCustomIDE,
 	refreshIDEs,
-	handleSourceIDEChange,
-	initIDEEventListeners,
-} from './scripts/ide';
-import {
 	handleExportCustomIDEs,
 	handleExportSelectedSettings,
 	handleExportAll,
 	handleImport,
 	handleBrowseExportPath,
 	handleBrowseImportPath,
-	initExportImportMessageHandler,
-} from './scripts/export-import';
-import { effect } from '@preact/signals';
-import { hydrate } from 'preact';
-import { initStore, sourceIDEUuid, sourceIDEName, searchQuery } from './store';
-import { SearchResultsList, AllSettingsList, SelectedSettingsList } from './components/settings/SettingList';
-import { SourceIdeIndicator } from './components/ide/SourceIdeIndicator';
-import { EnumWebviewElemSelector, queryWebviewElem } from './scripts/elem-get';
+});
 
 /** ─── 初始化 / Initialization ─── */
 
-/**
- * 初始化 Webview 前端的所有事件監聽與狀態恢復
- * Initialize all event listeners and state restoration for the Webview frontend
- *
- * 執行順序：
- * 1. 初始化訊息處理器（接收來自 Extension host 的訊息）
- * 2. 初始化 IDE 事件監聽（來源 IDE radio 按鈕）
- * 3. 恢復已儲存的 UI 狀態（搜尋字串、已勾選的 IDE 與設定）
- * 4. 綁定搜尋輸入框與 IDE 勾選框的事件監聽
- *
- * Execution order:
- * 1. Initialize message handlers (receive messages from Extension host)
- * 2. Initialize IDE event listeners (source IDE radio buttons)
- * 3. Restore saved UI state (search string, checked IDEs and settings)
- * 4. Bind event listeners for search input and IDE checkboxes
- */
 function initialize(): void
 {
 	/**
 	 * 初始化來自 Extension host 的訊息處理器
 	 * Initialize message handlers from the Extension host
-	 *
-	 * 分別處理一般訊息（syncComplete、deleteComplete 等）
-	 * 與匯出入相關訊息（exportPathSelected、importPathSelected 等）。
-	 * Handles general messages (syncComplete, deleteComplete, etc.)
-	 * and export/import related messages (exportPathSelected, importPathSelected, etc.) separately.
 	 */
 	initMessageHandler();
 	initExportImportMessageHandler();
@@ -98,83 +91,59 @@ function initialize(): void
 
 	/**
 	 * 初始化 store：從 window.__INITIAL_STATE__ 讀取初始值寫入 signals
-	 * 必須在 initIDEEventListeners 之後、initializeMemory 之前呼叫，
-	 * 確保 DOM 中的 radio 已可查詢，且 signals 在記憶體恢復前已就緒。
 	 * Initialize store: read initial values from window.__INITIAL_STATE__ into signals.
-	 * Must be called after initIDEEventListeners and before initializeMemory,
-	 * ensuring DOM radios are queryable and signals are ready before memory restoration.
 	 */
 	initStore();
 
 	/**
-	 * ─── Preact Hydration ───
+	 * ─── Preact Hydration + effect() ───
 	 *
-	 * 將 SSR 靜態 HTML 的關鍵容器接管為 Preact 管理的 virtual DOM 樹。
-	 * hydrate() 複用現有 DOM 節點（不重建），避免首次渲染閃爍，
-	 * 並讓 @preact/signals 的自動更新機制生效。
+	 * 只 hydrate 空容器或只渲染子內容的組件，避免重複渲染。
+	 * Only hydrate empty containers or components that render only children, avoiding duplication.
 	 *
-	 * Take over key containers from SSR static HTML into Preact-managed virtual DOM trees.
-	 * hydrate() reuses existing DOM nodes (no rebuild), avoiding first-render flicker,
-	 * and enables @preact/signals automatic update mechanism.
-	 *
-	 * hydration 後，這些容器內的 signal 變化會自動觸發 Preact 重新渲染，
-	 * 不再需要手動 DOM 操作或 effect() 橋接。
-	 *
-	 * After hydration, signal changes within these containers automatically trigger
-	 * Preact re-renders, eliminating the need for manual DOM operations or effect() bridging.
+	 * - SourceIdeIndicatorContent：hydrate 至 `.source-ide-indicator`（只渲染子內容，不含外層 div）
+	 * - SettingsNavigation：hydrate 至 `.tabs`（只渲染按鈕，不含外層 div）
+	 * - SearchResultsList / AllSettingsList / SelectedSettingsList：hydrate 各自的空容器
+	 * - Tab 顯示/隱藏：effect() 操作 CSS class
 	 */
 
 	/**
-	 * Hydrate SourceIdeIndicator：
-	 * 接管後 sourceIDEUuid / sourceIDEName signal 改變時自動更新名稱與 UUID 文字。
-	 *
-	 * Hydrate SourceIdeIndicator:
-	 * After hydration, sourceIDEUuid / sourceIDEName signal changes automatically update
-	 * the name and UUID text.
+	 * Hydrate SourceIdeIndicatorContent 至 `.source-ide-indicator`
+	 * 組件只渲染子內容（span 等），不含外層 div，所以不會重複。
+	 * Component renders only children (spans etc.), not the outer div, so no duplication.
 	 */
 	const sourceIndicatorEl = document.querySelector<HTMLElement>('.source-ide-indicator');
 	if (sourceIndicatorEl)
 	{
-		hydrate(<SourceIdeIndicator />, sourceIndicatorEl);
+		hydrate(<SourceIdeIndicatorContent />, sourceIndicatorEl);
 	}
 
 	/**
-	 * Hydrate 搜尋結果列表（#searchResults）：
-	 * 接管後 searchQuery / ideList / sourceIDEUuid / checkedSettingKeys signal 改變時自動重新渲染。
-	 * checkbox 狀態由 checkedSettingKeys signal 管理，刷新後不會消失。
-	 *
-	 * Hydrate search results list (#searchResults):
-	 * After hydration, searchQuery / ideList / sourceIDEUuid / checkedSettingKeys signal changes
-	 * trigger automatic re-renders. Checkbox state is managed by checkedSettingKeys signal
-	 * and persists across refreshes.
+	 * Hydrate SettingsNavigation 至 `.tabs`
+	 * 組件只渲染按鈕（Fragment），不含外層 div，所以不會重複。
+	 * Component renders only buttons (Fragment), not the outer div, so no duplication.
 	 */
+	const tabsEl = document.querySelector<HTMLElement>('.tabs');
+	if (tabsEl)
+	{
+		hydrate(<SettingsNavigation />, tabsEl);
+	}
+
+	/** Hydrate 搜尋結果列表（#searchResults — SSR 時為空）*/
 	const searchResultsEl = queryWebviewElem<HTMLDivElement>(EnumWebviewElemSelector.searchResults);
 	if (searchResultsEl)
 	{
 		hydrate(<SearchResultsList />, searchResultsEl);
 	}
 
-	/**
-	 * Hydrate 所有設定列表（#allSettings）：
-	 * 接管後 ideList / sourceIDEUuid / checkedSettingKeys signal 改變時自動重新渲染。
-	 *
-	 * Hydrate all settings list (#allSettings):
-	 * After hydration, ideList / sourceIDEUuid / checkedSettingKeys signal changes
-	 * trigger automatic re-renders.
-	 */
+	/** Hydrate 所有設定列表（#allSettings — SSR 時為空）*/
 	const allSettingsEl = document.getElementById('allSettings');
 	if (allSettingsEl)
 	{
 		hydrate(<AllSettingsList />, allSettingsEl);
 	}
 
-	/**
-	 * Hydrate 已選設定列表（#selectedSettingsList）：
-	 * 接管後 checkedSettingKeys / ideList signal 改變時自動重新渲染。
-	 *
-	 * Hydrate selected settings list (#selectedSettingsList):
-	 * After hydration, checkedSettingKeys / ideList signal changes trigger automatic re-renders.
-	 */
+	/** Hydrate 已選設定列表（#selectedSettingsList — SSR 時為空）*/
 	const selectedSettingsEl = document.getElementById('selectedSettingsList');
 	if (selectedSettingsEl)
 	{
@@ -182,13 +151,25 @@ function initialize(): void
 	}
 
 	/**
-	 * .ide-item 的 source-ide class 切換仍需 effect()，
-	 * 因為 IDE 列表（.ide-list）尚未 hydrate，仍是 SSR 靜態 HTML。
-	 * 這是唯一保留的手動 DOM 操作。
-	 *
-	 * .ide-item source-ide class toggling still requires effect(),
-	 * because the IDE list (.ide-list) is not yet hydrated and remains SSR static HTML.
-	 * This is the only remaining manual DOM operation.
+	 * Tab 顯示/隱藏：用 effect() 操作 CSS class
+	 * Tab show/hide: use effect() to toggle CSS class
+	 */
+	effect(() =>
+	{
+		const tab = activeTab.value;
+		const tabIds: TabName[] = ['sync', 'values', 'selected', 'export-import'];
+
+		/** 更新 tab-content 顯示 / Update tab-content visibility */
+		tabIds.forEach(id =>
+		{
+			const el = document.getElementById(id);
+			if (el) el.classList.toggle('active', id === tab);
+		});
+	});
+
+	/**
+	 * .ide-item 的 source-ide class 切換
+	 * .ide-item source-ide class toggling
 	 */
 	effect(() =>
 	{
@@ -201,19 +182,8 @@ function initialize(): void
 	});
 
 	/**
-	 * 從 window.__INITIAL_STATE__ 恢復已儲存的 UI 狀態
-	 * Restore saved UI state from window.__INITIAL_STATE__
-	 */
-	initializeMemory();
-
-	/**
-	 * 為搜尋輸入框綁定 input 事件：
-	 * 1. 更新 searchQuery signal，驅動 SearchResultsList 自動重新渲染
-	 * 2. 儲存搜尋字串至 globalState（持久化）
-	 *
-	 * Bind input event to search input:
-	 * 1. Update searchQuery signal to drive SearchResultsList automatic re-render
-	 * 2. Save search string to globalState (persistence)
+	 * 搜尋輸入框 input 事件：更新 searchQuery signal
+	 * Search input event: update searchQuery signal
 	 */
 	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
 	searchInput?.addEventListener('input', (e) =>
@@ -223,8 +193,14 @@ function initialize(): void
 	});
 
 	/**
-	 * 為所有 IDE 勾選框綁定 change 事件，自動儲存勾選狀態至 globalState
-	 * Bind change event to all IDE checkboxes for automatic saving of checked state to globalState
+	 * 從 window.__INITIAL_STATE__ 恢復已儲存的 UI 狀態
+	 * Restore saved UI state from window.__INITIAL_STATE__
+	 */
+	initializeMemory();
+
+	/**
+	 * 為所有 IDE 勾選框綁定 change 事件
+	 * Bind change event to all IDE checkboxes
 	 */
 	document.querySelectorAll('.ide-checkbox').forEach(checkbox =>
 	{
@@ -235,11 +211,6 @@ function initialize(): void
 /**
  * 根據 DOM 就緒狀態決定立即執行或延遲至 DOMContentLoaded
  * Decide whether to execute immediately or defer to DOMContentLoaded based on DOM ready state
- *
- * Webview bundle 以 `<script src="...">` 方式在 `<body>` 末尾載入，
- * 通常 DOM 已就緒，但仍做防禦性判斷以確保相容性。
- * The Webview bundle is loaded via `<script src="...">` at the end of `<body>`,
- * so the DOM is usually ready, but a defensive check is still made for compatibility.
  */
 if (document.readyState === 'loading')
 {

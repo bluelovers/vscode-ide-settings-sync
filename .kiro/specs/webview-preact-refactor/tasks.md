@@ -2,7 +2,9 @@
 
 ## Overview
 
-將 `src/webview/settingsSyncPanel.ts` 中的混合式 HTML 字串注入重構為完全使用 Preact JSX 的架構。建立獨立的 `webview/` 前端資料夾，由 esbuild 打包為 IIFE bundle；Extension host 端改為純 SSR 模式，所有 client-side 互動邏輯移至 `webview/src/` TypeScript 模組。
+將 `webview/src/` 中所有殘留的 HTML 字串事件屬性（`onclick="..."` / `onchange="..."` / `onkeyup="..."`）與直接 DOM 操作，全面遷移至 Preact JSX 事件處理（`onClick={handler}`）與 `@preact/signals` 狀態管理。完成後 `window-this.ts` 大幅精簡，`scripts/` 中的 DOM 操作函數轉為純邏輯函數。
+
+**重要限制**：`app.tsx`（SSR 根組件）不在修改範圍內。
 
 ## Tasks
 
@@ -24,136 +26,258 @@
     - 從 `src/webview/components/types.ts` 重新匯出或精簡複製 `IIDEInfoWebview`、`IUnavailableIDEInfoWebview`，避免引入 VS Code 相依
     - _Requirements: 1.6, 9.1, 9.2_
 
-- [x] 3. 新增 SSR 組件
-  - [x] 3.1 建立 `webview/src/components/LanguageConfiguration.tsx`
-    - 定義 `ILanguageConfigProps`（`languageConfig: ILanguageConfig`、`supportedLanguages`、`currentLanguage`）
-    - 渲染 primary language `<select id="primaryLang">`，含 `onclick="changePrimaryLanguage()"` 字串屬性
-    - 渲染 fallback 語言標籤列表
-    - 條件性渲染 secondary language 列（`showSecondary === true` 且 `secondary` 有值時）
-    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
-  - [ ]* 3.2 為 LanguageConfiguration 撰寫屬性測試
+- [x] 3. 建立 SSR 組件（已完成）
+  - [x] 3.1 建立 `webview/src/components/LanguageConfiguration.tsx`（SSR 版本）
+  - [x] 3.2 建立 Tab 組件：`SyncTab.tsx`、`AllSettingsTab.tsx`、`SelectedTab.tsx`（SSR 版本）
+  - [x] 3.3 建立 `webview/src/app.tsx` — SSR 根組件
+  - _Requirements: 3.1–3.6, 4.1–4.5, 5.1–5.5_
+
+- [x] 4. 遷移 client-side 腳本至 `webview/src/scripts/`（已完成）
+  - [x] 4.1 建立 `messages.ts`、`tabs.ts`、`language.ts`、`memory.ts`、`settings.ts`、`sync.ts`、`ide.ts`、`export-import.ts`
+  - _Requirements: 6.1–6.5, 7.1–7.4_
+
+- [x] 5. 建立 Webview 前端入口 `webview/src/index.tsx`（已完成）
+  - _Requirements: 2.1–2.6_
+
+- [x] 6. 重構 `SettingsSyncPanel.getWebviewContent()`（已完成）
+  - _Requirements: 3.1–3.6, 10.5_
+
+- [x] 7. 移除舊的 inline script 渲染（已完成）
+  - _Requirements: 10.3_
+
+- [x] 8. Checkpoint — 確認建置與測試通過（已完成）
+
+- [x] 9. 新增 `store.ts` signals 支援 Tab 狀態管理
+  - [x] 9.1 在 `webview/src/store.ts` 新增 `activeTab` signal
+    - 新增 `export const activeTab = signal<'sync' | 'values' | 'selected' | 'export-import'>('sync')`
+    - 定義 `type TabName = 'sync' | 'values' | 'selected' | 'export-import'` 並匯出
+    - 在 `initStore()` 中初始化 `activeTab.value = 'sync'`（或從 state 讀取若有儲存）
+    - _Requirements: 9.1, 9.2_
+  - [x] 9.2 在 `webview/src/store.ts` 新增 `exportPath` 與 `importPath` signals
+    - 新增 `export const exportPath = signal<string>('')`
+    - 新增 `export const importPath = signal<string>('')`
+    - 這兩個 signal 將由 `initExportImportMessageHandler` 在收到 `exportPathSelected`/`importPathSelected` 訊息時更新
+    - _Requirements: 9.1, 9.2_
+  - [ ]* 9.3 撰寫 `activeTab` signal 的屬性測試
+    - **Property 1: Tab 切換完整性**
+    - 對任意合法 `TabName`，設定 `activeTab.value` 後其值等於輸入值
+    - **Validates: Requirements 9.1**
+
+- [x] 10. 重構 `SettingsNavigation.tsx` 為完整 Preact 組件
+  - [x] 10.1 修改 `webview/src/components/settings/SettingsNavigation.tsx`
+    - 從 `../../store` import `activeTab`
+    - 移除所有 `onclick="switchTab('...')"` 字串屬性與 `// @ts-ignore`
+    - 改用 `onClick={() => { activeTab.value = 'sync'; }}` 等 JSX handler
+    - 使用 `activeTab.value === 'sync' ? 'tab active' : 'tab'` 動態決定 className
+    - _Requirements: 9.1, 9.4_
+  - [x] 10.2 在 `webview/src/index.tsx` 新增 `SettingsNavigation` 的 hydration
+    - 查詢 `.tabs` 容器元素
+    - 呼叫 `hydrate(<SettingsNavigation />, tabsEl)`
+    - _Requirements: 2.2_
+  - [ ]* 10.3 撰寫 `SettingsNavigation` 的屬性測試
+    - **Property 1: Tab 切換完整性（UI 層）**
+    - 對任意合法 `TabName`，設定 `activeTab.value` 後，`SettingsNavigation` 渲染中對應按鈕具有 `active` class，其餘三個不具有
+    - **Validates: Requirements 9.1**
+
+- [x] 11. 重構 Tab 內容組件（SyncTab / AllSettingsTab / SelectedTab）
+  - [x] 11.1 重構 `webview/src/components/tabs/SyncTab.tsx`
+    - 從 `../../store` import `activeTab`、`searchQuery`
+    - 從 `../../scripts/settings` import `clearSearch`、`refreshSettings`、`addSelectedSettingsListOnSearchPanel`
+    - 從 `../../scripts/sync` import `syncSettings`、`deleteSettings`
+    - 從 `../../scripts/memory` import `saveSearchHistory`
+    - 移除所有 `onclick`/`onkeyup` 字串屬性與 `// @ts-ignore`
+    - 搜尋輸入框改用 `onInput={(e) => { searchQuery.value = e.currentTarget.value; saveSearchHistory(); }}`
+    - 操作按鈕改用 `onClick={() => clearSearch()}`、`onClick={() => refreshSettings()}` 等 JSX handler
+    - 根據 `activeTab.value === 'sync'` 決定是否顯示（`display: none` 或 conditional render）
+    - _Requirements: 5.1, 5.4, 9.2_
+  - [x] 11.2 重構 `webview/src/components/tabs/AllSettingsTab.tsx`
+    - 從 `../../store` import `activeTab`
+    - 從 `../../scripts/settings` import `refreshSettings`、`addSelectedSettingsListOnAllPanel`
+    - 從 `../../scripts/sync` import `syncSettings`、`deleteSettings`
+    - 移除所有 `onclick` 字串屬性與 `// @ts-ignore`
+    - 操作按鈕改用 JSX handler
+    - 根據 `activeTab.value === 'values'` 決定是否顯示
+    - _Requirements: 5.2, 5.4, 9.2_
+  - [x] 11.3 重構 `webview/src/components/tabs/SelectedTab.tsx`
+    - 從 `../../store` import `activeTab`
+    - 從 `../../scripts/settings` import `refreshSettings`、`clearAllSelectedSettings`
+    - 從 `../../scripts/sync` import `syncSettings`、`deleteSettings`
+    - 移除所有 `onclick` 字串屬性與 `// @ts-ignore`
+    - 操作按鈕改用 JSX handler
+    - 根據 `activeTab.value === 'selected'` 決定是否顯示
+    - _Requirements: 5.3, 5.4, 9.2_
+  - [x] 11.4 在 `webview/src/index.tsx` 新增三個 Tab 組件的 hydration
+    - 查詢 `#sync`、`#values`、`#selected` 容器元素
+    - 分別呼叫 `hydrate(<SyncTab />, el)`、`hydrate(<AllSettingsTab />, el)`、`hydrate(<SelectedTab />, el)`
+    - 移除 `index.tsx` 中手動綁定 `searchInput.addEventListener('input', ...)` 的程式碼（已由 SyncTab 組件處理）
+    - 移除 `document.querySelectorAll('.ide-checkbox').forEach(...)` 手動綁定（改由組件處理）
+    - _Requirements: 2.2_
+  - [ ]* 11.5 撰寫 Tab 組件的屬性測試
+    - **Property 1: Tab 切換完整性（內容層）**
+    - 對任意合法 `TabName`，設定 `activeTab.value` 後，對應 Tab 組件可見，其餘隱藏
+    - **Validates: Requirements 9.1**
+
+- [x] 12. 重構 `IDEList.tsx` 移除 onclick 字串屬性
+  - [x] 12.1 重構 `BtnRemoveCustomIDE`、`BtnOpenIDEFolder`、`BtnOpenSettingsJson`
+    - 從 `../../scripts/ide` import `removeCustomIDE`、`openIDEFolder`、`openSettingsJson`
+    - `BtnRemoveCustomIDE`：移除 `onclick={`removeCustomIDE(...)`}` 字串，改用 `onClick={() => removeCustomIDE(params)}`
+    - `BtnOpenIDEFolder`：移除 `onclick={`openIDEFolder(...)`}` 字串，改用 `onClick={() => openIDEFolder(props.path)}`
+    - `BtnOpenSettingsJson`：移除 `onclick={`openSettingsJson(...)`}` 字串，改用 `onClick={() => openSettingsJson(props.idePath, props.ideName)}`
+    - 移除所有 `// @ts-ignore`
+    - _Requirements: 9.2, 9.4_
+  - [x] 12.2 重構 `IDEListSection` 的 Add / Refresh 按鈕
+    - 從 `../../scripts/ide` import `addCustomIDE`、`refreshIDEs`
+    - 移除 `onclick="addCustomIDE()"` 與 `onclick="refreshIDEs()"` 字串屬性
+    - 改用 `onClick={() => addCustomIDE()}` 與 `onClick={() => refreshIDEs()}`
+    - 移除 `// @ts-ignore`
+    - _Requirements: 9.2, 9.4_
+  - [x] 12.3 在 `webview/src/index.tsx` 新增 `IDEListSection` 的 hydration（或保留 SSR）
+    - 評估是否需要 hydrate `IDEListSection`（目前 `.ide-list` 仍為 SSR 靜態 HTML）
+    - 若 hydrate：查詢 `.section` 中包含 `#ide-list` 的容器，呼叫 `hydrate(<IDEListSection />, el)`
+    - 若保留 SSR：確認 `effect()` 仍可正確切換 `.source-ide` class
+    - _Requirements: 2.2_
+  - [ ]* 12.4 撰寫 `IDEList` 的屬性測試
+    - **Property 5: IDE 資料的 data-* 屬性保留**
+    - 使用 `fc.array` 產生任意 IDE 列表，驗證渲染後每個 IDE 包含正確的 `data-uuid`、`data-name`、`data-index`
+    - 驗證 `onClick` handler 為函數型別（非字串）
+    - **Validates: Requirements 7.4, 9.4**
+
+- [x] 13. 重構 `LanguageConfiguration.tsx` 為完整 Preact 組件
+  - [x] 13.1 修改 `webview/src/components/LanguageConfiguration.tsx`
+    - 從 `../scripts/language` import `changePrimaryLanguage`、`openLanguageConfig`
+    - 移除 `onchange="changePrimaryLanguage()"` 字串屬性與 `// @ts-ignore`
+    - `<select>` 改用 `onChange={(e) => changePrimaryLanguage(e.currentTarget.value)}`
+    - 移除 `onclick="openLanguageConfig()"` 字串屬性
+    - `<button>` 改用 `onClick={() => openLanguageConfig()}`
+    - _Requirements: 4.4, 9.2, 9.4_
+  - [x] 13.2 在 `webview/src/index.tsx` 新增 `LanguageConfiguration` 的 hydration
+    - 查詢語言設定區塊的容器元素（`.section` 中含 `#primaryLang` 的那個）
+    - 呼叫 `hydrate(<LanguageConfiguration {...props} />, el)`，props 從 `__INITIAL_STATE__` 讀取
+    - _Requirements: 2.2_
+  - [ ]* 13.3 撰寫 `LanguageConfiguration` 的屬性測試
     - **Property 3: LanguageConfiguration 組件的渲染正確性**
     - 使用 `fc.array` 產生任意 `supportedLanguages`，驗證 `<option>` 數量與陣列長度相同
-    - 驗證對應 `languageConfig.primary` 的 `<option>` 具有 `selected` 屬性
-    - 驗證 `showSecondary` 旗標控制 secondary language 列的顯示
-    - **Validates: Requirements 4.3, 4.5**
-  - [x] 3.3 建立 Tab 組件：`webview/src/components/tabs/SyncTab.tsx`
-    - 渲染「Search & Sync Settings」面板靜態骨架
-    - 包含 `<input id="searchInput">`、`<div id="searchResults">`、`<div id="message">`
-    - 包含操作按鈕（Refresh、Save Selected、Sync Selected、Delete Selected），使用 `onclick` 字串屬性
-    - _Requirements: 5.1, 5.4, 5.5_
-  - [x] 3.4 建立 Tab 組件：`webview/src/components/tabs/AllSettingsTab.tsx`
-    - 渲染「All IDE Settings」面板骨架，包含 `<div id="allSettings">` 與操作按鈕
-    - _Requirements: 5.2, 5.4, 5.5_
-  - [x] 3.5 建立 Tab 組件：`webview/src/components/tabs/SelectedTab.tsx`
-    - 渲染「Selected Settings List」面板骨架，包含 `<div id="selectedSettingsList">` 與操作按鈕
-    - _Requirements: 5.3, 5.4, 5.5_
-  - [ ]* 3.6 為 Tab 組件撰寫屬性測試
-    - **Property 4: Tab 組件渲染包含必要的 DOM 元素**
-    - 驗證 `SyncTab` 渲染包含 `id="searchInput"`、`id="searchResults"`、`id="message"`
-    - 驗證 `AllSettingsTab` 渲染包含 `id="allSettings"`
-    - 驗證 `SelectedTab` 渲染包含 `id="selectedSettingsList"`
-    - **Validates: Requirements 5.4**
-  - [x] 3.7 建立 `webview/src/app.tsx` — SSR 根組件
-    - 定義 `IAppProps`（`ideList`、`unavailableIDEs`、`currentIDEName`、`sourceIDEUuid`、`languageConfig`、`supportedLanguages`、`currentLanguage`、`cssContent`、`cspSource`、`webviewScriptUri`、`initialState`）
-    - 組合所有 SSR 子組件：`PageHead`、`IDEListSection`、`LanguageConfiguration`、`SourceIdeIndicator`、`SettingsNavigation`、`SyncTab`、`AllSettingsTab`、`SelectedTab`、`ExportImportPanel`
-    - 在 `<body>` 末尾注入 `<script>window.__INITIAL_STATE__ = {...};</script>` 與 `<script src={webviewScriptUri}>`
-    - 產生完整的 `<!DOCTYPE html>` 文件
-    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
-  - [ ]* 3.8 為 App 組件撰寫屬性測試
-    - **Property 1: getWebviewContent() 產生包含必要結構的 HTML**
-    - 使用 `fc.record` 產生任意 `IAppProps`，驗證輸出包含 `<!DOCTYPE html>`、CSP meta 標籤、`window.__INITIAL_STATE__`、`id="sync"`、`id="values"`、`id="selected"`、`id="export-import"`
-    - **Validates: Requirements 3.3, 3.4, 3.5**
+    - 驗證 `onChange` handler 為函數型別（非字串）
+    - **Validates: Requirements 4.3, 9.4**
 
-- [x] 4. 遷移 client-side 腳本至 `webview/src/scripts/`
-  - [x] 4.1 建立 `webview/src/scripts/messages.ts`
-    - 定義 `showMessage(text: string, type: 'success' | 'error' | 'info'): void`
-    - 實作 `window.addEventListener('message', ...)` handler，處理 `syncComplete`、`deleteComplete`、`addCustomIDEComplete`、`exportPathSelected`、`importPathSelected`、`exportComplete`、`importComplete`
-    - 使用 optional chaining 存取 DOM 元素
-    - _Requirements: 6.1, 6.2, 6.5, 7.2, 7.3_
-  - [x] 4.2 建立 `webview/src/scripts/tabs.ts`
-    - 實作 `switchTab(tabName: string): void`，切換 tab 顯示並更新 active 狀態
-    - _Requirements: 6.1, 6.2, 6.5_
-  - [x] 4.3 建立 `webview/src/scripts/language.ts`
-    - 實作 `changePrimaryLanguage(): void`，讀取 `#primaryLang` 值並 postMessage
-    - 實作 `openLanguageConfig(): void`
-    - _Requirements: 6.1, 6.2, 6.5, 7.1_
-  - [x] 4.4 建立 `webview/src/scripts/memory.ts`
-    - 實作 `initializeMemory(): void`，從 `window.__INITIAL_STATE__` 恢復搜尋字串、已選 IDE、已選設定
-    - 實作 `saveSearchHistory(): void`、`saveSearchSelectedSettings(): void`、`saveAllSelectedSettings(): void`、`saveSelectedIDEs(): void`
-    - _Requirements: 6.1, 6.2, 6.4, 6.5, 7.1_
-  - [x] 4.5 建立 `webview/src/scripts/settings.ts`
-    - 實作 `searchSettings(): void`、`displayAllSettings(): void`、`displaySelectedSettingsList(): void`
-    - 實作 `createSettingHTML(key, values, sourceUuid?, ideRecord?): string`
-    - 實作 `getSettingDescription(key: string): string`（從 `__INITIAL_STATE__.settingDescriptions` 查找）
-    - 實作 `clearSearch(): void`、`removeFromSelectedSettings(key: string): void`、`clearAllSelectedSettings(): void`、`refreshSettings(): void`
-    - 所有 DOM 查詢使用 optional chaining
-    - _Requirements: 6.1, 6.2, 6.4, 6.5, 7.1_
-  - [x] 4.6 建立 `webview/src/scripts/sync.ts`
-    - 實作 `syncSettings(): void`，收集已選 IDE 與設定後 postMessage
-    - 實作 `deleteSettings(): void`
-    - _Requirements: 6.1, 6.2, 6.5, 7.1, 7.4_
-  - [x] 4.7 建立 `webview/src/scripts/ide.ts`（遷移自 `IDEListScript`）
-    - 實作 `removeCustomIDE(params): void`、`openIDEFolder(path: string): void`、`openSettingsJson(idePath: string, ideName: string): void`
-    - 實作 `addCustomIDE(): void`、`refreshIDEs(): void`、`handleSourceIDEChange(event: Event): void`
-    - 在 `DOMContentLoaded` 時為 `.ide-source-radio` 綁定 `handleSourceIDEChange`
-    - _Requirements: 6.1, 6.2, 6.5, 7.1, 7.4_
-  - [x] 4.8 建立 `webview/src/scripts/export-import.ts`（遷移自 `ExportImportScript`）
-    - 實作 `handleExportCustomIDEs()`、`handleExportSelectedSettings()`、`handleExportAll()`、`handleImport()`、`handleBrowseExportPath()`、`handleBrowseImportPath()`
-    - 實作 `exportPathSelected` / `importPathSelected` 訊息處理（填入路徑輸入框）
-    - _Requirements: 6.1, 6.2, 6.5, 7.1, 7.2_
+- [x] 14. 重構 `language.ts` 函數簽名
+  - [x] 14.1 修改 `webview/src/scripts/language.ts` 中的 `changePrimaryLanguage`
+    - 將函數簽名從 `changePrimaryLanguage(): void` 改為 `changePrimaryLanguage(value: string): void`
+    - 移除 `document.getElementById('primaryLang')` 的 DOM 讀取
+    - 直接使用傳入的 `value` 參數呼叫 `vscode.postMessage`
+    - 移除 `document.querySelector('.tab.active')` 的 DOM 讀取
+    - 改用 `import { activeTab } from '../store'`，根據 `activeTab.value === 'values'` 決定後續行為
+    - _Requirements: 6.5, 9.2_
+  - [ ]* 14.2 撰寫 `changePrimaryLanguage` 的屬性測試
+    - **Property 2: 事件處理無 window 依賴**
+    - 對任意合法語言代碼字串，呼叫 `changePrimaryLanguage(value)` 後 `vscode.postMessage` 收到正確 payload
+    - 驗證函數不讀取任何 DOM 元素（mock `document.getElementById` 驗證未被呼叫）
+    - **Validates: Requirements 6.5, 9.2**
 
-- [x] 5. 建立 Webview 前端入口 `webview/src/index.tsx`
-  - 讀取 `window.__INITIAL_STATE__`，以防禦性方式解構（`?? {}` fallback）
-  - 初始化 `const vscode = acquireVsCodeApi()`，並匯出供腳本模組使用
-  - 匯入並呼叫所有 scripts 模組的初始化函數（`initializeMemory`、message handler 等）
-  - 在 `DOMContentLoaded` 後執行初始化（若 DOM 尚未就緒則延遲）
-  - 將所有腳本函數掛載至 `window` 以供 `onclick` 字串屬性呼叫
-  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+- [x] 15. 重構 `ExportImportPanel.tsx` 及子組件
+  - [x] 15.1 修改 `webview/src/components/export-import/ActionButton.tsx`
+    - 將 `onClick` prop 型別從 `string` 改為 `() => void`
+    - 移除 `// @ts-ignore` 與 `onclick={onClick}` 字串屬性
+    - 改用 `onClick={onClick}` JSX handler
+    - _Requirements: 9.1, 9.4_
+  - [x] 15.2 修改 `webview/src/components/export-import/PathInput.tsx`
+    - 將 `onBrowse` prop 型別從 `string` 改為 `() => void`
+    - 新增 `inputRef?: Ref<HTMLInputElement>` prop（從 `preact/hooks` import `Ref`）
+    - 移除 `// @ts-ignore` 與 `onclick={onBrowse}` 字串屬性
+    - 改用 `onClick={onBrowse}` JSX handler
+    - 在 `<input>` 上套用 `ref={inputRef}`
+    - _Requirements: 9.1, 9.4_
+  - [x] 15.3 修改 `webview/src/components/export-import/ExportSection.tsx`
+    - 將 `actionOnClick: string` prop 改為 `onAction: () => void`
+    - 新增 `onBrowse: () => void` prop（取代 `PathInput` 內部的字串）
+    - 新增 `pathRef?: Ref<HTMLInputElement>` prop，傳入 `PathInput`
+    - 更新 `ActionButton` 的 `onClick` 傳入方式
+    - _Requirements: 9.1, 9.4_
+  - [x] 15.4 修改 `webview/src/components/export-import/ImportSection.tsx`
+    - 將 `actionOnClick: string` prop 改為 `onAction: () => void`
+    - 新增 `onBrowse: () => void` prop
+    - 新增 `pathRef?: Ref<HTMLInputElement>` prop，傳入 `PathInput`
+    - 更新 `ActionButton` 的 `onClick` 傳入方式
+    - _Requirements: 9.1, 9.4_
+  - [x] 15.5 重構 `webview/src/components/ExportImportPanel.tsx`
+    - 從 `preact/hooks` import `useRef`
+    - 從 `../scripts/export-import` import `handleExportCustomIDEs`、`handleExportSelectedSettings`、`handleExportAll`、`handleImport`、`handleBrowseExportPath`、`handleBrowseImportPath`
+    - 建立各 input 的 `useRef`：`exportCustomPathRef`、`exportSelectedPathRef`、`exportAllPathRef`、`importPathRef`
+    - 建立 checkbox 的 `useRef`：`exportIncludeKnownRef`、`exportAllIncludeKnownRef`
+    - 將 `ExportSection` 的 `actionOnClick` 字串改為 `onAction` 函數，讀取對應 ref 值後呼叫 export-import.ts 函數
+    - 將 `ImportSection` 的 `actionOnClick` 字串改為 `onAction` 函數
+    - 傳入 `pathRef` 至各子組件
+    - _Requirements: 9.1, 9.4_
+  - [x] 15.6 在 `webview/src/index.tsx` 新增 `ExportImportPanel` 的 hydration
+    - 查詢 `#export-import` 容器元素
+    - 呼叫 `hydrate(<ExportImportPanel />, el)`
+    - _Requirements: 2.2_
+  - [ ]* 15.7 撰寫 `ExportImportPanel` 的屬性測試
+    - **Property 3: Export/Import 路徑讀取**
+    - 對任意路徑字串，模擬 ref.current.value 後呼叫 `handleExportCustomIDEs`，驗證 `vscode.postMessage` 收到正確 payload
+    - 驗證不使用 `document.getElementById` 讀取路徑
+    - **Validates: Requirements 9.3**
 
-- [x] 6. 重構 `SettingsSyncPanel.getWebviewContent()`
-  - 匯入新的 `App` 組件（`webview/src/app.tsx`）
-  - 組裝 `IAppProps`，包含 `ideList`、`unavailableIDEs`、`languageConfig`、`supportedLanguages`、`currentLanguage`、`cssContent`、`cspSource`、`webviewScriptUri`、`initialState`
-  - 使用 `panel.webview.asWebviewUri(...)` 解析 `dist/webview/index.js` 的 URI；若解析失敗則 log error 並省略 script 標籤
-  - 呼叫 `renderJsxToString(App, props)` 產生完整 HTML，取代現有 template literal
-  - 確保 `getWebviewContent()` 不再包含超過單行的 template literal HTML 字串
-  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 10.5_
+- [x] 16. 重構 `export-import.ts` 函數簽名
+  - [x] 16.1 修改 `webview/src/scripts/export-import.ts` 中的四個 handle 函數
+    - `handleExportCustomIDEs(customPath: string | undefined, includeKnownIDEs: boolean): void`
+    - `handleExportSelectedSettings(customPath: string | undefined): void`
+    - `handleExportAll(customPath: string | undefined, includeKnownIDEs: boolean): void`
+    - `handleImport(customPath: string | undefined): void`
+    - 移除所有 `document.getElementById(...)` 的 DOM 讀取（路徑由呼叫方從 ref 讀取後傳入）
+    - _Requirements: 6.5, 9.2_
+  - [x] 16.2 修改 `initExportImportMessageHandler()` 改用 signals
+    - 收到 `exportPathSelected` 時：更新 `exportPath.value = message.path`（而非直接操作 DOM）
+    - 收到 `importPathSelected` 時：更新 `importPath.value = message.path`
+    - 從 `../store` import `exportPath`、`importPath`
+    - _Requirements: 6.5, 9.2_
+  - [ ]* 16.3 撰寫 `export-import.ts` 的屬性測試
+    - **Property 3: Export/Import 路徑讀取**
+    - 對任意路徑字串與 boolean 組合，呼叫各 handle 函數後 `vscode.postMessage` 收到正確 payload
+    - 驗證函數不讀取任何 DOM 元素
+    - **Validates: Requirements 6.5, 9.2**
 
-- [x] 7. 移除舊的 inline script 渲染
-  - [x] 7.1 移除 `IDEListSection` 中的 `<IDEListScript />` 渲染
-    - 從 `IDEListSection` 的 JSX 中移除 `<IDEListScript />` 元素（JS 邏輯已移至 `webview/src/scripts/ide.ts`）
-    - 保留 `IDEListScript` 函數定義（或標記為 deprecated），避免破壞現有測試
-    - _Requirements: 10.3_
-  - [x] 7.2 移除 `ExportImportPanel` 中的 `<ExportImportScript />` 渲染
-    - 從 `ExportImportPanel` 的 JSX 中移除 `<ExportImportScript />` 元素（JS 邏輯已移至 `webview/src/scripts/export-import.ts`）
-    - 保留 `ExportImportScript` 函數定義（或標記為 deprecated），避免破壞現有測試
-    - _Requirements: 10.3_
-
-- [x] 8. Checkpoint — 確認建置與測試通過
-  - 執行 `npx ts-node esbuild.config.ts`，確認 `dist/extension.js` 與 `dist/webview/index.js` 均成功產生
-  - 執行 `npm test`，確認所有現有測試通過，無回歸
-  - 確認 `webview/tsconfig.json` 編譯零錯誤（`tsc --noEmit -p webview/tsconfig.json`）
+- [x] 17. Checkpoint — 確認組件重構後建置通過
+  - 執行 `npx ts-node esbuild.config.ts`，確認兩個 bundle 均成功產生
+  - 執行 `tsc --noEmit -p webview/tsconfig.json`，確認零 TypeScript 錯誤
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. 撰寫屬性測試（fast-check）
-  - [ ]* 9.1 撰寫 Property 2 屬性測試：初始狀態 JSON 序列化往返
-    - **Property 2: 初始狀態 JSON 序列化的完整性**
-    - 使用 `fc.record` 產生任意 `IWebviewInitialState`，序列化後反序列化，驗證與原始物件等價
-    - **Validates: Requirements 2.4, 3.5**
-  - [ ]* 9.2 撰寫 Property 5 屬性測試：IDE data-* 屬性保留
-    - **Property 5: IDE 資料的 data-* 屬性保留**
-    - 使用 `fc.array(arbitraryIDEInfo(), { minLength: 1, maxLength: 10 })` 產生任意 IDE 列表
-    - 驗證 `IDEListSection` 渲染的 HTML 中每個 IDE 包含正確的 `data-uuid`、`data-name`、`data-index`
-    - **Validates: Requirements 7.4**
-  - [ ]* 9.3 撰寫 Property 6 屬性測試：Webview 腳本函數的 null 安全性
-    - **Property 6: Webview 腳本函數的 null 安全性**
-    - 使用 jsdom 模擬空 DOM 環境（不含預期元素）
-    - 呼叫 `searchSettings`、`displayAllSettings`、`syncSettings`、`displaySelectedSettingsList` 等函數，驗證不拋出 TypeError
-    - **Validates: Requirements 6.5**
+- [x] 18. 精簡 `window-this.ts`
+  - [x] 18.1 移除不再需要掛載至 `window` 的函數
+    - 移除所有僅供 `onclick` 字串呼叫的函數掛載（`switchTab`、`changePrimaryLanguage`、`openLanguageConfig`、`clearSearch`、`refreshSettings`、`syncSettings`、`deleteSettings`、`addCustomIDE`、`refreshIDEs`、`openIDEFolder`、`openSettingsJson`、`removeCustomIDE`、`handleExportCustomIDEs`、`handleExportSelectedSettings`、`handleExportAll`、`handleImport`、`handleBrowseExportPath`、`handleBrowseImportPath` 等）
+    - 保留仍需跨模組存取的函數（如 `removeFromSelectedSettings`，被 `SettingItem` 組件呼叫）
+    - 保留 `displayAllSettings`、`searchSettings`、`displaySelectedSettingsList`（若仍有 `window.xxx?.()` 形式呼叫）
+    - _Requirements: 9.2_
+  - [x] 18.2 更新 `IWebviewWindow` 型別定義
+    - 移除 `IWebviewWindowApi` 型別中已不再掛載的函數
+    - 確保 `IWebviewWindow` 型別與實際掛載的函數一致
+    - _Requirements: 9.1, 9.2_
+  - [x] 18.3 從 `index.tsx` 移除不再需要的 import 與初始化程式碼
+    - 移除 `initIDEEventListeners()` 呼叫（radio 事件改由 Preact 組件處理，若已 hydrate）
+    - 移除 `searchInput.addEventListener('input', ...)` 手動綁定（已由 SyncTab 組件處理）
+    - 移除 `document.querySelectorAll('.ide-checkbox').forEach(...)` 手動綁定
+    - 清理不再使用的 import 語句
+    - _Requirements: 9.2_
 
-- [x] 10. Final Checkpoint — 確認所有測試通過
+- [x] 19. 清理 `types.ts`
+  - [x] 19.1 移除 `webview/src/types.ts` 中不必要的 import
+    - 移除 `import { saveSearchHistory } from './scripts/memory'`（未使用）
+    - 移除 `import { displayAllSettings, displaySelectedSettingsList, removeFromSelectedSettings, searchSettings } from './scripts/settings'`（未使用）
+    - 移除 `IWebviewWindowApi` 型別定義（已移至 `window-this.ts`，或直接刪除）
+    - _Requirements: 9.1, 9.3_
+
+- [x] 20. 清理 `tabs.ts`（可選）
+  - [x] 20.1 評估 `switchTab()` 函數的保留策略
+    - 若所有呼叫方已改用 `activeTab.value = tabName`，可移除 `switchTab()` 或保留為向後相容 wrapper
+    - 若保留：改寫為 `export function switchTab(tabName: TabName): void { activeTab.value = tabName; }`
+    - 若移除：確認 `window-this.ts` 中已移除對應掛載
+    - _Requirements: 9.2_
+
+- [x] 21. Final Checkpoint — 確認所有測試通過
   - 執行完整測試套件 `npm test`
-  - 確認 `dist/webview/index.js` 存在且非空（整合測試）
+  - 執行 `tsc --noEmit -p webview/tsconfig.json`，確認零 TypeScript 錯誤
+  - 確認 `dist/webview/index.js` 存在且非空
+  - 在 VS Code 中手動驗證 Tab 切換、IDE 操作、語言設定、Export/Import 功能正常
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
@@ -161,7 +285,8 @@
 - 標記 `*` 的子任務為選用，可跳過以加速 MVP 開發
 - 每個任務均引用具體需求條款以確保可追溯性
 - Checkpoint 任務確保增量驗證
+- **`app.tsx`（SSR 根組件）不在修改範圍內**，SSR 輸出的 HTML 結構不變，hydration 可正常接管
 - 屬性測試驗證跨任意輸入的普遍正確性；單元測試驗證具體範例與邊界條件
-- `webview/` 使用 `jsxImportSource: "preact"`（automatic JSX），`src/` 保留 classic `h`/`Fragment`，兩者不混用
-- 所有 DOM 查詢必須使用 optional chaining，避免 `null` 相關 TypeError
-- `IDEListScript` 與 `ExportImportScript` 的 JS 字串邏輯遷移後，原函數保留以避免破壞現有測試
+- `IDEList` 是否 hydrate 需評估：若 hydrate 則可移除 `effect()` 橋接；若保留 SSR 則 `effect()` 仍需保留
+- 重構後 `window-this.ts` 應只保留真正需要跨模組 `window.xxx?.()` 存取的函數
+- 所有 `// @ts-ignore` 應在對應組件重構後一併移除

@@ -1,32 +1,22 @@
 /**
- * IDE 列表組件模組
- * IDE list component module
+ * IDE 列表組件模組（SSR 組件）
+ * IDE list component module (SSR component)
  *
  * 渲染可用與不可用的 IDE 列表，包含來源 IDE 選擇、自訂 IDE 管理等互動元素。
  * Renders available and unavailable IDE lists, including source IDE selection and custom IDE management interactions.
+ *
+ * 事件處理由 window 掛載的函數負責（onclick 字串）。
+ * Event handling is done by window-mounted functions (onclick strings).
  */
 
 import { formatPath } from '../../../src/utils/formatPath';
 import { IIDEListProps, IRemoveCustomIDEParams } from './types';
 import { ITSRequireAtLeastOne } from 'ts-type';
 
-/** ─── 內部子組件 / Internal sub-components ─── */
-
-/**
- * 可用 IDE 項目組件
- * Available IDE item component
- *
- * 渲染單一可用 IDE 的列表項目，包含來源 radio、勾選框、路徑顯示與操作按鈕。
- * Renders a single available IDE list item, including source radio, checkbox, path display, and action buttons.
- */
 function AvailableIDEItem(props: {
-	/** IDE 資訊 / IDE information */
 	ide: { uuid: string; name: string; type: string; nativePath: string };
-	/** IDE 在列表中的索引 / IDE index in the list */
 	index: number;
-	/** 是否為當前執行此擴充功能的 IDE / Whether this is the IDE currently running this extension */
 	isCurrent: boolean;
-	/** 是否為選取的來源 IDE / Whether this is the selected source IDE */
 	isSource: boolean;
 })
 {
@@ -70,14 +60,8 @@ function AvailableIDEItem(props: {
 	</>);
 }
 
-/**
- * 移除自訂 IDE 按鈕組件
- * Remove custom IDE button component
- */
 function BtnRemoveCustomIDE(props: {
-	/** IDE 資訊（包含 uuid, name, nativePath）/ IDE information (including uuid, name, nativePath) */
 	ide: { uuid: string; name: string; nativePath: string };
-	/** IDE 在列表中的索引 / IDE index in the list */
 	index: number;
 })
 {
@@ -91,12 +75,8 @@ function BtnRemoveCustomIDE(props: {
 	return (
 		<button
 			className="btn btn-small btn-remove"
-			/**
-			 * onclick 使用小寫字串屬性以相容 SSR 輸出
-			 * onclick uses lowercase string attribute for SSR output compatibility
-			 */
 			// @ts-ignore
-			onclick={`removeCustomIDE(${JSON.stringify(params)})`}
+			onclick={`removeCustomIDE && removeCustomIDE(${JSON.stringify(params)})`}
 			title="Remove this custom IDE"
 		>
 			Remove
@@ -104,30 +84,18 @@ function BtnRemoveCustomIDE(props: {
 	);
 }
 
-/**
- * 開啟 IDE 資料夾按鈕組件
- * Open IDE folder button component
- */
 function BtnOpenIDEFolder(props: { path: string })
 {
 	// @ts-ignore
-	return (<button className="btn btn-small" onclick={`openIDEFolder(${JSON.stringify(props.path)})`} title="Open IDE folder">📂</button>);
+	return (<button className="btn btn-small" onclick={`openIDEFolder && openIDEFolder(${JSON.stringify(props.path)})`} title="Open IDE folder">📂</button>);
 }
 
-/**
- * 開啟 settings.json 按鈕組件
- * Open settings.json button component
- */
 function BtnOpenSettingsJson(props: { idePath: string; ideName: string })
 {
 	// @ts-ignore
-	return (<button className="btn btn-small" onclick={`openSettingsJson(${JSON.stringify(props.idePath)}, ${JSON.stringify(props.ideName)})`} title="Open settings.json in editor">📄</button>);
+	return (<button className="btn btn-small" onclick={`openSettingsJson && openSettingsJson(${JSON.stringify(props.idePath)}, ${JSON.stringify(props.ideName)})`} title="Open settings.json in editor">📄</button>);
 }
 
-/**
- * 不可用 IDE 項目的原因說明組件
- * Reason description component for unavailable IDE items
- */
 export function UnavailableIDEItemReason(props: ITSRequireAtLeastOne<{
 	reason: string;
 	ide: { reason?: string };
@@ -141,17 +109,8 @@ export function UnavailableIDEItemReason(props: ITSRequireAtLeastOne<{
 	return (<div className="ide-item unavailable-reason">{props.reason ?? props.ide.reason}</div>);
 }
 
-/**
- * 不可用 IDE 項目組件
- * Unavailable IDE item component
- *
- * 渲染系統中預期存在但未偵測到的 IDE 項目，以灰顯方式顯示。
- * Renders IDE items that are expected to exist in the system but were not detected, displayed in a grayed-out style.
- */
 function UnavailableIDEItem(props: {
-	/** 不可用 IDE 的資訊 / Unavailable IDE information */
 	ide: { name: string; expectedPath: string; reason?: string };
-	/** IDE 在列表中的索引 / IDE index in the list */
 	index: number;
 })
 {
@@ -169,17 +128,6 @@ function UnavailableIDEItem(props: {
 	</>);
 }
 
-/** ─── 公開組件 / Public components ─── */
-
-/**
- * IDE 列表組件
- * IDE list component
- *
- * 渲染可用與不可用的 IDE 列表，不含外層 section 包裝。
- * Renders available and unavailable IDE lists without outer section wrapper.
- *
- * @param props - IDE 列表屬性 / IDE list props
- */
 export function IDEList({
 	availableIDEs,
 	unavailableIDEs,
@@ -187,10 +135,6 @@ export function IDEList({
 	sourceIDEUuid,
 }: IIDEListProps)
 {
-	/**
-	 * 若未指定來源 IDE，預設選取第一個可用 IDE
-	 * If no source IDE is specified, default to the first available IDE
-	 */
 	const defaultSourceUuid = sourceIDEUuid ?? (availableIDEs.length > 0 ? availableIDEs[0].uuid : undefined);
 
 	return (<>
@@ -211,15 +155,6 @@ export function IDEList({
 	</>);
 }
 
-/**
- * IDE 列表區塊組件（含 section 包裝與操作按鈕）
- * IDE list section component (with section wrapper and action buttons)
- *
- * 在 IDE 列表外加上 section 標題、新增自訂 IDE 按鈕與重新整理按鈕。
- * Adds section title, add custom IDE button, and refresh button around the IDE list.
- *
- * @param props - IDE 列表屬性 / IDE list props
- */
 export function IDEListSection({
 	availableIDEs,
 	unavailableIDEs,
@@ -237,11 +172,11 @@ export function IDEListSection({
 				sourceIDEUuid={sourceIDEUuid}
 			/>
 			{/* @ts-ignore */}
-			<button className="btn" onclick="addCustomIDE()" style="margin-top: 10px;" title="Manually specify an IDE/settings folder">
+			<button className="btn" onclick="addCustomIDE && addCustomIDE()" style="margin-top: 10px;" title="Manually specify an IDE/settings folder">
 				+ Add Custom IDE Path
 			</button>
 			{/* @ts-ignore */}
-			<button className="btn secondary" onclick="refreshIDEs()" title="Refresh IDE list">
+			<button className="btn secondary" onclick="refreshIDEs && refreshIDEs()" title="Refresh IDE list">
 				🔄 Refresh
 			</button>
 		</div>

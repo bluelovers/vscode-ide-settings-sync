@@ -8,13 +8,14 @@
  * Logic migrated from the inline `<script>` in settingsSyncPanel.ts.
  */
 
-import { vscode } from '../index';
+import { vscode } from '../global/vscode-api';
 import { showMessage } from './messages';
-import { sourceIDEUuid } from '../store';
+import { sourceIDEUuid, checkedSettingKeys, searchQuery } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType, IWebviewState } from '../types';
-import { IWebviewWindow } from '../global/window-this';
+import { IWebviewWindow } from '../global/window-types';
 import { EnumWebviewElemSelector, queryWebviewElem } from './elem-get';
+import { saveSearchHistory } from './memory';
 
 /**
  * 取得注入的初始狀態物件的便捷存取器
@@ -404,15 +405,12 @@ export function displaySelectedSettingsList(): void
  */
 export function clearSearch(): void
 {
-	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
-	if (searchInput) searchInput.value = '';
-	const searchResults = queryWebviewElem<HTMLDivElement>(EnumWebviewElemSelector.searchResults);
-	if (searchResults) searchResults.innerHTML = '';
 	/**
-	 * 儲存清空後的搜尋字串，確保 globalState 與 UI 同步
-	 * Save the cleared search string to ensure globalState is in sync with the UI
+	 * 更新 searchQuery signal，SearchResultsList 組件自動清空
+	 * Update searchQuery signal; SearchResultsList component clears automatically
 	 */
-	(window as any as IWebviewWindow).saveSearchHistory?.();
+	searchQuery.value = '';
+	saveSearchHistory();
 }
 
 /**
@@ -434,7 +432,13 @@ export function removeFromSelectedSettings(key: string): void
 	{
 		savedSelectedSettings.splice(index, 1);
 		vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings: savedSelectedSettings });
-		(window as any as IWebviewWindow).displaySelectedSettingsList?.();
+		/**
+		 * 更新 checkedSettingKeys signal，SelectedSettingsList 組件自動重新渲染
+		 * Update checkedSettingKeys signal; SelectedSettingsList component re-renders automatically
+		 */
+		const next = new Set(checkedSettingKeys.value);
+		next.delete(key);
+		checkedSettingKeys.value = next;
 		showMessage(`✓ Removed "${key}" from selected settings`, EnumShowMessageType.SUCCESS);
 	}
 }
@@ -454,7 +458,11 @@ export function clearAllSelectedSettings(): void
 		 */
 		state.savedSelectedSettings = [];
 		vscode.postMessage({ command: EnumWebviewCommand.SaveSelectedSettings, selectedSettings: [] });
-		(window as any as IWebviewWindow).displaySelectedSettingsList?.();
+		/**
+		 * 清空 checkedSettingKeys signal，SelectedSettingsList 組件自動重新渲染
+		 * Clear checkedSettingKeys signal; SelectedSettingsList component re-renders automatically
+		 */
+		checkedSettingKeys.value = new Set();
 		showMessage('✓ All selected settings cleared', EnumShowMessageType.SUCCESS);
 	}
 }

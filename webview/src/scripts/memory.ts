@@ -3,12 +3,12 @@
  * UI state persistence module
  */
 
-import { vscode } from '../index';
+import { vscode } from '../global/vscode-api';
 import { showMessage } from './messages';
 import { searchQuery, checkedSettingKeys } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType } from '../types';
-import { IWebviewWindow } from '../global/window-this';
+import { IWebviewWindow } from '../global/window-types';
 
 export function initializeMemory(): void
 {

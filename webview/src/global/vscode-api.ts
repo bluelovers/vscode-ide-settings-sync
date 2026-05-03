@@ -42,24 +42,15 @@ declare function acquireVsCodeApi(): {
  * Webview 與 Extension host 之間的通訊橋接物件
  * Communication bridge object between Webview and Extension host
  *
- * WHY 在模組頂層呼叫：VS Code 規定 `acquireVsCodeApi()` 在整個 Webview
- * 生命週期內只能呼叫一次，重複呼叫會拋出例外。將其放在模組頂層確保：
- * 1. 只執行一次（模組只會被載入一次）
- * 2. 所有 scripts/ 子模組都能透過 `import { vscode } from '../index'`
- *    共享同一個實例，不需要各自呼叫 acquireVsCodeApi()
- *
- * WHY called at module top level: VS Code requires `acquireVsCodeApi()` to be called
- * only once during the entire Webview lifecycle; calling it again throws an exception.
- * Placing it at the module top level ensures:
- * 1. Executed only once (the module is only loaded once)
- * 2. All scripts/ submodules can share the same instance via `import { vscode } from '../index'`,
- *    without each needing to call acquireVsCodeApi() themselves
- *
- * WHY export：讓 scripts/ 下的各模組（messages.ts、sync.ts 等）
- * 可以 import 此實例來呼叫 postMessage，集中管理通訊入口。
- * WHY export: Allows each module under scripts/ (messages.ts, sync.ts, etc.)
- * to import this instance to call postMessage, centralizing the communication entry point.
+ * 在 SSR（Node.js）環境中，`acquireVsCodeApi` 不存在，使用 stub 代替。
+ * In SSR (Node.js) environment, `acquireVsCodeApi` doesn't exist; use a stub instead.
  */
-export const vscode = acquireVsCodeApi();
+export const vscode = typeof acquireVsCodeApi !== 'undefined'
+	? acquireVsCodeApi()
+	: {
+		postMessage: () => {},
+		getState: () => ({} as IWebviewState),
+		setState: () => {},
+	};
 
 import './window-this';

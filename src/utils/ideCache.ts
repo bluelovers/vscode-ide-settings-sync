@@ -8,7 +8,19 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { IIDEInfoWebview } from '../webview/components/types';
+import { IIDEInfoWebview } from '../../webview/src/types';
+
+/**
+ * IDE 快取項目型別（IIDEInfoWebview 的子集，type 使用 string 以相容快取格式）
+ * IDE cache item type (subset of IIDEInfoWebview, type uses string for cache format compatibility)
+ */
+interface IIDECacheItem
+{
+	uuid: string;
+	name: string;
+	type: string;
+	nativePath: string;
+}
 
 /**
  * 快取檔案名稱
@@ -145,7 +157,7 @@ export function isIDECacheExists(extensionPath: string): boolean
  */
 export function saveIDECache(
 	extensionPath: string,
-	ides: IIDEInfoWebview[],
+	ides: IIDECacheItem[],
 	sourceIDEUuid?: string,
 ): boolean
 {
@@ -185,7 +197,7 @@ export function saveIDECache(
  */
 export function loadIDECache(
 	extensionPath: string,
-): { ides: IIDEInfoWebview[]; sourceIDEUuid?: string } | null
+): { ides: IIDECacheItem[]; sourceIDEUuid?: string } | null
 {
 	try
 	{

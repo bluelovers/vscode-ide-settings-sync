@@ -1,29 +1,32 @@
 /**
  * 語言設定模組
  * Language configuration module
+ *
+ * 從 DOM 讀取語言選擇值，由 window 掛載後供 onchange 字串呼叫。
+ * Reads language selection value from DOM, mounted to window for onchange string calls.
  */
 
-import { IWebviewWindow } from '../global/window-this';
-import { vscode } from '../index';
+import { vscode } from '../global/vscode-api';
+import { activeTab } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 
-export function changePrimaryLanguage(): void
+/**
+ * 變更主顯示語言
+ * Change the primary display language
+ *
+ * 可接受直接傳入的 value（來自 onchange="changePrimaryLanguage(this.value)"），
+ * 或從 DOM 讀取（向後相容）。
+ * Accepts value passed directly (from onchange="changePrimaryLanguage(this.value)"),
+ * or reads from DOM (backward compatible).
+ *
+ * @param value - 語言代碼（可選，若未提供則從 DOM 讀取）/ Language code (optional, reads from DOM if not provided)
+ */
+export function changePrimaryLanguage(value?: string): void
 {
-	const select = document.getElementById('primaryLang') as HTMLSelectElement | null;
-	const newLang = select?.value;
-	if (!newLang) return;
+	const lang = value ?? (document.getElementById('primaryLang') as HTMLSelectElement | null)?.value;
+	if (!lang) return;
 
-	vscode.postMessage({ command: EnumWebviewCommand.ChangePrimaryLanguage, language: newLang });
-
-	const activeTab = document.querySelector('.tab.active');
-	if (activeTab?.textContent?.includes('All'))
-	{
-		(window as any as IWebviewWindow).displayAllSettings?.();
-	}
-	else
-	{
-		(window as any as IWebviewWindow).searchSettings?.();
-	}
+	vscode.postMessage({ command: EnumWebviewCommand.ChangePrimaryLanguage, language: lang });
 }
 
 export function openLanguageConfig(): void

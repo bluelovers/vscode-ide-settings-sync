@@ -1,6 +1,6 @@
 import { IIDEInfo } from '../types';
 import { IdeSettingProvider } from '../providers/ideSettingProvider';
-import { IRemoveCustomIDEParams } from '../webview/components/types';
+import { IRemoveCustomIDEParams } from '../../webview/src/components/types';
 import { IIDEInfoWebview } from '../../webview/src/types';
 
 /**

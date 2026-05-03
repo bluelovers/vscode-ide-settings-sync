@@ -1,9 +1,11 @@
 /**
- * 匯出/匯入面板組件
- * Export/Import panel component
+ * 匯出/匯入面板組件（SSR 組件）
+ * Export/Import panel component (SSR component)
  *
- * 組合所有匯出與匯入區塊，渲染完整的匯出/匯入設定面板。
- * Composes all export and import sections to render the complete export/import settings panel.
+ * 事件處理由 window 掛載的函數負責（onclick 字串）。
+ * Event handling is done by window-mounted functions (onclick strings).
+ * export-import.ts 函數從 DOM input 讀取路徑值（document.getElementById）。
+ * export-import.ts functions read path values from DOM inputs (document.getElementById).
  */
 
 import { IImportResult } from '../types';
@@ -11,22 +13,12 @@ import { ExportSection } from './export-import/ExportSection';
 import { ImportSection } from './export-import/ImportSection';
 import { ImportResultDisplay } from './export-import/ImportResultDisplay';
 
-/** 匯出/匯入面板的 Props 介面 / Props interface for the export/import panel */
 interface IExportImportPanelProps
 {
-	/** 匯入結果物件，有值時顯示匯入結果區塊 / Import result object; shows import result section when provided */
 	importResult?: IImportResult;
-	/** 是否處於處理中狀態，處理中時禁用所有操作按鈕 / Whether in processing state; disables all action buttons when true */
 	isProcessing?: boolean;
 }
 
-/**
- * 匯出/匯入面板組件
- * Export/Import panel component
- *
- * @param importResult - 匯入結果 / Import result
- * @param isProcessing - 是否處理中 / Whether processing
- */
 export function ExportImportPanel({
 	importResult,
 	isProcessing = false,
@@ -43,7 +35,7 @@ export function ExportImportPanel({
 					pathPlaceholder="Enter custom path or leave empty to use file dialog"
 					checkboxId="exportIncludeKnownIDEs"
 					checkboxLabel="Include known IDEs in export"
-					actionOnClick="handleExportCustomIDEs()"
+					actionOnClick="handleExportCustomIDEs && handleExportCustomIDEs()"
 					actionTitle="Export custom IDE configurations"
 					actionText="📤 Export Custom IDEs"
 					isProcessing={isProcessing}
@@ -53,7 +45,7 @@ export function ExportImportPanel({
 					title="📤 Export Selected Settings"
 					pathId="exportSelectedPath"
 					pathPlaceholder="Enter custom path or leave empty to use file dialog"
-					actionOnClick="handleExportSelectedSettings()"
+					actionOnClick="handleExportSelectedSettings && handleExportSelectedSettings()"
 					actionTitle="Export selected settings"
 					actionText="📤 Export Selected Settings"
 					isProcessing={isProcessing}
@@ -65,14 +57,14 @@ export function ExportImportPanel({
 					pathPlaceholder="Enter custom path or leave empty to use file dialog"
 					checkboxId="exportAllIncludeKnownIDEs"
 					checkboxLabel="Include known IDEs in export"
-					actionOnClick="handleExportAll()"
+					actionOnClick="handleExportAll && handleExportAll()"
 					actionTitle="Export all settings and IDE configurations"
 					actionText="📤 Export All"
 					isProcessing={isProcessing}
 				/>
 
 				<ImportSection
-					actionOnClick="handleImport()"
+					actionOnClick="handleImport && handleImport()"
 					actionTitle="Import settings from file"
 					actionText="📥 Import Settings"
 					isProcessing={isProcessing}

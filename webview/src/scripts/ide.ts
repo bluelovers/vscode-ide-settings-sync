@@ -3,7 +3,7 @@
  * IDE list interaction module
  */
 
-import { vscode } from '../index';
+import { vscode } from '../global/vscode-api';
 import { sourceIDEUuid } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 
