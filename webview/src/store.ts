@@ -14,7 +14,7 @@
 
 import { signal, computed } from '@preact/signals';
 import { IWebviewState, IIDEInfoWebview } from './types';
-import { IWebviewWindow } from './global/window-types';
+import type { IWebviewWindow } from './global/window-this';
 import { getClassSelector, querySelectorByClass } from './utils/elem-get';
 import { ALL_TAB_NAMES, EnumCssClassSelector, EnumTabName } from './types/elem-const';
 

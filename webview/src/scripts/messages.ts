@@ -14,7 +14,7 @@
  */
 
 import { EnumShowMessageType } from '../types';
-import { IWebviewWindow } from '../global/window-types';
+import type { IWebviewWindow } from '../global/window-this';
 import { vscode } from '../global/vscode-api';
 import { ideList } from '../store';
 import { EnumHostCommand, IHostMessage, IWebviewWindowMessageEvent } from '../webviewMessages';

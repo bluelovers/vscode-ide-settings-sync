@@ -8,7 +8,7 @@ import { showMessage } from './messages';
 import { searchQuery, checkedSettingKeys } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType } from '../types';
-import { IWebviewWindow } from '../global/window-types';
+import type { IWebviewWindow } from '../global/window-this';
 import { querySelectorById, getClassSelector, querySelectorAllByClass, querySelectorByClass } from '../utils/elem-get';
 import { EnumCssClassSelector, EnumWebviewElemId } from '../types/elem-const';
 

@@ -12,7 +12,7 @@
  */
 
 import { checkedSettingKeys, sourceIDEUuid } from '../../store';
-import { IWebviewWindow } from '../../global/window-types';
+import type { IWebviewWindow } from '../../global/window-this';
 
 /** ─── 型別定義 / Type definitions ─── */
 

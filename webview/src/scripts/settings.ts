@@ -13,7 +13,7 @@ import { showMessage } from './messages';
 import { sourceIDEUuid, checkedSettingKeys, searchQuery } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType, IWebviewState } from '../types';
-import { IWebviewWindow } from '../global/window-types';
+import type { IWebviewWindow } from '../global/window-this';
 import { querySelectorById } from '../utils/elem-get';
 import { saveSearchHistory } from './memory';
 import { EnumWebviewElemId } from '../types/elem-const';
