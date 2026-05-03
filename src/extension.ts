@@ -11,6 +11,7 @@ import {
 	transformLanguagesToQuickPick,
 	createYesNoQuickPickOptions,
 } from './utils/languageConfig';
+import { EnumVscodeCommands } from './types/vscode/vscode-commands';
 
 let ideProvider: IDEProvider;
 let syncPanel: SettingsSyncPanel | undefined;
@@ -33,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext)
 
 	// Register commands
 	let disposable = vscode.commands.registerCommand(
-		'vscode-ide-settings-sync.openSync',
+		EnumVscodeCommands.openSync,
 		async () =>
 		{
 			if (syncPanel)
@@ -54,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext)
 
 	// Refresh IDEs command
 	disposable = vscode.commands.registerCommand(
-		'vscode-ide-settings-sync.refreshIDEs',
+		EnumVscodeCommands.refreshIDEs,
 		async () =>
 		{
 			await ideProvider.refreshIDEList();
@@ -68,7 +69,7 @@ export async function activate(context: vscode.ExtensionContext)
 
 	// Sync settings command
 	disposable = vscode.commands.registerCommand(
-		'vscode-ide-settings-sync.syncSettings',
+		EnumVscodeCommands.syncSettings,
 		async () =>
 		{
 			if (syncPanel)
@@ -81,7 +82,7 @@ export async function activate(context: vscode.ExtensionContext)
 
 	// 語言配置管理命令
 	disposable = vscode.commands.registerCommand(
-		'vscode-ide-settings-sync.configLanguage',
+		EnumVscodeCommands.configLanguage,
 		async () =>
 		{
 			await configureLanguage(context);
@@ -90,7 +91,7 @@ export async function activate(context: vscode.ExtensionContext)
 	context.subscriptions.push(disposable);
 
 	// Auto-show panel on first activation
-	vscode.commands.executeCommand('vscode-ide-settings-sync.openSync');
+	vscode.commands.executeCommand(EnumVscodeCommands.openSync);
 }
 
 /**

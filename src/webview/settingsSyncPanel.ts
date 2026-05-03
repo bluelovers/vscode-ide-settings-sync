@@ -16,6 +16,7 @@ import { _performSyncCore } from '../utils/settingsSync';
 import { EnumWebviewCommand, EnumHostCommand, IWebviewMessage, IHostMessage } from './webviewMessages';
 // @ts-ignore — webview/src/app.tsx uses automatic JSX; imported here for SSR only
 import { App, IAppProps } from '../../webview/src/app';
+import { EnumVscodeCommands } from '../types/vscode/vscode-commands';
 
 export class SettingsSyncPanel
 {
@@ -385,7 +386,7 @@ export class SettingsSyncPanel
 					 *  Open the language configuration panel via VS Code command
 					 */
 					case EnumWebviewCommand.OpenLanguageConfig:
-						vscode.commands.executeCommand('vscode-ide-settings-sync.configLanguage');
+						vscode.commands.executeCommand(EnumVscodeCommands.configLanguage);
 						break;
 
 					/**
@@ -395,7 +396,7 @@ export class SettingsSyncPanel
 					case EnumWebviewCommand.OpenIDEFolder:
 						if (message.path)
 						{
-							vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(message.path));
+							vscode.commands.executeCommand(EnumVscodeCommands.revealFileInOS, vscode.Uri.file(message.path));
 						}
 						break;
 
@@ -477,7 +478,7 @@ export class SettingsSyncPanel
 					case EnumWebviewCommand.ExportCustomIDEs:
 						try
 						{
-							await vscode.commands.executeCommand('ide-sync.exportCustomIDEs');
+							await vscode.commands.executeCommand(EnumVscodeCommands.exportCustomIDEs);
 							this.postToWebview({ command: EnumHostCommand.ExportComplete, success: true });
 						}
 						catch (error)
@@ -493,7 +494,7 @@ export class SettingsSyncPanel
 					case EnumWebviewCommand.ExportSelectedSettings:
 						try
 						{
-							await vscode.commands.executeCommand('ide-sync.exportSelectedSettings');
+							await vscode.commands.executeCommand(EnumVscodeCommands.exportSelectedSettings);
 							this.postToWebview({ command: EnumHostCommand.ExportComplete, success: true });
 						}
 						catch (error)
@@ -509,7 +510,7 @@ export class SettingsSyncPanel
 					case EnumWebviewCommand.ExportAll:
 						try
 						{
-							await vscode.commands.executeCommand('ide-sync.exportAll');
+							await vscode.commands.executeCommand(EnumVscodeCommands.exportAll);
 							this.postToWebview({ command: EnumHostCommand.ExportComplete, success: true });
 						}
 						catch (error)
@@ -525,7 +526,7 @@ export class SettingsSyncPanel
 					case EnumWebviewCommand.Import:
 						try
 						{
-							await vscode.commands.executeCommand('ide-sync.import');
+							await vscode.commands.executeCommand(EnumVscodeCommands.import);
 							this.postToWebview({ command: EnumHostCommand.ImportComplete, success: true });
 						}
 						catch (error)

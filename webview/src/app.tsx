@@ -26,6 +26,7 @@ import {
 	IWebviewState,
 } from './types';
 import { IIDEInfo } from '../../src/types';
+import { EnumCssClassSelector, EnumTabName, EnumWebviewElemId } from './types/elem-const';
 
 /** ─── 型別定義 / Type definitions ─── */
 
@@ -194,7 +195,7 @@ export function App({
 					/>
 
 					{/* 設定分頁導覽列 / Settings tab navigation bar */}
-					<div class="tabs">
+					<div class={EnumCssClassSelector.tabs}>
 						<SettingsNavigation />
 					</div>
 
@@ -208,7 +209,7 @@ export function App({
 					<SelectedTab />
 
 					{/* Export/Import 分頁：匯出與匯入設定 / Export/Import tab: export and import settings */}
-					<div id="export-import" class="tab-content">
+					<div id={EnumTabName.exportImport} class="tab-content">
 						<ExportImportPanel importResult={undefined} isProcessing={false} />
 					</div>
 				</div>

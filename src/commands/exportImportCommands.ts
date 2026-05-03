@@ -9,6 +9,7 @@
 import * as vscode from 'vscode';
 import { ExportImportService } from '../services/exportImportService';
 import { ExportImportType } from '../types';
+import { EnumVscodeCommands } from '../types/vscode/vscode-commands';
 
 export class ExportImportCommands
 {
@@ -28,23 +29,23 @@ export class ExportImportCommands
 	{
 		// Export commands
 		const exportCustomIDEsCommand = vscode.commands.registerCommand(
-			'ide-sync.exportCustomIDEs',
+			EnumVscodeCommands.exportCustomIDEs,
 			() => this.exportCustomIDEs(),
 		);
 
 		const exportSelectedSettingsCommand = vscode.commands.registerCommand(
-			'ide-sync.exportSelectedSettings',
+			EnumVscodeCommands.exportSelectedSettings,
 			() => this.exportSelectedSettings(),
 		);
 
 		const exportAllCommand = vscode.commands.registerCommand(
-			'ide-sync.exportAll',
+			EnumVscodeCommands.exportAll,
 			() => this.exportAll(),
 		);
 
 		// Import commands
 		const importCommand = vscode.commands.registerCommand(
-			'ide-sync.import',
+			EnumVscodeCommands.import,
 			() => this.import(),
 		);
 
