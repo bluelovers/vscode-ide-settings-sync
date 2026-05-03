@@ -14,8 +14,9 @@ import { sourceIDEUuid, checkedSettingKeys, searchQuery } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType, IWebviewState } from '../types';
 import { IWebviewWindow } from '../global/window-types';
-import { EnumWebviewElemId, queryWebviewElemById } from './elem-get';
+import { querySelectorById } from '../utils/elem-get';
 import { saveSearchHistory } from './memory';
+import { EnumWebviewElemId } from '../types/elem-const';
 
 /**
  * 取得注入的初始狀態物件的便捷存取器
@@ -165,7 +166,7 @@ export function createSettingHTML(
  */
 export function displayAllSettings(): void
 {
-	const allSettingsDiv = queryWebviewElemById<HTMLDivElement>(EnumWebviewElemId.allSettings);
+	const allSettingsDiv = querySelectorById<HTMLDivElement>(EnumWebviewElemId.allSettings);
 	if (!allSettingsDiv) return;
 	allSettingsDiv.innerHTML = '';
 

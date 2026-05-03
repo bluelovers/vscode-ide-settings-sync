@@ -9,7 +9,8 @@ import { searchQuery, checkedSettingKeys } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType } from '../types';
 import { IWebviewWindow } from '../global/window-types';
-import { EnumWebviewElemId, EnumCssClassSelector, queryWebviewElemById, getClassSelector, queryWebviewElemAllByClass, queryWebviewElemByClass } from './elem-get';
+import { querySelectorById, getClassSelector, querySelectorAllByClass, querySelectorByClass } from '../utils/elem-get';
+import { EnumCssClassSelector, EnumWebviewElemId } from '../types/elem-const';
 
 export function initializeMemory(): void
 {
@@ -18,7 +19,7 @@ export function initializeMemory(): void
 	const savedSelectedIDEs: number[] = state.savedSelectedIDEs ?? [];
 	const savedSelectedSettings: string[] = state.savedSelectedSettings ?? [];
 
-	const searchInput = queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.searchInput);
+	const searchInput = querySelectorById<HTMLInputElement>(EnumWebviewElemId.searchInput);
 	if (searchInput && savedSearchHistory)
 	{
 		searchInput.value = savedSearchHistory;
@@ -27,7 +28,7 @@ export function initializeMemory(): void
 
 	savedSelectedIDEs.forEach(index =>
 	{
-		const checkbox = queryWebviewElemByClass<HTMLInputElement>(
+		const checkbox = querySelectorByClass<HTMLInputElement>(
 			EnumCssClassSelector.ideCheckbox,
 			`[data-index="${index}"]`,
 		);
@@ -42,7 +43,7 @@ export function initializeMemory(): void
 
 export function saveSearchHistory(): void
 {
-	const searchInput = queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.searchInput);
+	const searchInput = querySelectorById<HTMLInputElement>(EnumWebviewElemId.searchInput);
 	const searchText = searchInput?.value ?? '';
 	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 	state.savedSearchHistory = searchText;
@@ -78,7 +79,7 @@ export function addSelectedSettingsListOnAllPanel(): void
 export function saveSelectedIDEs(): void
 {
 	const selectedIDEs: number[] = [];
-	queryWebviewElemAllByClass(EnumCssClassSelector.ideCheckbox, ':checked').forEach(cb =>
+	querySelectorAllByClass(EnumCssClassSelector.ideCheckbox, ':checked').forEach(cb =>
 	{
 		const index = parseInt((cb as HTMLInputElement).dataset.index ?? '');
 		if (!isNaN(index)) selectedIDEs.push(index);

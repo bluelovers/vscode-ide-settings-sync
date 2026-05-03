@@ -6,8 +6,7 @@
  * Tab show/hide is controlled by effect() in index.tsx via CSS class.
  */
 
-import { EnumTabName } from '../../enums';
-import { EnumWebviewElemId } from '../../scripts/elem-get';
+import { EnumTabName, EnumWebviewElemId } from '../../types/elem-const';
 
 export function SelectedTab()
 {

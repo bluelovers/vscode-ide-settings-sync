@@ -1,5 +1,6 @@
-import { EnumTabName } from '../../enums';
-import { EnumWebviewElemId } from '../../scripts/elem-get';
+
+
+import { EnumTabName, EnumWebviewElemId } from '../../types/elem-const';
 
 /**
  * Sync 分頁組件（SSR 骨架）

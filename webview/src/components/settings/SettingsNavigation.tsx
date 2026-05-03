@@ -15,7 +15,8 @@
  */
 
 import { activeTab } from '../../store';
-import { EnumTabName, ITabConfig, ALL_TAB_NAMES } from '../../enums';
+import { ITabConfig } from '../../enums';
+import { ALL_TAB_NAMES, EnumTabName } from '../../types/elem-const';
 
 /**
  * 分頁顯示標籤對照表（單一事實來源）

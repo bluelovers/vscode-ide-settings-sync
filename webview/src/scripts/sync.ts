@@ -13,7 +13,8 @@ import { showMessage } from './messages';
 import { checkedSettingKeys, sourceIDEUuid } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType } from '../types';
-import { EnumCssClassSelector, getClassSelector, queryWebviewElemAllByClass, queryWebviewElemByClass } from './elem-get';
+import { getClassSelector, querySelectorAllByClass, querySelectorByClass } from '../utils/elem-get';
+import { EnumCssClassSelector } from '../types/elem-const';
 
 /**
  * 收集當前已勾選的 IDE 與設定，向 Extension host 發送 `syncSettings` 指令
@@ -26,7 +27,7 @@ export function syncSettings(): void
 	 * Collect all checked IDE indices (IDE list is still SSR static HTML, read from DOM)
 	 */
 	const selectedIDEs: number[] = [];
-	queryWebviewElemAllByClass(EnumCssClassSelector.ideCheckbox, ':checked').forEach(cb =>
+	querySelectorAllByClass(EnumCssClassSelector.ideCheckbox, ':checked').forEach(cb =>
 	{
 		const index = parseInt((cb as HTMLInputElement).dataset.index ?? '');
 		if (!isNaN(index)) selectedIDEs.push(index);
@@ -55,7 +56,7 @@ export function syncSettings(): void
 	 * Read source IDE UUID from signal, then find the corresponding index from DOM
 	 */
 	const uuid = sourceIDEUuid.value;
-	const sourceRadio = queryWebviewElemByClass<HTMLInputElement>(EnumCssClassSelector.ideSourceRadio, `[value="${uuid}"]`);
+	const sourceRadio = querySelectorByClass<HTMLInputElement>(EnumCssClassSelector.ideSourceRadio, `[value="${uuid}"]`);
 	const sourceIndex = sourceRadio?.dataset.index;
 
 	vscode.postMessage({
@@ -77,7 +78,7 @@ export function deleteSettings(): void
 	 * Collect all checked IDE indices (IDE list is still SSR static HTML, read from DOM)
 	 */
 	const selectedIDEs: number[] = [];
-	queryWebviewElemAllByClass(EnumCssClassSelector.ideCheckbox, ':checked').forEach(cb =>
+	querySelectorAllByClass(EnumCssClassSelector.ideCheckbox, ':checked').forEach(cb =>
 	{
 		const index = parseInt((cb as HTMLInputElement).dataset.index ?? '');
 		if (!isNaN(index)) selectedIDEs.push(index);

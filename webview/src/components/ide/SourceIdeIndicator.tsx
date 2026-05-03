@@ -15,9 +15,9 @@
  * hydrated into `.source-ide-indicator` container without duplicating the outer div.
  */
 
-import { EnumCssClassSelector } from 'src/scripts/elem-get';
 import { sourceIDEName, sourceIDEUuid } from '../../store';
 import { isWebviewBrowser } from '../../utils/webview-browser';
+import { EnumCssClassSelector } from '../../types/elem-const';
 
 /**
  * 來源 IDE 指示器組件 Props

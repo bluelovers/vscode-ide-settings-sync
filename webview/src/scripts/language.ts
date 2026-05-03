@@ -9,7 +9,8 @@
 import { vscode } from '../global/vscode-api';
 import { activeTab } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
-import { EnumWebviewElemId, queryWebviewElemById } from './elem-get';
+import { querySelectorById } from '../utils/elem-get';
+import { EnumWebviewElemId } from '../types/elem-const';
 
 /**
  * 變更主顯示語言
@@ -24,7 +25,7 @@ import { EnumWebviewElemId, queryWebviewElemById } from './elem-get';
  */
 export function changePrimaryLanguage(value?: string): void
 {
-	const lang = value ?? (queryWebviewElemById<HTMLSelectElement>(EnumWebviewElemId.primaryLang))?.value;
+	const lang = value ?? (querySelectorById<HTMLSelectElement>(EnumWebviewElemId.primaryLang))?.value;
 	if (!lang) return;
 
 	vscode.postMessage({ command: EnumWebviewCommand.ChangePrimaryLanguage, language: lang });

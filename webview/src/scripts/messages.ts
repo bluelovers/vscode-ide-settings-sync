@@ -18,7 +18,8 @@ import { IWebviewWindow } from '../global/window-types';
 import { vscode } from '../global/vscode-api';
 import { ideList } from '../store';
 import { EnumHostCommand, IHostMessage, IWebviewWindowMessageEvent } from '../webviewMessages';
-import { EnumWebviewElemId, queryWebviewElemById } from './elem-get';
+import { querySelectorById } from '../utils/elem-get';
+import { EnumWebviewElemId } from '../types/elem-const';
 
 /**
  * 在 `#message` 元素中顯示狀態訊息
@@ -32,7 +33,7 @@ import { EnumWebviewElemId, queryWebviewElemById } from './elem-get';
  */
 export function showMessage(text: string, type: EnumShowMessageType): void
 {
-	const messageDiv = queryWebviewElemById(EnumWebviewElemId.message);
+	const messageDiv = querySelectorById(EnumWebviewElemId.message);
 	if (!messageDiv) return;
 
 	messageDiv.textContent = text;

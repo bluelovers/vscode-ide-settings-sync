@@ -15,8 +15,8 @@
 import { signal, computed } from '@preact/signals';
 import { IWebviewState, IIDEInfoWebview } from './types';
 import { IWebviewWindow } from './global/window-types';
-import { EnumTabName, ALL_TAB_NAMES } from './enums';
-import { EnumCssClassSelector, getClassSelector, queryWebviewElemByClass } from './scripts/elem-get';
+import { getClassSelector, querySelectorByClass } from './utils/elem-get';
+import { ALL_TAB_NAMES, EnumCssClassSelector, EnumTabName } from './types/elem-const';
 
 /**
  * 當前活躍的分頁名稱
@@ -143,7 +143,7 @@ export function initStore(): void
 	 */
 	const initialSourceUuid =
 		state.sourceIDEUuid ??
-		queryWebviewElemByClass<HTMLInputElement>(EnumCssClassSelector.ideSourceRadio, ':checked')?.value ??
+		querySelectorByClass<HTMLInputElement>(EnumCssClassSelector.ideSourceRadio, ':checked')?.value ??
 		'';
 	sourceIDEUuid.value = initialSourceUuid;
 

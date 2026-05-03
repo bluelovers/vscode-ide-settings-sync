@@ -9,33 +9,34 @@
 import { vscode } from '../global/vscode-api';
 import { exportPath, importPath } from '../store';
 import { EnumWebviewCommand, EnumHostCommand } from '../webviewMessages';
-import { EnumWebviewElemId, queryWebviewElemById } from './elem-get';
+import { querySelectorById } from '../utils/elem-get';
+import { EnumWebviewElemId } from '../types/elem-const';
 
 export function handleExportCustomIDEs(): void
 {
-	const customPath = (queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.exportCustomPath))?.value;
+	const customPath = (querySelectorById<HTMLInputElement>(EnumWebviewElemId.exportCustomPath))?.value;
 	const includeKnownIDEs =
-		(queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.exportIncludeKnownIDEs))?.checked ?? false;
+		(querySelectorById<HTMLInputElement>(EnumWebviewElemId.exportIncludeKnownIDEs))?.checked ?? false;
 	vscode.postMessage({ command: EnumWebviewCommand.ExportCustomIDEs, includeKnownIDEs, customPath: customPath || undefined });
 }
 
 export function handleExportSelectedSettings(): void
 {
-	const customPath = (queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.exportSelectedPath))?.value;
+	const customPath = (querySelectorById<HTMLInputElement>(EnumWebviewElemId.exportSelectedPath))?.value;
 	vscode.postMessage({ command: EnumWebviewCommand.ExportSelectedSettings, customPath: customPath || undefined });
 }
 
 export function handleExportAll(): void
 {
-	const customPath = (queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.exportAllPath))?.value;
+	const customPath = (querySelectorById<HTMLInputElement>(EnumWebviewElemId.exportAllPath))?.value;
 	const includeKnownIDEs =
-		(queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.exportAllIncludeKnownIDEs))?.checked ?? false;
+		(querySelectorById<HTMLInputElement>(EnumWebviewElemId.exportAllIncludeKnownIDEs))?.checked ?? false;
 	vscode.postMessage({ command: EnumWebviewCommand.ExportAll, includeKnownIDEs, customPath: customPath || undefined });
 }
 
 export function handleImport(): void
 {
-	const customPath = (queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.importPath))?.value;
+	const customPath = (querySelectorById<HTMLInputElement>(EnumWebviewElemId.importPath))?.value;
 	vscode.postMessage({ command: EnumWebviewCommand.Import, customPath: customPath || undefined });
 }
 
@@ -65,7 +66,7 @@ export function initExportImportMessageHandler(): void
 				exportPath.value = message.path ?? '';
 				[EnumWebviewElemId.exportCustomPath, EnumWebviewElemId.exportSelectedPath, EnumWebviewElemId.exportAllPath].forEach(id =>
 				{
-					const el = queryWebviewElemById<HTMLInputElement>(id);
+					const el = querySelectorById<HTMLInputElement>(id);
 					if (el) el.value = message.path;
 				});
 				break;
@@ -76,7 +77,7 @@ export function initExportImportMessageHandler(): void
 				 * Update importPath signal and sync to import path input
 				 */
 				importPath.value = message.path ?? '';
-				const importEl = queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.importPath);
+				const importEl = querySelectorById<HTMLInputElement>(EnumWebviewElemId.importPath);
 				if (importEl) importEl.value = message.path;
 				break;
 

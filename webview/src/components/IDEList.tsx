@@ -9,10 +9,10 @@
  * Event handling is done by window-mounted functions (onclick strings).
  */
 
-import { EnumCssClassSelector } from 'src/scripts/elem-get';
 import { formatPath } from '../../../src/utils/formatPath';
 import { IIDEListProps, IRemoveCustomIDEParams } from './types';
 import { ITSRequireAtLeastOne } from 'ts-type';
+import { EnumCssClassSelector } from '../types/elem-const';
 
 function AvailableIDEItem(props: {
 	ide: { uuid: string; name: string; type: string; nativePath: string };
