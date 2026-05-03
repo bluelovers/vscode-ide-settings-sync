@@ -36,7 +36,7 @@ import { EnumTabName, ALL_TAB_NAMES } from './enums';
 import { SearchResultsList, AllSettingsList, SelectedSettingsList } from './components/settings/SettingList';
 import { SettingsNavigation } from './components/settings/SettingsNavigation';
 import { SourceIdeIndicatorContent } from './components/ide/SourceIdeIndicator';
-import { EnumWebviewElemSelector, queryWebviewElem } from './scripts/elem-get';
+import { EnumCssClassSelector, EnumWebviewElemId, queryWebviewElemByClass, getClassSelector, queryWebviewElemById } from './scripts/elem-get';
 
 /** ─── 掛載至 window / Mount to window ─── */
 
@@ -111,7 +111,7 @@ function initialize(): void
 	 * 組件只渲染子內容（span 等），不含外層 div，所以不會重複。
 	 * Component renders only children (spans etc.), not the outer div, so no duplication.
 	 */
-	const sourceIndicatorEl = document.querySelector<HTMLElement>('.source-ide-indicator');
+	const sourceIndicatorEl = queryWebviewElemByClass<HTMLElement>(EnumCssClassSelector.sourceIdeIndicator);
 	if (sourceIndicatorEl)
 	{
 		hydrate(<SourceIdeIndicatorContent />, sourceIndicatorEl);
@@ -122,28 +122,28 @@ function initialize(): void
 	 * 組件只渲染按鈕（Fragment），不含外層 div，所以不會重複。
 	 * Component renders only buttons (Fragment), not the outer div, so no duplication.
 	 */
-	const tabsEl = document.querySelector<HTMLElement>('.tabs');
+	const tabsEl = queryWebviewElemByClass<HTMLElement>(EnumCssClassSelector.tabs);
 	if (tabsEl)
 	{
 		hydrate(<SettingsNavigation />, tabsEl);
 	}
 
 	/** Hydrate 搜尋結果列表（#searchResults — SSR 時為空）*/
-	const searchResultsEl = queryWebviewElem<HTMLDivElement>(EnumWebviewElemSelector.searchResults);
+	const searchResultsEl = queryWebviewElemById<HTMLDivElement>(EnumWebviewElemId.searchResults);
 	if (searchResultsEl)
 	{
 		hydrate(<SearchResultsList />, searchResultsEl);
 	}
 
 	/** Hydrate 所有設定列表（#allSettings — SSR 時為空）*/
-	const allSettingsEl = document.getElementById('allSettings');
+	const allSettingsEl = queryWebviewElemById<HTMLDivElement>(EnumWebviewElemId.allSettings);
 	if (allSettingsEl)
 	{
 		hydrate(<AllSettingsList />, allSettingsEl);
 	}
 
 	/** Hydrate 已選設定列表（#selectedSettingsList — SSR 時為空）*/
-	const selectedSettingsEl = document.getElementById('selectedSettingsList');
+	const selectedSettingsEl = queryWebviewElemById<HTMLDivElement>(EnumWebviewElemId.selectedSettingsList);
 	if (selectedSettingsEl)
 	{
 		hydrate(<SelectedSettingsList />, selectedSettingsEl);
@@ -172,9 +172,9 @@ function initialize(): void
 	effect(() =>
 	{
 		const uuid = sourceIDEUuid.value;
-		document.querySelectorAll('.ide-item').forEach(item =>
+		document.querySelectorAll(EnumCssClassSelector.ideItem).forEach(item =>
 		{
-			const checkbox = item.querySelector<HTMLInputElement>('.ide-checkbox');
+			const checkbox = item.querySelector<HTMLInputElement>(getClassSelector(EnumCssClassSelector.ideCheckbox));
 			item.classList.toggle('source-ide', checkbox?.dataset.uuid === uuid);
 		});
 	});
@@ -183,7 +183,7 @@ function initialize(): void
 	 * 搜尋輸入框 input 事件：更新 searchQuery signal
 	 * Search input event: update searchQuery signal
 	 */
-	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
+	const searchInput = queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.searchInput);
 	searchInput?.addEventListener('input', (e) =>
 	{
 		searchQuery.value = (e.target as HTMLInputElement).value;
@@ -200,7 +200,7 @@ function initialize(): void
 	 * 為所有 IDE 勾選框綁定 change 事件
 	 * Bind change event to all IDE checkboxes
 	 */
-	document.querySelectorAll('.ide-checkbox').forEach(checkbox =>
+	document.querySelectorAll(EnumCssClassSelector.ideCheckbox).forEach(checkbox =>
 	{
 		checkbox.addEventListener('change', saveSelectedIDEs);
 	});

@@ -6,16 +6,19 @@
  * Tab show/hide is controlled by effect() in index.tsx via CSS class.
  */
 
+import { EnumTabName } from '../../enums';
+import { EnumWebviewElemId } from '../../scripts/elem-get';
+
 export function SelectedTab()
 {
 	return (
-		<div id="selected" className="tab-content">
+		<div id={EnumTabName.selected} className="tab-content">
 			<div className="section">
 				<h2>Selected Settings List</h2>
 				<p style={{ color: 'var(--vscode-descriptionForeground)', marginBottom: '15px', fontSize: '13px' }}>
 					👇 All checked settings from both Search &amp; Sync and View All sections
 				</p>
-				<div id="selectedSettingsList" className="settings-list"></div>
+				<div id={EnumWebviewElemId.selectedSettingsList} className="settings-list"></div>
 				<div className="actions">
 					{/* @ts-ignore */}
 					<button className="btn" onclick="refreshSettings && refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>

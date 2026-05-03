@@ -14,7 +14,7 @@ import { sourceIDEUuid, checkedSettingKeys, searchQuery } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType, IWebviewState } from '../types';
 import { IWebviewWindow } from '../global/window-types';
-import { EnumWebviewElemSelector, queryWebviewElem } from './elem-get';
+import { EnumWebviewElemId, queryWebviewElemById } from './elem-get';
 import { saveSearchHistory } from './memory';
 
 /**
@@ -165,7 +165,7 @@ export function createSettingHTML(
  */
 export function displayAllSettings(): void
 {
-	const allSettingsDiv = document.getElementById('allSettings');
+	const allSettingsDiv = queryWebviewElemById<HTMLDivElement>(EnumWebviewElemId.allSettings);
 	if (!allSettingsDiv) return;
 	allSettingsDiv.innerHTML = '';
 
@@ -232,9 +232,9 @@ export function displayAllSettings(): void
  */
 export function searchSettings(): void
 {
-	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
+	const searchInput = queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.searchInput);
 	const query = searchInput?.value?.toLowerCase() ?? '';
-	const resultsDiv = queryWebviewElem<HTMLDivElement>(EnumWebviewElemSelector.searchResults);
+	const resultsDiv = queryWebviewElemById<HTMLDivElement>(EnumWebviewElemId.searchResults);
 	if (!resultsDiv) return;
 	resultsDiv.innerHTML = '';
 
@@ -314,7 +314,7 @@ export function searchSettings(): void
  */
 export function displaySelectedSettingsList(): void
 {
-	const selectedListDiv = document.getElementById('selectedSettingsList');
+	const selectedListDiv = queryWebviewElemById<HTMLDivElement>(EnumWebviewElemId.selectedSettingsList);
 	if (!selectedListDiv) return;
 	selectedListDiv.innerHTML = '';
 

@@ -1,3 +1,6 @@
+import { EnumTabName } from '../../enums';
+import { EnumWebviewElemId } from '../../scripts/elem-get';
+
 /**
  * Sync 分頁組件（SSR 骨架）
  * Sync tab component (SSR skeleton)
@@ -15,14 +18,14 @@
 export function SyncTab()
 {
 	return (
-		<div id="sync" className="tab-content active">
+		<div id={EnumTabName.sync} className="tab-content active">
 			<div className="section">
 				<h2>Search &amp; Sync Settings</h2>
 				<div className="search-container">
 					<input
 						type="text"
 						className="search-input"
-						id="searchInput"
+						id={EnumWebviewElemId.searchInput}
 						placeholder="e.g., editor.fontFamily, editor.fontSize..."
 						// @ts-ignore
 						onkeyup="searchSettings && searchSettings();saveSearchHistory && saveSearchHistory()"
@@ -30,7 +33,7 @@ export function SyncTab()
 					{/* @ts-ignore */}
 					<button className="btn" onclick="clearSearch && clearSearch()" title="Clear search field">Clear</button>
 				</div>
-				<div id="searchResults" className="settings-list"></div>
+				<div id={EnumWebviewElemId.searchResults} className="settings-list"></div>
 				<div className="actions">
 					{/* @ts-ignore */}
 					<button className="btn" onclick="refreshSettings && refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
@@ -41,7 +44,7 @@ export function SyncTab()
 					{/* @ts-ignore */}
 					<button className="btn btn-delete" onclick="deleteSettings && deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
 				</div>
-				<div id="message" className="message"></div>
+				<div id={EnumWebviewElemId.message} className="message"></div>
 			</div>
 		</div>
 	);

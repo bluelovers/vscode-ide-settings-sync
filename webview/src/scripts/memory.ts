@@ -9,6 +9,7 @@ import { searchQuery, checkedSettingKeys } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType } from '../types';
 import { IWebviewWindow } from '../global/window-types';
+import { EnumWebviewElemId, EnumCssClassSelector, queryWebviewElemById, getClassSelector } from './elem-get';
 
 export function initializeMemory(): void
 {
@@ -17,7 +18,7 @@ export function initializeMemory(): void
 	const savedSelectedIDEs: number[] = state.savedSelectedIDEs ?? [];
 	const savedSelectedSettings: string[] = state.savedSelectedSettings ?? [];
 
-	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
+	const searchInput = queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.searchInput);
 	if (searchInput && savedSearchHistory)
 	{
 		searchInput.value = savedSearchHistory;
@@ -27,7 +28,7 @@ export function initializeMemory(): void
 	savedSelectedIDEs.forEach(index =>
 	{
 		const checkbox = document.querySelector(
-			`input.ide-checkbox[data-index="${index}"]`,
+			`input${getClassSelector(EnumCssClassSelector.ideCheckbox)}[data-index="${index}"]`,
 		) as HTMLInputElement | null;
 		if (checkbox) checkbox.checked = true;
 	});
@@ -40,7 +41,7 @@ export function initializeMemory(): void
 
 export function saveSearchHistory(): void
 {
-	const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
+	const searchInput = queryWebviewElemById<HTMLInputElement>(EnumWebviewElemId.searchInput);
 	const searchText = searchInput?.value ?? '';
 	const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 	state.savedSearchHistory = searchText;
@@ -76,7 +77,7 @@ export function addSelectedSettingsListOnAllPanel(): void
 export function saveSelectedIDEs(): void
 {
 	const selectedIDEs: number[] = [];
-	document.querySelectorAll('.ide-checkbox:checked').forEach(cb =>
+	document.querySelectorAll(`${EnumCssClassSelector.ideCheckbox}:checked`).forEach(cb =>
 	{
 		const index = parseInt((cb as HTMLInputElement).dataset.index ?? '');
 		if (!isNaN(index)) selectedIDEs.push(index);

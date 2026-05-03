@@ -1,3 +1,6 @@
+import { EnumTabName } from '../../enums';
+import { EnumWebviewElemId } from '../../scripts/elem-get';
+
 /**
  * All Settings 分頁組件（SSR 骨架）
  * All Settings tab component (SSR skeleton)
@@ -9,10 +12,10 @@
 export function AllSettingsTab()
 {
 	return (
-		<div id="values" className="tab-content">
+		<div id={EnumTabName.values} className="tab-content">
 			<div className="section">
 				<h2>All IDE Settings</h2>
-				<div id="allSettings" className="settings-list"></div>
+				<div id={EnumWebviewElemId.allSettings} className="settings-list"></div>
 				<div className="actions">
 					{/* @ts-ignore */}
 					<button className="btn" onclick="refreshSettings && refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
