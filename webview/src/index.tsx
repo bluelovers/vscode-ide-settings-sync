@@ -36,7 +36,8 @@ import { EnumTabName, ALL_TAB_NAMES } from './enums';
 import { SearchResultsList, AllSettingsList, SelectedSettingsList } from './components/settings/SettingList';
 import { SettingsNavigation } from './components/settings/SettingsNavigation';
 import { SourceIdeIndicatorContent } from './components/ide/SourceIdeIndicator';
-import { EnumCssClassSelector, EnumWebviewElemId, queryWebviewElemByClass, getClassSelector, queryWebviewElemById } from './scripts/elem-get';
+import { EnumCssClassSelector, EnumWebviewElemId, queryWebviewElemByClass, getClassSelector, queryWebviewElemById, queryWebviewElemAllByClass } from './scripts/elem-get';
+import { onWebviewReadyMaybe } from './utils/webview-browser';
 
 /** ─── 掛載至 window / Mount to window ─── */
 
@@ -160,7 +161,7 @@ function initialize(): void
 		/** 更新 tab-content 顯示 / Update tab-content visibility */
 		ALL_TAB_NAMES.forEach(id =>
 		{
-			const el = document.getElementById(id);
+			const el = queryWebviewElemById(id);
 			if (el) el.classList.toggle('active', id === tab);
 		});
 	});
@@ -172,7 +173,7 @@ function initialize(): void
 	effect(() =>
 	{
 		const uuid = sourceIDEUuid.value;
-		document.querySelectorAll(EnumCssClassSelector.ideItem).forEach(item =>
+		queryWebviewElemAllByClass(EnumCssClassSelector.ideItem).forEach(item =>
 		{
 			const checkbox = item.querySelector<HTMLInputElement>(getClassSelector(EnumCssClassSelector.ideCheckbox));
 			item.classList.toggle('source-ide', checkbox?.dataset.uuid === uuid);
@@ -200,7 +201,7 @@ function initialize(): void
 	 * 為所有 IDE 勾選框綁定 change 事件
 	 * Bind change event to all IDE checkboxes
 	 */
-	document.querySelectorAll(EnumCssClassSelector.ideCheckbox).forEach(checkbox =>
+	queryWebviewElemAllByClass<HTMLInputElement>(EnumCssClassSelector.ideCheckbox).forEach(checkbox =>
 	{
 		checkbox.addEventListener('change', saveSelectedIDEs);
 	});
@@ -210,11 +211,4 @@ function initialize(): void
  * 根據 DOM 就緒狀態決定立即執行或延遲至 DOMContentLoaded
  * Decide whether to execute immediately or defer to DOMContentLoaded based on DOM ready state
  */
-if (document.readyState === 'loading')
-{
-	document.addEventListener('DOMContentLoaded', initialize);
-}
-else
-{
-	initialize();
-}
+onWebviewReadyMaybe(initialize);

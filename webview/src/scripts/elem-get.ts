@@ -1,3 +1,4 @@
+import { EnumTabName } from 'src/enums';
 
 /**
  * Webview 元素選擇器列舉（單一事實來源）
@@ -38,11 +39,12 @@ export const enum EnumWebviewElemId
  * 將 EnumWebviewElemId 轉換為 CSS ID 選擇器字串（帶 # 前綴）
  * Convert EnumWebviewElemId to CSS ID selector string (with # prefix)
  * @param id - 元素 ID 列舉值 / Element ID enum value
+ * @param suffix - 選擇器後綴 / Selector suffix
  * @returns CSS ID 選擇器字串 / CSS ID selector string
  */
-export function getElemIdSelector(id: EnumWebviewElemId): string
+export function getElemIdSelector(id: EnumWebviewElemId, suffix?: string): string
 {
-	return `#${id}`;
+	return `#${id}${suffix ?? ''}`;
 }
 
 /**
@@ -70,22 +72,12 @@ export const enum EnumCssClassSelector
  * 將 EnumCssClassSelector 轉換為 CSS 類別選擇器字串（帶 . 前綴）
  * Convert EnumCssClassSelector to CSS class selector string (with . prefix)
  * @param className - CSS 類別列舉值 / CSS class enum value
+ * @param suffix - 選擇器後綴 / Selector suffix
  * @returns CSS 類別選擇器字串 / CSS class selector string
  */
-export function getClassSelector(className: EnumCssClassSelector): string
+export function getClassSelector(className: EnumCssClassSelector, suffix?: string): string
 {
-	return `.${className}`;
-}
-
-/**
- * 網頁元素 ID 選擇器列舉（保留舊版相容）
- * Webview element selector enum (Legacy compatibility)
- *
- * @deprecated 請使用 EnumWebviewElemId 與 getElemIdSelector()
- */
-export const enum EnumWebviewElemSelector
-{
-	'searchResults' = '#searchResults',
+	return `.${className}${suffix ?? ''}`;
 }
 
 /**
@@ -94,7 +86,7 @@ export const enum EnumWebviewElemSelector
  * @param id - 元素 ID 列舉值 / Element ID enum value
  * @returns 查詢到的元素或 null / Queried element or null
  */
-export function queryWebviewElemById<T extends HTMLElement>(id: EnumWebviewElemId): T | null
+export function queryWebviewElemById<T extends HTMLElement>(id: EnumWebviewElemId | EnumTabName): T | null
 {
 	return document.getElementById(id) as T | null;
 }
@@ -103,42 +95,23 @@ export function queryWebviewElemById<T extends HTMLElement>(id: EnumWebviewElemI
  * 透過 EnumCssClassSelector 查詢單一元素
  * Query single element by EnumCssClassSelector
  * @param classSelector - CSS 類別列舉值 / CSS class enum value
+ * @param suffix - 選擇器後綴 / Selector suffix
  * @returns 查詢到的元素或 null / Queried element or null
  */
-export function queryWebviewElemByClass<T extends HTMLElement>(classSelector: EnumCssClassSelector): T | null
+export function queryWebviewElemByClass<T extends HTMLElement>(classSelector: EnumCssClassSelector, suffix?: string): T | null
 {
-	return document.querySelector<T>(getClassSelector(classSelector));
+	return document.querySelector<T>(getClassSelector(classSelector, suffix));
 }
 
 /**
  * 透過 EnumCssClassSelector 查詢所有匹配元素
  * Query all elements by EnumCssClassSelector
  * @param classSelector - CSS 類別列舉值 / CSS class enum value
+ * @param suffix - 選擇器後綴 / Selector suffix
  * @returns 查詢到的元素列表 / Queried elements NodeList
  */
-export function queryWebviewElemAllByClass<T extends HTMLElement>(classSelector: EnumCssClassSelector): NodeListOf<T>
+export function queryWebviewElemAllByClass<T extends HTMLElement>(classSelector: EnumCssClassSelector, suffix?: string): NodeListOf<T>
 {
-	return document.querySelectorAll<T>(getClassSelector(classSelector));
+	return document.querySelectorAll<T>(getClassSelector(classSelector, suffix));
 }
 
-/**
- * 保留舊版函式（相容性）
- * Legacy function (backward compatibility)
- *
- * @deprecated 請使用 queryWebviewElemById 或 queryWebviewElemByClass
- */
-export function queryWebviewElem<T extends HTMLElement>(selector: EnumWebviewElemSelector): T | null
-{
-	return document.querySelector<T>(selector);
-}
-
-/**
- * 保留舊版函式（相容性）
- * Legacy function (backward compatibility)
- *
- * @deprecated 請使用 queryWebviewElemAllByClass
- */
-export function queryWebviewElemAll<T extends HTMLElement>(selector: EnumWebviewElemSelector): NodeListOf<T>
-{
-	return document.querySelectorAll<T>(selector);
-}

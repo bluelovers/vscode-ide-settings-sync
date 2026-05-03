@@ -15,7 +15,9 @@
  * hydrated into `.source-ide-indicator` container without duplicating the outer div.
  */
 
+import { EnumCssClassSelector } from 'src/scripts/elem-get';
 import { sourceIDEName, sourceIDEUuid } from '../../store';
+import { isWebviewBrowser } from '../../utils/webview-browser';
 
 /**
  * 來源 IDE 指示器組件 Props
@@ -44,10 +46,18 @@ export interface ISourceIdeIndicatorProps
  * hydrate 至 `.source-ide-indicator` 後 Preact 接管，signal 改變時自動重新渲染。
  * After hydrating into `.source-ide-indicator`, Preact takes over and re-renders on signal change.
  */
-export function SourceIdeIndicatorContent()
+export function SourceIdeIndicatorContent(props: ISourceIdeIndicatorProps)
 {
-	const name = sourceIDEName.value;
-	const uuid = sourceIDEUuid.value;
+	/**
+	 * 判斷目前是否在瀏覽器環境（hydration 後）
+	 * 若是，從 signals 讀取；若否（SSR），從 props 讀取。
+	 *
+	 * Determine if currently in browser environment (after hydration).
+	 * If yes, read from signals; if no (SSR), read from props.
+	 */
+	const isBrowser = isWebviewBrowser();
+	const name = isBrowser ? sourceIDEName.value : (props.sourceIDEName ?? 'Not selected');
+	const uuid = isBrowser ? sourceIDEUuid.value : (props.sourceIDEUuid ?? '');
 
 	return (
 		<>
@@ -69,24 +79,11 @@ export function SourceIdeIndicatorContent()
  */
 export function SourceIdeIndicator(props: ISourceIdeIndicatorProps)
 {
-	/**
-	 * 判斷目前是否在瀏覽器環境（hydration 後）
-	 * 若是，從 signals 讀取；若否（SSR），從 props 讀取。
-	 *
-	 * Determine if currently in browser environment (after hydration).
-	 * If yes, read from signals; if no (SSR), read from props.
-	 */
-	const isBrowser = typeof window !== 'undefined';
-	const name = isBrowser ? sourceIDEName.value : (props.sourceIDEName ?? 'Not selected');
-	const uuid = isBrowser ? sourceIDEUuid.value : (props.sourceIDEUuid ?? '');
+
 
 	return (
-		<div className="section source-ide-indicator">
-			<span className="source-label">Source IDE:</span>
-			<span className="source-name">
-				<span className="source-name-text">{name || 'Not selected'}</span>
-				&nbsp;(<span className="source-uuid">{uuid}</span>)
-			</span>
+		<div className={`section ${EnumCssClassSelector.sourceIdeIndicator}`}>
+			<SourceIdeIndicatorContent {...props} />
 		</div>
 	);
 }

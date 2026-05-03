@@ -9,7 +9,7 @@ import { searchQuery, checkedSettingKeys } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
 import { EnumShowMessageType } from '../types';
 import { IWebviewWindow } from '../global/window-types';
-import { EnumWebviewElemId, EnumCssClassSelector, queryWebviewElemById, getClassSelector } from './elem-get';
+import { EnumWebviewElemId, EnumCssClassSelector, queryWebviewElemById, getClassSelector, queryWebviewElemAllByClass, queryWebviewElemByClass } from './elem-get';
 
 export function initializeMemory(): void
 {
@@ -27,9 +27,10 @@ export function initializeMemory(): void
 
 	savedSelectedIDEs.forEach(index =>
 	{
-		const checkbox = document.querySelector(
-			`input${getClassSelector(EnumCssClassSelector.ideCheckbox)}[data-index="${index}"]`,
-		) as HTMLInputElement | null;
+		const checkbox = queryWebviewElemByClass<HTMLInputElement>(
+			EnumCssClassSelector.ideCheckbox,
+			`[data-index="${index}"]`,
+		);
 		if (checkbox) checkbox.checked = true;
 	});
 
@@ -77,7 +78,7 @@ export function addSelectedSettingsListOnAllPanel(): void
 export function saveSelectedIDEs(): void
 {
 	const selectedIDEs: number[] = [];
-	document.querySelectorAll(`${EnumCssClassSelector.ideCheckbox}:checked`).forEach(cb =>
+	queryWebviewElemAllByClass(EnumCssClassSelector.ideCheckbox, ':checked').forEach(cb =>
 	{
 		const index = parseInt((cb as HTMLInputElement).dataset.index ?? '');
 		if (!isNaN(index)) selectedIDEs.push(index);

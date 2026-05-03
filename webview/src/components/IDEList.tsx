@@ -9,6 +9,7 @@
  * Event handling is done by window-mounted functions (onclick strings).
  */
 
+import { EnumCssClassSelector } from 'src/scripts/elem-get';
 import { formatPath } from '../../../src/utils/formatPath';
 import { IIDEListProps, IRemoveCustomIDEParams } from './types';
 import { ITSRequireAtLeastOne } from 'ts-type';
@@ -30,7 +31,7 @@ function AvailableIDEItem(props: {
 				type="radio"
 				id={sourceId}
 				name="sourceIDE"
-				className="ide-source-radio"
+				className={EnumCssClassSelector.ideSourceRadio}
 				value={props.ide.uuid}
 				checked={props.isSource}
 				title="Select as source IDE"
@@ -41,7 +42,7 @@ function AvailableIDEItem(props: {
 			<input
 				type="checkbox"
 				id={id}
-				className="ide-checkbox"
+				className={EnumCssClassSelector.ideCheckbox}
 				data-index={props.index}
 				data-name={props.ide.name}
 				data-uuid={props.ide.uuid}
@@ -118,8 +119,8 @@ function UnavailableIDEItem(props: {
 
 	return (<>
 		<div key={props.index} className="ide-item unavailable" title={`Not detected: ${props.ide.expectedPath}`}>
-			<input type="radio" className="ide-source-radio" disabled title="Cannot select unavailable IDE as source" />
-			<input type="checkbox" id={id} className="ide-checkbox" disabled />
+			<input type="radio" className={EnumCssClassSelector.ideSourceRadio} disabled title="Cannot select unavailable IDE as source" />
+			<input type="checkbox" id={id} className={EnumCssClassSelector.ideCheckbox} disabled />
 			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
 			<span className="ide-path">❌ Not detected: {props.ide.expectedPath}</span>
 			<BtnOpenIDEFolder path={props.ide.expectedPath} />

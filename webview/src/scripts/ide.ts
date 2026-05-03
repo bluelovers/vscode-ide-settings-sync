@@ -6,7 +6,7 @@
 import { vscode } from '../global/vscode-api';
 import { sourceIDEUuid } from '../store';
 import { EnumWebviewCommand } from '../webviewMessages';
-import { EnumCssClassSelector } from './elem-get';
+import { EnumCssClassSelector, queryWebviewElemAllByClass } from './elem-get';
 
 export function removeCustomIDE(params: {
 	index: number;
@@ -54,7 +54,7 @@ export function handleSourceIDEChange(event: Event): void
 
 export function initIDEEventListeners(): void
 {
-	document.querySelectorAll(EnumCssClassSelector.ideSourceRadio).forEach(radio =>
+	queryWebviewElemAllByClass(EnumCssClassSelector.ideSourceRadio).forEach(radio =>
 	{
 		radio.addEventListener('change', handleSourceIDEChange);
 	});

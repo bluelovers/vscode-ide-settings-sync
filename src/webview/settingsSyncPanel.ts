@@ -94,6 +94,8 @@ export class SettingsSyncPanel
 	 */
 	private postToWebview(message: IHostMessage): void
 	{
+		console.log('[SettingsSyncPanel] Posting message to webview:', message.command, message);
+
 		this.panel.webview.postMessage(message);
 	}
 
@@ -246,6 +248,8 @@ export class SettingsSyncPanel
 		this.panel.webview.onDidReceiveMessage(
 			async (message: IWebviewMessage) =>
 			{
+				console.log('[SettingsSyncPanel] Received message:', 'command', message.command, message);
+
 				switch (message.command)
 				{
 					/**

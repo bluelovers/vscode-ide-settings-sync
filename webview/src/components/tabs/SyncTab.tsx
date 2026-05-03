@@ -28,21 +28,21 @@ export function SyncTab()
 						id={EnumWebviewElemId.searchInput}
 						placeholder="e.g., editor.fontFamily, editor.fontSize..."
 						// @ts-ignore
-						onkeyup="searchSettings && searchSettings();saveSearchHistory && saveSearchHistory()"
+
 					/>
 					{/* @ts-ignore */}
-					<button className="btn" onclick="clearSearch && clearSearch()" title="Clear search field">Clear</button>
+					<button className="btn" onclick="clearSearch()" title="Clear search field">Clear</button>
 				</div>
 				<div id={EnumWebviewElemId.searchResults} className="settings-list"></div>
 				<div className="actions">
 					{/* @ts-ignore */}
-					<button className="btn" onclick="refreshSettings && refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
+					<button className="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
 					{/* @ts-ignore */}
-					<button className="btn" onclick="addSelectedSettingsListOnSearchPanel && addSelectedSettingsListOnSearchPanel()" title="Add selected settings">💾 Add Selected Settings</button>
+					<button className="btn" onclick="addSelectedSettingsListOnSearchPanel()" title="Add selected settings">💾 Add Selected Settings</button>
 					{/* @ts-ignore */}
-					<button className="btn btn-sync" onclick="syncSettings && syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
+					<button className="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
 					{/* @ts-ignore */}
-					<button className="btn btn-delete" onclick="deleteSettings && deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
+					<button className="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
 				</div>
 				<div id={EnumWebviewElemId.message} className="message"></div>
 			</div>

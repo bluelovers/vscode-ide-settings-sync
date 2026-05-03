@@ -21,13 +21,13 @@ export function SelectedTab()
 				<div id={EnumWebviewElemId.selectedSettingsList} className="settings-list"></div>
 				<div className="actions">
 					{/* @ts-ignore */}
-					<button className="btn" onclick="refreshSettings && refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
+					<button className="btn" onclick="refreshSettings()" title="Reload settings from disk">↻ Refresh Settings</button>
 					{/* @ts-ignore */}
-					<button className="btn" onclick="clearAllSelectedSettings && clearAllSelectedSettings()" title="Remove all saved selections">🗑️ Clear All Selected</button>
+					<button className="btn" onclick="clearAllSelectedSettings()" title="Remove all saved selections">🗑️ Clear All Selected</button>
 					{/* @ts-ignore */}
-					<button className="btn btn-sync" onclick="syncSettings && syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
+					<button className="btn btn-sync" onclick="syncSettings()" title="Start syncing selected settings">✓ Sync Selected</button>
 					{/* @ts-ignore */}
-					<button className="btn btn-delete" onclick="deleteSettings && deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
+					<button className="btn btn-delete" onclick="deleteSettings()" title="Delete selected settings">✗ Delete Selected</button>
 				</div>
 			</div>
 		</div>
