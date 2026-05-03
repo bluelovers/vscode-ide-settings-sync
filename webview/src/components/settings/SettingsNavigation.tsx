@@ -14,15 +14,24 @@
  * Uses `activeTab` signal to drive active state and onClick events.
  */
 
-import { Fragment } from 'preact';
-import { activeTab, TabName } from '../../store';
+import { activeTab } from '../../store';
+import { EnumTabName, ITabConfig, ALL_TAB_NAMES } from '../../enums';
 
-const TABS: Array<{ name: TabName; label: string }> = [
-	{ name: 'sync', label: 'Sync Settings' },
-	{ name: 'values', label: 'View All Settings' },
-	{ name: 'selected', label: 'Selected Settings' },
-	{ name: 'export-import', label: 'Export/Import' },
-];
+/**
+ * 分頁顯示標籤對照表（單一事實來源）
+ * Tab display label map (Single Source of Truth)
+ */
+const TAB_LABELS: Record<EnumTabName, string> = {
+	[EnumTabName.sync]: 'Sync Settings',
+	[EnumTabName.values]: 'View All Settings',
+	[EnumTabName.selected]: 'Selected Settings',
+	[EnumTabName.exportImport]: 'Export/Import',
+};
+
+const TABS: ITabConfig[] = ALL_TAB_NAMES.map(name => ({
+	name,
+	label: TAB_LABELS[name],
+}));
 
 /**
  * 設定導覽列組件（渲染 .tabs 的子內容）

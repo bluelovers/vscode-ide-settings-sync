@@ -13,21 +13,16 @@
  * @module
  */
 import * as vscode from 'vscode';
-import { ILanguageConfig, ILanguageCode, EnumGlobalStateName } from '../types';
+import { ILanguageConfig, EnumLanguageCode, EnumGlobalStateName } from '../types';
 import { isValidLanguageCode } from './settingsDescriptions';
 
 /**
  * 預設語言配置
  * Default language configuration
- *
- * 用於避免在多個模組中重複定義相同的預設值。
- * This constant is used to avoid duplicating default config in multiple modules.
- *
- * @constant {ILanguageConfig}
  */
 export const DEFAULT_LANGUAGE_CONFIG: ILanguageConfig = {
-	primary: 'en' as ILanguageCode,
-	fallbackList: ['zh-tw', 'en'],
+	primary: EnumLanguageCode.en,
+	fallbackList: [EnumLanguageCode.zhTw, EnumLanguageCode.en],
 	secondary: undefined,
 	showSecondary: false,
 };
@@ -110,14 +105,14 @@ export function saveLanguageConfig(
  * 這個模式在多個地方重複出現，現在統一由工具函式處理。
  * This pattern was duplicated in multiple places, now unified in utility.
  *
- * @param {Array<{ code: ILanguageCode; name: string }>} languages - 語言選項陣列
- * @param {ILanguageCode} [exclude] - 要排除的語言代碼（可選）
- * @returns {Array<{ label: string; id: ILanguageCode }>} QuickPick 格式選項
+ * @param languages - 語言選項陣列
+ * @param [exclude] - 要排除的語言代碼（可選）
+ * @returns QuickPick 格式選項
  */
 export function transformLanguagesToQuickPick(
-	languages: Array<{ code: ILanguageCode; name: string }>,
-	exclude?: ILanguageCode,
-): Array<{ label: string; id: ILanguageCode }>
+	languages: Array<{ code: EnumLanguageCode; name: string }>,
+	exclude?: EnumLanguageCode,
+): Array<{ label: string; id: EnumLanguageCode }>
 {
 	const filtered = exclude
 		? languages.filter(l => l.code !== exclude)

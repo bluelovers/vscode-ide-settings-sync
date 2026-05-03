@@ -4,9 +4,7 @@
  * With fallback mechanism
  */
 
-import { ILanguageCode } from '../types';
-
-export { ILanguageCode };
+import { EnumLanguageCode } from '../types';
 
 // 英文設定描述
 const enDescriptions: Record<string, string> = {
@@ -280,34 +278,34 @@ const zhTwDescriptions: Record<string, string> = {
 };
 
 // 語言映射
-const languageDescriptions: Record<ILanguageCode, Record<string, string>> = {
-	'en': enDescriptions,
-	'zh-tw': zhTwDescriptions,
-	'zh-cn': zhTwDescriptions,
-	'ja': enDescriptions,
-	'de': enDescriptions,
-	'fr': enDescriptions,
+const languageDescriptions: Record<EnumLanguageCode, Record<string, string>> = {
+	[EnumLanguageCode.en]: enDescriptions,
+	[EnumLanguageCode.zhTw]: zhTwDescriptions,
+	[EnumLanguageCode.zhCn]: zhTwDescriptions,
+	[EnumLanguageCode.ja]: enDescriptions,
+	[EnumLanguageCode.de]: enDescriptions,
+	[EnumLanguageCode.fr]: enDescriptions,
 };
 
 // 語言優先順序
-const languageFallbacks: Record<ILanguageCode, ILanguageCode[]> = {
-	'en': ['en'],
-	'zh-tw': ['zh-tw', 'en'],
-	'zh-cn': ['zh-cn', 'zh-tw', 'en'],
-	'ja': ['ja', 'en'],
-	'de': ['de', 'en'],
-	'fr': ['fr', 'en'],
+const languageFallbacks: Record<EnumLanguageCode, EnumLanguageCode[]> = {
+	[EnumLanguageCode.en]: [EnumLanguageCode.en],
+	[EnumLanguageCode.zhTw]: [EnumLanguageCode.zhTw, EnumLanguageCode.zhCn, EnumLanguageCode.en],
+	[EnumLanguageCode.zhCn]: [EnumLanguageCode.zhCn, EnumLanguageCode.zhTw, EnumLanguageCode.en],
+	[EnumLanguageCode.ja]: [EnumLanguageCode.ja, EnumLanguageCode.en],
+	[EnumLanguageCode.de]: [EnumLanguageCode.de, EnumLanguageCode.en],
+	[EnumLanguageCode.fr]: [EnumLanguageCode.fr, EnumLanguageCode.en],
 };
 
 /**
  * 獲取設定描述（使用系統預設回退順序）
  * @param {string} key - 設定鍵值，例如 `editor.fontSize`
- * @param {ILanguageCode} [language='en'] - 首選語言代碼
+ * @param {EnumLanguageCode} [language='en'] - 首選語言代碼
  * @returns {string} 對應的設定描述，若無則回傳 `'No description available'`
  */
-export function getSettingDescription(key: string, language: ILanguageCode = 'en'): string
+export function getSettingDescription(key: string, language: EnumLanguageCode = EnumLanguageCode.en): string
 {
-	const fallbacks = languageFallbacks[language] || languageFallbacks['en'];
+	const fallbacks = languageFallbacks[language] || languageFallbacks[EnumLanguageCode.en];
 
 	for (const lang of fallbacks)
 	{
@@ -331,8 +329,8 @@ export function getSettingDescription(key: string, language: ILanguageCode = 'en
  */
 export function getSettingDescriptionWithCustomFallback(
 	key: string,
-	primaryLanguage: ILanguageCode = 'en',
-	fallbackList: ILanguageCode[] = [],
+	primaryLanguage: EnumLanguageCode = EnumLanguageCode.en,
+	fallbackList: EnumLanguageCode[] = [],
 ): string
 {
 	// 建構完整的語言清單：主語言 + 自訂 Fallback + 系統 Fallback
@@ -360,7 +358,7 @@ export function getSettingDescriptionWithCustomFallback(
 	// 依序尋找翻譯
 	for (const lang of languageChain)
 	{
-		const descriptions = languageDescriptions[lang as ILanguageCode];
+		const descriptions = languageDescriptions[lang as EnumLanguageCode];
 		if (descriptions && descriptions[key])
 		{
 			return descriptions[key];
@@ -380,9 +378,9 @@ export function getSettingDescriptionWithCustomFallback(
  */
 export function getSettingDescriptionBilingual(
 	key: string,
-	primaryLanguage: ILanguageCode = 'en',
-	secondaryLanguage?: ILanguageCode,
-	primaryFallbacks: ILanguageCode[] = [],
+	primaryLanguage: EnumLanguageCode = EnumLanguageCode.en,
+	secondaryLanguage?: EnumLanguageCode,
+	primaryFallbacks: EnumLanguageCode[] = [],
 ): { primary: string; secondary?: string }
 {
 	const primary = getSettingDescriptionWithCustomFallback(key, primaryLanguage, primaryFallbacks);
@@ -409,38 +407,41 @@ export function getAllSettingKeys(): string[]
 
 /**
  * 獲取所有支援的語言清單
- * @returns {Array<{ code: ILanguageCode; name: string }>} 支援語言及其顯示名稱
+ * @returns {Array<{ code: EnumLanguageCode; name: string }>} 支援語言及其顯示名稱
  */
-export function getSupportedLanguages(): Array<{ code: ILanguageCode; name: string }>
+export function getSupportedLanguages(): Array<{ code: EnumLanguageCode; name: string }>
 {
 	return [
-		{ code: 'en', name: 'English' },
-		{ code: 'zh-tw', name: '繁體中文 (Traditional Chinese)' },
-		{ code: 'zh-cn', name: '簡體中文 (Simplified Chinese)' },
-		{ code: 'ja', name: '日本語 (Japanese)' },
-		{ code: 'de', name: 'Deutsch (German)' },
-		{ code: 'fr', name: 'Français (French)' },
+		{ code: EnumLanguageCode.en, name: 'English' },
+		{ code: EnumLanguageCode.zhTw, name: '繁體中文 (Traditional Chinese)' },
+		{ code: EnumLanguageCode.zhCn, name: '簡體中文 (Simplified Chinese)' },
+		{ code: EnumLanguageCode.ja, name: '日本語 (Japanese)' },
+		{ code: EnumLanguageCode.de, name: 'Deutsch (German)' },
+		{ code: EnumLanguageCode.fr, name: 'Français (French)' },
 	];
 }
 
 /**
  * 驗證語言代碼是否為本套件支援的代碼
  * @param {string} code - 要驗證的語言代碼
- * @returns {code is ILanguageCode} 若有效則回傳 true
+ * @returns {code is EnumLanguageCode} 若有效則回傳 true
  */
-export function isValidLanguageCode(code: string): code is ILanguageCode
+export function isValidLanguageCode(code: string): code is EnumLanguageCode
 {
-	return ['en', 'zh-tw', 'zh-cn', 'ja', 'de', 'fr'].includes(code);
+	const validCodes: string[] = [
+		EnumLanguageCode.en,
+		EnumLanguageCode.zhTw,
+		EnumLanguageCode.zhCn,
+		EnumLanguageCode.ja,
+		EnumLanguageCode.de,
+		EnumLanguageCode.fr,
+	];
+	return validCodes.includes(code);
 }
 
-/**
- * 獲取語言的系統 Fallback 清單
- * @param {ILanguageCode} language - 語言代碼
- * @returns {ILanguageCode[]} 依序的回退語言代碼清單
- */
-export function getDefaultFallbackList(language: ILanguageCode): ILanguageCode[]
+export function getDefaultFallbackList(language: EnumLanguageCode): EnumLanguageCode[]
 {
-	return languageFallbacks[language] || ['en'];
+	return languageFallbacks[language] || [EnumLanguageCode.en];
 }
 
 // 向後相容性

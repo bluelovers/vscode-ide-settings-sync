@@ -5,28 +5,29 @@
  * 將 IDE 列表儲存至檔案，實現跨工作區的持久化
  * Stores IDE list to file for cross-workspace persistence
  */
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { IIDEInfoWebview } from '../../webview/src/types';
-
-/**
- * IDE 快取項目型別（IIDEInfoWebview 的子集，type 使用 string 以相容快取格式）
- * IDE cache item type (subset of IIDEInfoWebview, type uses string for cache format compatibility)
- */
-interface IIDECacheItem
-{
-	uuid: string;
-	name: string;
-	type: string;
-	nativePath: string;
-}
+import { IIDEInfoBase } from '../../src/types';
 
 /**
  * 快取檔案名稱
  * Cache file name
  */
 const CACHE_FILE_NAME = '.vscode-ide-cache.json';
+
+/**
+ * 用於比對與快取的 IDE 項目（從 IIDEInfoBase 衍生，單一事實來源）
+ * IDE item for matching and caching (derived from IIDEInfoBase, Single Source of Truth)
+ *
+ * 只取快取與比對所需的最小欄位子集。
+ * type 繼承自 IIDEInfoBase，為 EnumIDEInfoType（非裸 string），
+ * 確保與 Extension host 的型別系統一致。
+ *
+ * Takes only the minimal field subset needed for caching and matching.
+ * type is inherited from IIDEInfoBase as EnumIDEInfoType (not bare string),
+ * ensuring consistency with the Extension host type system.
+ */
+export type IIDEInfoForMatch = Pick<IIDEInfoBase, 'uuid' | 'name' | 'type' | 'nativePath'>;
 
 /**
  * 快取資料結構
@@ -38,27 +39,10 @@ export interface IIDECacheData
 	version: string;
 	/** 快取時間 / Cache timestamp */
 	cachedAt: string;
-	/** IDE 列表 / IDE list */
-	ides: Array<{
-		uuid: string;
-		name: string;
-		type: string;
-		nativePath: string;
-	}>;
+	/** IDE 列表（使用 IIDEInfoForMatch 作為單一事實來源）/ IDE list (uses IIDEInfoForMatch as SSoT) */
+	ides: IIDEInfoForMatch[];
 	/** 來源 IDE UUID / Source IDE UUID */
 	sourceIDEUuid?: string;
-}
-
-/**
- * 用於比對的 IDE 項目
- * IDE item for matching
- */
-export interface IIDEInfoForMatch
-{
-	uuid: string;
-	name: string;
-	type: string;
-	nativePath: string;
 }
 
 /**
@@ -157,7 +141,7 @@ export function isIDECacheExists(extensionPath: string): boolean
  */
 export function saveIDECache(
 	extensionPath: string,
-	ides: IIDECacheItem[],
+	ides: IIDEInfoForMatch[],
 	sourceIDEUuid?: string,
 ): boolean
 {
@@ -197,7 +181,7 @@ export function saveIDECache(
  */
 export function loadIDECache(
 	extensionPath: string,
-): { ides: IIDECacheItem[]; sourceIDEUuid?: string } | null
+): { ides: IIDEInfoForMatch[]; sourceIDEUuid?: string } | null
 {
 	try
 	{

@@ -15,14 +15,7 @@
 import { signal, computed } from '@preact/signals';
 import { IWebviewState, IIDEInfoWebview } from './types';
 import { IWebviewWindow } from './global/window-types';
-
-/** ─── Tab 狀態 / Tab state ─── */
-
-/**
- * 合法的分頁名稱聯合型別
- * Union type of valid tab names
- */
-export type TabName = 'sync' | 'values' | 'selected' | 'export-import';
+import { EnumTabName, ALL_TAB_NAMES } from './enums';
 
 /**
  * 當前活躍的分頁名稱
@@ -31,7 +24,7 @@ export type TabName = 'sync' | 'values' | 'selected' | 'export-import';
  * 由 `SettingsNavigation` 在使用者點擊 Tab 按鈕時更新。
  * Updated by `SettingsNavigation` when the user clicks a tab button.
  */
-export const activeTab = signal<TabName>('sync');
+export const activeTab = signal<EnumTabName>(EnumTabName.sync);
 
 /** ─── Export/Import 路徑狀態 / Export/Import path state ─── */
 
@@ -134,10 +127,10 @@ export function initStore(): void
 	ideList.value = state.ideList ?? [];
 
 	/**
-	 * 初始化活躍分頁（預設為 'sync'）
-	 * Initialize active tab (defaults to 'sync')
+	 * 初始化活躍分頁（預設為 sync）
+	 * Initialize active tab (defaults to sync)
 	 */
-	activeTab.value = 'sync';
+	activeTab.value = EnumTabName.sync;
 
 	/**
 	 * 初始化來源 IDE UUID：

@@ -6,11 +6,27 @@
  * 確保 Webview bundle 在瀏覽器沙盒中可獨立執行。
  * This file must NOT import any VS Code or Node.js dependent modules,
  * ensuring the Webview bundle can run independently in the browser sandbox.
+ *
+ * 凡與 src/types.ts 結構相同的型別，一律直接 re-export，
+ * 不在此重複定義，確保單一事實來源。
+ * All types structurally identical to src/types.ts are re-exported directly,
+ * never redefined here, ensuring a single source of truth.
  */
 
-import { IIDEInfo } from '../../src/types';
-import { saveSearchHistory } from './scripts/memory';
-import { displayAllSettings, displaySelectedSettingsList, removeFromSelectedSettings, searchSettings } from './scripts/settings';
+import {
+	IIDEInfoBase,
+	IUnavailableIDEBase,
+	EnumLanguageCode,
+	EnumIDEInfoType,
+	ILanguageConfig,
+	IImportResult,
+} from '../../src/types';
+
+/** ─── Re-export 共用型別 / Re-export shared types ─── */
+
+export { EnumLanguageCode, EnumIDEInfoType, ILanguageConfig, IImportResult };
+
+/** ─── Webview 專用列舉 / Webview-specific enums ─── */
 
 export const enum EnumShowMessageType
 {
@@ -20,40 +36,19 @@ export const enum EnumShowMessageType
 	WARNING = 'warning'
 }
 
-/** ─── 語言相關型別 / Language-related types ─── */
-
-/**
- * 支援的語言代碼聯合型別
- * Union type of supported language codes
- */
-export type ILanguageCode = 'en' | 'zh-tw' | 'zh-cn' | 'ja' | 'de' | 'fr';
-
-/**
- * 語言配置介面（精簡版，不含 VS Code 相依）
- * Language configuration interface (simplified, no VS Code dependency)
- */
-export interface ILanguageConfig
-{
-	/** 主顯示語言 / Primary display language */
-	primary: ILanguageCode;
-	/** Fallback 語言列表，依序查找直到找到有效描述 / Fallback language list, searched in order until a valid description is found */
-	fallbackList: ILanguageCode[];
-	/** 副顯示語言（可選）/ Secondary display language (optional) */
-	secondary?: ILanguageCode;
-	/** 是否在設定描述旁顯示副語言翻譯 / Whether to show secondary language translation alongside setting descriptions */
-	showSecondary: boolean;
-}
-
 /** ─── IDE 相關型別 / IDE-related types ─── */
 
 /**
  * IDE 資訊介面（用於 Webview 渲染）
  * IDE information interface (for Webview rendering)
  *
- * 精簡版的 IDE 資訊，用於傳遞給前端組件，不含 VS Code 相依。
- * Simplified IDE information for passing to frontend components, without VS Code dependency.
+ * 繼承 IIDEInfoBase（可序列化核心），加上 Webview 端需要的 settings 鍵值對。
+ * 不含 settingProvider，確保 Webview bundle 在瀏覽器沙盒中可獨立執行。
+ *
+ * Extends IIDEInfoBase (serializable core), adding the settings key-value pairs needed by the Webview.
+ * Excludes settingProvider, ensuring the Webview bundle can run independently in the browser sandbox.
  */
-export interface IIDEInfoWebview extends Omit<IIDEInfo, 'settingProvider'>
+export interface IIDEInfoWebview extends IIDEInfoBase
 {
 	/** IDE 的所有設定鍵值對 / All setting key-value pairs of the IDE */
 	settings: Record<string, any>;
@@ -63,19 +58,18 @@ export interface IIDEInfoWebview extends Omit<IIDEInfo, 'settingProvider'>
  * 不可用的 IDE 資訊介面（用於 Webview 渲染）
  * Unavailable IDE information interface (for Webview rendering)
  *
- * 用於顯示系統中預期存在但實際未偵測到的 IDE。
- * Used to display IDEs that are expected to exist in the system but were not detected.
+ * 繼承 IUnavailableIDEBase（共通基底），type 直接使用 EnumIDEInfoType。
+ * EnumIDEInfoType 為 const enum，esbuild 編譯時 inline 為字串字面量，
+ * 不會在 Webview bundle 中引入任何 VS Code 執行期相依。
+ *
+ * Extends IUnavailableIDEBase (common base), type uses EnumIDEInfoType directly.
+ * EnumIDEInfoType is a const enum; esbuild inlines it as string literals at compile time,
+ * introducing no VS Code runtime dependency in the Webview bundle.
  */
-export interface IUnavailableIDEInfoWebview
+export interface IUnavailableIDEInfoWebview extends IUnavailableIDEBase
 {
-	/** IDE 顯示名稱 / IDE display name */
-	name: string;
 	/** IDE 類型 / IDE type */
-	type: string;
-	/** 預期的設定資料夾路徑（用於顯示未偵測到的原因）/ Expected settings folder path (used to show why it was not detected) */
-	expectedPath: string;
-	/** 不可用原因說明 / Reason why the IDE is unavailable */
-	reason?: string;
+	type: EnumIDEInfoType;
 }
 
 /** ─── Webview 初始狀態 / Webview initial state ─── */
@@ -120,37 +114,6 @@ export interface IWebviewState
 	 * avoiding repeated language lookup logic on the Webview side.
 	 */
 	settingDescriptions: Record<string, { primary: string; secondary?: string }>;
-
 	/** 來源 IDE UUID / Source IDE UUID */
 	sourceIDEUuid?: string;
 }
-
-/** ─── 匯出/匯入相關型別 / Export/Import related types ─── */
-
-/**
- * 匯入操作的結果介面
- * Import operation result interface
- *
- * 從 src/types.ts 的 IImportResult 複製，去除 VS Code 相依，
- * 確保 Webview bundle 可在瀏覽器沙盒中獨立使用。
- * Copied from IImportResult in src/types.ts, without VS Code dependency,
- * ensuring the Webview bundle can be used independently in the browser sandbox.
- */
-export interface IImportResult
-{
-	/** 匯入是否成功 / Whether the import was successful */
-	success: boolean;
-	/** 成功匯入的自訂 IDE 數量 / Number of custom IDEs successfully imported */
-	importedCustomIDEs: number;
-	/** 成功匯入的已選設定數量 / Number of selected settings successfully imported */
-	importedSelectedSettings: number;
-	/** 跳過的自訂 IDE 數量 / Number of custom IDEs skipped */
-	skippedCustomIDEs: number;
-	/** 跳過的已選設定數量 / Number of selected settings skipped */
-	skippedSelectedSettings: number;
-	/** 錯誤訊息列表 / List of error messages */
-	errors: string[];
-	/** 警告訊息列表 / List of warning messages */
-	warnings: string[];
-}
-

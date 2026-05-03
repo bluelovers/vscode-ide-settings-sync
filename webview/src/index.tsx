@@ -23,13 +23,13 @@ import { syncSettings, deleteSettings } from './scripts/sync';
 import { changePrimaryLanguage, openLanguageConfig } from './scripts/language';
 import { addCustomIDE, refreshIDEs, removeCustomIDE, openIDEFolder, openSettingsJson } from './scripts/ide';
 import { handleExportCustomIDEs, handleExportSelectedSettings, handleExportAll, handleImport, handleBrowseExportPath, handleBrowseImportPath } from './scripts/export-import';
-import { switchTab } from './scripts/tabs';
 
 /** ─── Import Preact / Import Preact ─── */
 
 import { effect } from '@preact/signals';
 import { hydrate } from 'preact';
-import { initStore, sourceIDEUuid, searchQuery, activeTab, TabName } from './store';
+import { initStore, sourceIDEUuid, searchQuery, activeTab } from './store';
+import { EnumTabName, ALL_TAB_NAMES } from './enums';
 
 /** ─── Import 組件 / Import components ─── */
 
@@ -45,7 +45,6 @@ import { EnumWebviewElemSelector, queryWebviewElem } from './scripts/elem-get';
  * Mount functions still needed from HTML onclick strings to window
  */
 Object.assign(window, {
-	switchTab,
 	showMessage,
 	changePrimaryLanguage,
 	openLanguageConfig,
@@ -157,10 +156,9 @@ function initialize(): void
 	effect(() =>
 	{
 		const tab = activeTab.value;
-		const tabIds: TabName[] = ['sync', 'values', 'selected', 'export-import'];
 
 		/** 更新 tab-content 顯示 / Update tab-content visibility */
-		tabIds.forEach(id =>
+		ALL_TAB_NAMES.forEach(id =>
 		{
 			const el = document.getElementById(id);
 			if (el) el.classList.toggle('active', id === tab);

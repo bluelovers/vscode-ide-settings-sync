@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IDEProvider } from './providers/ideProvider';
 import { SettingsSyncPanel } from './webview/settingsSyncPanel';
 import { ExportImportCommands } from './commands/exportImportCommands';
-import { ILanguageConfig, ILanguageSourceInfo, ILanguageCode, EnumGlobalStateName } from './types';
+import { ILanguageConfig, ILanguageSourceInfo, EnumLanguageCode, EnumGlobalStateName } from './types';
 import { isValidLanguageCode, getDefaultFallbackList } from './utils/settingsDescriptions';
 import {
 	loadLanguageConfig as loadLanguageConfigUtil,
@@ -157,10 +157,10 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
 		return;
 	}
 
-	languageConfig.primary = primaryChoice.id as ILanguageCode;
+	languageConfig.primary = primaryChoice.id as EnumLanguageCode;
 
 	// 👇 New: Sort Fallback Languages by letting user select them in order
-	await configureFallbackLanguages(supportedLangs, primaryChoice.id as ILanguageCode);
+	await configureFallbackLanguages(supportedLangs, primaryChoice.id as EnumLanguageCode);
 
 	// 選擇是否��示副語言
 	// Use utility function to create Yes/No options
@@ -178,7 +178,7 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
 	{
 		const secondaryQuickPickOptions = transformLanguagesToQuickPick(
 			supportedLangs,
-			primaryChoice.id as ILanguageCode,
+			primaryChoice.id as EnumLanguageCode,
 		);
 		const secondaryChoice = await vscode.window.showQuickPick(
 			secondaryQuickPickOptions,
@@ -187,7 +187,7 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
 
 		if (secondaryChoice && isValidLanguageCode(secondaryChoice.id))
 		{
-			languageConfig.secondary = secondaryChoice.id as ILanguageCode;
+			languageConfig.secondary = secondaryChoice.id as EnumLanguageCode;
 		}
 	}
 
@@ -212,8 +212,8 @@ async function configureLanguage(context: vscode.ExtensionContext): Promise<void
  * @param primaryLanguage 主語言代碼
  */
 async function configureFallbackLanguages(
-	supportedLangs: Array<{ code: ILanguageCode; name: string }>,
-	primaryLanguage: ILanguageCode,
+	supportedLangs: Array<{ code: EnumLanguageCode; name: string }>,
+	primaryLanguage: EnumLanguageCode,
 ): Promise<void>
 {
 	// 過濾可用的語言（排除主要語言）
@@ -221,7 +221,7 @@ async function configureFallbackLanguages(
 	const availableLangsForPick = supportedLangs
 		.filter(l => l.code !== primaryLanguage)
 		.map(l => ({ label: l.name, id: l.code }));
-	const selectedLangs: ILanguageCode[] = [];
+	const selectedLangs: EnumLanguageCode[] = [];
 
 	// Show current fallback list
 	const currentList = languageConfig.fallbackList
@@ -238,7 +238,7 @@ async function configureFallbackLanguages(
 	const fallbackChoices = await vscode.window.showQuickPick(
 		availableLangsForPick.map(l => ({
 			...l,
-			picked: languageConfig.fallbackList.includes(l.id as ILanguageCode),
+			picked: languageConfig.fallbackList.includes(l.id as EnumLanguageCode),
 		})),
 		{
 			placeHolder: 'Select Fallback Languages (you can reorder them next)',
@@ -253,10 +253,10 @@ async function configureFallbackLanguages(
 	}
 
 	// 👇 Allow user to reorder selected languages
-	const reorderedFallbacks: ILanguageCode[] = [];
+	const reorderedFallbacks: EnumLanguageCode[] = [];
 	let remainingLangs = fallbackChoices.map(c => ({
 		label: c.label,
-		id: c.id as ILanguageCode,
+		id: c.id as EnumLanguageCode,
 	}));
 
 	while (remainingLangs.length > 0)

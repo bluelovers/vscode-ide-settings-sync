@@ -3,7 +3,7 @@ import { IDEProvider } from '../providers/ideProvider';
 import { ILanguageConfig, EnumGlobalStateName } from '../types';
 import {
 	getSupportedLanguages,
-	ILanguageCode,
+	EnumLanguageCode,
 	getSettingDescriptionBilingual,
 	getAllSettingKeys,
 } from '../utils/settingsDescriptions';
@@ -25,7 +25,7 @@ export class SettingsSyncPanel
 	private context: vscode.ExtensionContext;
 	private onDisposeCallback?: () => void;
 	private languageConfig: ILanguageConfig;
-	private currentLanguage: ILanguageCode;
+	private currentLanguage: EnumLanguageCode;
 
 	constructor(context: vscode.ExtensionContext, ideProvider: IDEProvider, languageConfig?: ILanguageConfig)
 	{
@@ -371,8 +371,8 @@ export class SettingsSyncPanel
 					case EnumWebviewCommand.ChangePrimaryLanguage:
 						if (message.language)
 						{
-							this.languageConfig.primary = message.language as ILanguageCode;
-							this.currentLanguage = message.language as ILanguageCode;
+							this.languageConfig.primary = message.language as EnumLanguageCode;
+							this.currentLanguage = message.language as EnumLanguageCode;
 						}
 						break;
 
