@@ -5,7 +5,7 @@
     // "jsxFactory": "h",
     // "jsxFragmentFactory": "Fragment",
     "target": "ES2022",
-    "module": "preserve",
+    "module": "ES2022",
     "declaration": true,
     "outDir": "./out",
     "strict": true,
