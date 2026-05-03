@@ -13,6 +13,9 @@ import { ExportImportCore, IStorageProvider, IFileSystemProvider, IDialogProvide
 import { knownIDEs } from '../data/knownIDEs';
 import { EnumShowMessageType } from '../../webview/src/types';
 
+/**
+ * @deprecated Use VSCodeGlobalStateProvider instead
+ */
 export class VSCodeStorageProvider implements IStorageProvider
 {
 	constructor(private context: vscode.ExtensionContext) {}

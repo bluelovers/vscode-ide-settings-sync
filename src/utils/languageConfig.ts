@@ -15,6 +15,7 @@
 import * as vscode from 'vscode';
 import { ILanguageConfig, EnumLanguageCode, EnumGlobalStateName } from '../types';
 import { isValidLanguageCode } from './settingsDescriptions';
+import { newVscodeExtensionContextGlobalStateByContext } from '../providers/vscode/globalState';
 
 /**
  * 預設語言配置
@@ -58,7 +59,8 @@ export function getDefaultLanguageConfig(): ILanguageConfig
  */
 export function loadLanguageConfig(context: vscode.ExtensionContext): ILanguageConfig
 {
-	const saved = context.globalState.get<ILanguageConfig>(EnumGlobalStateName.languageConfig);
+	const globalState = newVscodeExtensionContextGlobalStateByContext(context);
+	const saved = globalState.get(EnumGlobalStateName.languageConfig);
 
 	if (saved && isValidLanguageCode(saved.primary))
 	{

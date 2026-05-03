@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 import { IDEProvider } from '../providers/ideProvider';
-import { ILanguageConfig, EnumGlobalStateName } from '../types';
+import { ILanguageConfig, EnumGlobalStateName, EnumLanguageCode } from '../types';
 import {
 	getSupportedLanguages,
-	EnumLanguageCode,
 	getSettingDescriptionBilingual,
 	getAllSettingKeys,
 } from '../utils/settingsDescriptions';
@@ -17,8 +16,9 @@ import { EnumWebviewCommand, EnumHostCommand, IWebviewMessage, IHostMessage } fr
 // @ts-ignore — webview/src/app.tsx uses automatic JSX; imported here for SSR only
 import { App, IAppProps } from '../../webview/src/app';
 import { EnumVscodeCommands } from '../types/vscode/vscode-commands';
+import { AbstractClassWithContextGlobalState } from '../providers/vscode/globalState';
 
-export class SettingsSyncPanel
+export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 {
 	public readonly panel: vscode.WebviewPanel;
 	private disposables: vscode.Disposable[] = [];
@@ -30,6 +30,7 @@ export class SettingsSyncPanel
 
 	constructor(context: vscode.ExtensionContext, ideProvider: IDEProvider, languageConfig?: ILanguageConfig)
 	{
+		super();
 		this.context = context;
 		this.ideProvider = ideProvider;
 		/**
@@ -64,10 +65,10 @@ export class SettingsSyncPanel
 		if (cachedData?.sourceIDEUuid)
 		{
 			/** 如果 globalState 中沒有來源 IDE，則使用檔案快取中的值 */
-			const globalSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid);
+			const globalSourceIDEUuid = this.globalState.get(EnumGlobalStateName.sourceIDEUuid);
 			if (!globalSourceIDEUuid)
 			{
-				this.context.globalState.update(EnumGlobalStateName.sourceIDEUuid, cachedData.sourceIDEUuid);
+				this.globalState.update(EnumGlobalStateName.sourceIDEUuid, cachedData.sourceIDEUuid);
 				console.log(`[IDE Cache] 從檔案快取恢復來源 IDE UUID: ${cachedData.sourceIDEUuid}`);
 				console.log(`[IDE Cache] Restored source IDE UUID from file cache: ${cachedData.sourceIDEUuid}`);
 			}
@@ -112,7 +113,7 @@ export class SettingsSyncPanel
 		 * Save IDE list to file cache
 		 */
 		const ideList = this.ideProvider.getIDEList();
-		const savedSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid) || '';
+		const savedSourceIDEUuid = this.globalState.get(EnumGlobalStateName.sourceIDEUuid, '');
 		saveIDECache(this.context.extensionPath, ideList, savedSourceIDEUuid);
 
 		this.panel.webview.html = this.getWebviewContent();
@@ -147,7 +148,7 @@ export class SettingsSyncPanel
 		await this.ideProvider.refreshIDEList();
 
 		const ideList = this.ideProvider.getIDEListToWebviewContent();
-		const savedSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid) || '';
+		const savedSourceIDEUuid = this.globalState.get(EnumGlobalStateName.sourceIDEUuid, '');
 
 		/**
 		 * 儲存 IDE 列表到檔案快取（與 updateWebview 保持一致）
@@ -179,10 +180,10 @@ export class SettingsSyncPanel
 		const currentIDEUuid = availableIDEs.find(ide => ide.name === currentIDEName)?.uuid;
 
 		/** 👇 從 globalState 中獲取已保存的值 */
-		const savedSearchHistory = this.context.globalState.get<string>(EnumGlobalStateName.searchHistory) || '';
-		const savedSelectedSettings = this.context.globalState.get<string[]>(EnumGlobalStateName.selectedSettings) || [];
-		const savedSelectedIDEs = this.context.globalState.get<number[]>(EnumGlobalStateName.selectedIDEs) || [];
-		const savedSourceIDEUuid = this.context.globalState.get<string>(EnumGlobalStateName.sourceIDEUuid) || '';
+		const savedSearchHistory = this.globalState.get(EnumGlobalStateName.searchHistory, '');
+		const savedSelectedSettings = this.globalState.get(EnumGlobalStateName.selectedSettings, []);
+		const savedSelectedIDEs = this.globalState.get(EnumGlobalStateName.selectedIDEs, []);
+		const savedSourceIDEUuid = this.globalState.get(EnumGlobalStateName.sourceIDEUuid, '');
 
 		/** 解析 webview script URI */
 		const scriptUri = this.panel.webview.asWebviewUri(
@@ -405,7 +406,7 @@ export class SettingsSyncPanel
 					 *  Save the current search input value to globalState
 					 */
 					case EnumWebviewCommand.SaveSearchHistory:
-						this.context.globalState.update(EnumGlobalStateName.searchHistory, message.searchText);
+						this.globalState.update(EnumGlobalStateName.searchHistory, message.searchText);
 						break;
 
 					/**
@@ -413,7 +414,7 @@ export class SettingsSyncPanel
 					 *  Save the list of checked setting keys to globalState
 					 */
 					case EnumWebviewCommand.SaveSelectedSettings:
-						this.context.globalState.update(EnumGlobalStateName.selectedSettings, message.selectedSettings);
+						this.globalState.update(EnumGlobalStateName.selectedSettings, message.selectedSettings);
 						break;
 
 					/**
@@ -421,7 +422,7 @@ export class SettingsSyncPanel
 					 *  Save the list of checked IDE indices to globalState
 					 */
 					case EnumWebviewCommand.SaveSelectedIDEs:
-						this.context.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
+						this.globalState.update(EnumGlobalStateName.selectedIDEs, message.selectedIDEs);
 						break;
 
 					/**
@@ -429,7 +430,7 @@ export class SettingsSyncPanel
 					 *  Select the source IDE and persist its UUID to globalState
 					 */
 					case EnumWebviewCommand.SelectSourceIDE:
-						this.context.globalState.update(EnumGlobalStateName.sourceIDEUuid, message.uuid);
+						this.globalState.update(EnumGlobalStateName.sourceIDEUuid, message.uuid);
 						break;
 
 					/**

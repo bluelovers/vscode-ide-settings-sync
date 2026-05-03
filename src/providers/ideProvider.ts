@@ -10,6 +10,7 @@ import { knownIDEs } from '../data/knownIDEs';
 import { IDEDetector, IDetectionResult } from '../utils/ideDetector';
 import { transformIDEListForWebview } from '../utils/ideListToWebviewContent';
 import { loadIDECache, getExistingUuid } from '../utils/ideCache';
+import { AbstractClassWithContextGlobalState, AbstractClassWithGlobalState, VscodeExtensionContextGlobalState } from './vscode/globalState';
 
 /**
  * IDE 設定供應商
@@ -21,7 +22,7 @@ import { loadIDECache, getExistingUuid } from '../utils/ideCache';
  * - 讀取/寫入 IDE 設定檔案
  * - 追蹤可用和不可用的 IDE
  */
-export class IDEProvider
+export class IDEProvider extends AbstractClassWithContextGlobalState
 {
 	// IDE 列表：存儲成功偵測到的可用 IDE
 	// IDE list: Stores successfully detected available IDEs
@@ -45,6 +46,7 @@ export class IDEProvider
 	 */
 	constructor(context: vscode.ExtensionContext)
 	{
+		super();
 		this.context = context;
 		this.ideDetector = new IDEDetector({
 			verbose: true,
@@ -149,7 +151,7 @@ export class IDEProvider
 	{
 		// 從全域狀態讀取自訂 IDE 清單
 		// Read custom IDE list from global state
-		const customIDEs = this.context.globalState.get<Array<ICustomIDEWithUuid>>(
+		const customIDEs = this.globalState.get(
 			EnumGlobalStateName.customIDEs,
 			[], // 預設值：空陣列 / Default value: empty array
 		);
@@ -557,7 +559,7 @@ export class IDEProvider
 		}
 
 		// 從全域狀態讀取現有自訂 IDE 列表 / Read existing custom IDE list
-		const customIDEs = this.context.globalState.get<Array<ICustomIDEWithUuid>>(
+		const customIDEs = this.globalState.get(
 			EnumGlobalStateName.customIDEs,
 			[],
 		);
@@ -615,7 +617,7 @@ export class IDEProvider
 		// All validations passed, generate UUID and add new custom IDE
 		const newUuid = nanoid();
 		customIDEs.push({ uuid: newUuid, name, path: settingsPath });
-		await this.context.globalState.update(EnumGlobalStateName.customIDEs, customIDEs);
+		await this.globalState.update(EnumGlobalStateName.customIDEs, customIDEs);
 
 		console.log(`[Custom IDE] 已添加 / Added: ${name} at ${settingsPath} (UUID: ${newUuid})`);
 
@@ -653,7 +655,7 @@ export class IDEProvider
 		}
 
 		// 從全域狀態讀取自訂 IDE 列表 / Read custom IDE list from global state
-		const customIDEs = this.context.globalState.get<Array<ICustomIDEWithUuid>>(
+		const customIDEs = this.globalState.get(
 			EnumGlobalStateName.customIDEs,
 			[],
 		);
@@ -671,7 +673,7 @@ export class IDEProvider
 			return;
 		}
 
-		await this.context.globalState.update(EnumGlobalStateName.customIDEs, filtered);
+		await this.globalState.update(EnumGlobalStateName.customIDEs, filtered);
 
 		console.log(`[Custom IDE] 已移除 / Removed: ${ide.name} (UUID: ${uuid}, Path: ${ide.nativePath})`);
 		console.log(`[Custom IDE] Removed successfully: ${ide.name} (UUID: ${uuid}, Path: ${ide.nativePath})`);
@@ -703,14 +705,14 @@ export class IDEProvider
 		if (ide.type === EnumIDEInfoType.custom)
 		{
 			// 從全域狀態讀取自訂 IDE 列表 / Read custom IDE list from global state
-			const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
+			const customIDEs = this.globalState.get(
 				EnumGlobalStateName.customIDEs,
 				[],
 			);
 
 			// 過濾掉要移除的 IDE / Filter out the IDE to be removed
 			const filtered = customIDEs.filter((c) => c.path !== ide.nativePath);
-			await this.context.globalState.update(EnumGlobalStateName.customIDEs, filtered);
+			await this.globalState.update(EnumGlobalStateName.customIDEs, filtered);
 
 			console.log(`[Custom IDE] 已移除 / Removed: [${ideIndex}] ${ide.name}`);
 

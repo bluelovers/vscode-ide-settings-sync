@@ -19,14 +19,16 @@ import {
 	EnumGlobalStateName,
 } from '../types';
 import { knownIDEs } from '../data/knownIDEs';
+import { AbstractClassWithContextGlobalState, AbstractClassWithGlobalState, VscodeExtensionContextGlobalState } from '../providers/vscode/globalState';
 
-export class ExportImportService
+export class ExportImportService extends AbstractClassWithContextGlobalState
 {
-	private context: vscode.ExtensionContext;
-	private readonly VERSION = '1.0.0';
+	protected context: vscode.ExtensionContext;
+	protected readonly VERSION = '1.0.0';
 
 	constructor(context: vscode.ExtensionContext)
 	{
+		super();
 		this.context = context;
 	}
 
@@ -36,7 +38,7 @@ export class ExportImportService
 	 */
 	async exportCustomIDEs(): Promise<string>
 	{
-		const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
+		const customIDEs = this.globalState.get(
 			EnumGlobalStateName.customIDEs,
 			[],
 		);
@@ -68,20 +70,20 @@ export class ExportImportService
 	 */
 	async exportSelectedSettings(): Promise<string>
 	{
-		const selectedSettings = this.context.globalState.get<Record<string, boolean>>(
+		const selectedSettings = this.globalState.get(
 			EnumGlobalStateName.selectedSettings,
-			{},
+			[],
 		);
 
+		console.dir(selectedSettings, { depth: null });
+
 		// Convert selected settings to export format
-		const exportSettings: ISelectedSettingExport[] = Object.entries(selectedSettings)
-			.filter(([_, selected]) => selected)
-			.map(([key, _]) => ({
+		const exportSettings: ISelectedSettingExport[] = selectedSettings
+			.map((key) => ({
 				key,
 				display: this.getSettingDisplay(key),
 				description: this.getSettingDescription(key),
 				values: {}, // Will be populated with actual values during export
-				exportedAt: new Date().toISOString(),
 			}));
 
 		const exportData: IExportImportData = {
@@ -106,14 +108,14 @@ export class ExportImportService
 	 */
 	async exportAll(): Promise<string>
 	{
-		const customIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
+		const customIDEs = this.globalState.get(
 			EnumGlobalStateName.customIDEs,
 			[],
 		);
 
-		const selectedSettings = this.context.globalState.get<Record<string, boolean>>(
+		const selectedSettings = this.globalState.get(
 			EnumGlobalStateName.selectedSettings,
-			{},
+			[],
 		);
 
 		const exportSettings: ISelectedSettingExport[] = Object.entries(selectedSettings)
@@ -208,7 +210,7 @@ export class ExportImportService
 		result: IImportResult,
 	): Promise<void>
 	{
-		const existingCustomIDEs = this.context.globalState.get<Array<{ name: string; path: string }>>(
+		const existingCustomIDEs = this.globalState.get(
 			EnumGlobalStateName.customIDEs,
 			[],
 		);
@@ -241,7 +243,7 @@ export class ExportImportService
 				path: customIDE.path,
 			});
 
-			await this.context.globalState.update(EnumGlobalStateName.customIDEs, updatedCustomIDEs);
+			await this.globalState.update(EnumGlobalStateName.customIDEs, updatedCustomIDEs);
 			result.importedCustomIDEs++;
 		}
 	}
@@ -256,9 +258,11 @@ export class ExportImportService
 		result: IImportResult,
 	): Promise<void>
 	{
-		const existingSelectedSettings = this.context.globalState.get<Record<string, boolean>>(
+		throw new Error("Unimplemented feature: this function requires implementation or fix before it can be used.");
+
+		const existingSelectedSettings = this.globalState.get(
 			EnumGlobalStateName.selectedSettings,
-			{},
+			[],
 		);
 
 		// Filter settings based on selected keys if provided
@@ -281,7 +285,7 @@ export class ExportImportService
 			result.importedSelectedSettings++;
 		}
 
-		await this.context.globalState.update(EnumGlobalStateName.selectedSettings, existingSelectedSettings);
+		await this.globalState.update(EnumGlobalStateName.selectedSettings, existingSelectedSettings);
 	}
 
 	/**

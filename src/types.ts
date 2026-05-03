@@ -109,7 +109,6 @@ export interface ISelectedSettingExport
 	display: string;
 	description: string;
 	values: Record<string, any>;
-	exportedAt: string;
 }
 
 export interface IExportImportData
