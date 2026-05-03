@@ -1,9 +1,5 @@
 /**
- * VSCode 匯出匯入服務適配器
- * VSCode Export/Import Service Adapter
- *
- * 將核心匯出匯入功能適配到 VSCode 環境
- * Adapts core export/import functionality to VSCode environment
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
  */
 
 import * as vscode from 'vscode';
@@ -14,7 +10,7 @@ import { knownIDEs } from '../data/knownIDEs';
 import { EnumShowMessageType } from '../../webview/src/types';
 
 /**
- * @deprecated Use VSCodeGlobalStateProvider instead
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
  */
 export class VSCodeStorageProvider implements IStorageProvider
 {
@@ -31,6 +27,9 @@ export class VSCodeStorageProvider implements IStorageProvider
 	}
 }
 
+/**
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
+ */
 export class VSCodeFileSystemProvider implements IFileSystemProvider
 {
 	async readFile(path: string): Promise<string>
@@ -44,6 +43,9 @@ export class VSCodeFileSystemProvider implements IFileSystemProvider
 	}
 }
 
+/**
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
+ */
 export class VSCodeDialogProvider implements IDialogProvider
 {
 	async showSaveDialog(options: any): Promise<string | undefined>
@@ -106,6 +108,9 @@ export class VSCodeDialogProvider implements IDialogProvider
 	}
 }
 
+/**
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
+ */
 export class VSCodeExportImportService extends ExportImportCore
 {
 	constructor(context: vscode.ExtensionContext)
