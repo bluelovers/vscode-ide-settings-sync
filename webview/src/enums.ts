@@ -11,6 +11,10 @@
 
 /** ─── Tab 相關列舉 / Tab-related enums ─── */
 
+/**
+ * 從單一事實來源匯入列舉，避免各處重複定義
+ * Import enum from Single Source of Truth to avoid duplicate definitions across files
+ */
 import { EnumTabName } from './types/elem-const';
 
 /**

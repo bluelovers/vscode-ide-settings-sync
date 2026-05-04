@@ -11,6 +11,9 @@ import { IIDEInfoWebview, IUnavailableIDEInfoWebview } from '../types';
 /**
  * IDE 列表組件的 Props 介面
  * Props interface for the IDE list component
+ *
+ * 定義 IDE 列表組件所需的屬性結構，確保型別安全與跨組件的一致性。
+ * Defines the property structure required by the IDE list component, ensuring type safety and cross-component consistency.
  */
 export interface IIDEListProps
 {

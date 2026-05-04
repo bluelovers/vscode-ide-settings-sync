@@ -28,11 +28,22 @@ export { EnumLanguageCode, EnumIDEInfoType, ILanguageConfig, IImportResult };
 
 /** ─── Webview 專用列舉 / Webview-specific enums ─── */
 
+/**
+ * Webview 顯示訊息的類型列舉
+ * Message type enumeration for Webview display
+ *
+ * 用於 `showMessage` 函數，指定訊息的樣式（成功、錯誤、資訊、警告）
+ * Used by `showMessage` function to specify message style (success, error, info, warning)
+ */
 export const enum EnumShowMessageType
 {
+	/** 成功訊息 / Success message */
 	SUCCESS = 'success',
+	/** 錯誤訊息 / Error message */
 	ERROR = 'error',
+	/** 資訊訊息 / Info message */
 	INFO = 'info',
+	/** 警告訊息 / Warning message */
 	WARNING = 'warning'
 }
 

@@ -52,8 +52,14 @@ export function SourceIdeIndicatorContent(props: ISourceIdeIndicatorProps)
 	 * 判斷目前是否在瀏覽器環境（hydration 後）
 	 * 若是，從 signals 讀取；若否（SSR），從 props 讀取。
 	 *
+	 * 原因：SSR 階段無法存取客戶端 signals，需從 props 獲取初始值；
+	 * hydration 後 Preact 接管，應從 signals 讀取即時狀態。
+	 *
 	 * Determine if currently in browser environment (after hydration).
 	 * If yes, read from signals; if no (SSR), read from props.
+	 *
+	 * Reason: SSR phase cannot access client-side signals, so initial values are read from props;
+	 * after hydration, Preact takes over and real-time state should be read from signals.
 	 */
 	const isBrowser = isWebviewBrowser();
 	const name = isBrowser ? sourceIDEName.value : (props.sourceIDEName ?? 'Not selected');

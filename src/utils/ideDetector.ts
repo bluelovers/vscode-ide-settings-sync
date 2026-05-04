@@ -104,6 +104,7 @@ export interface IDetectionConfig
  */
 export class IDEDetector
 {
+	/** 偵測配置：包含用戶資料目錄、日誌、自訂 IDE 等設定 / Detection config: user data dir, logging, custom IDEs, etc. */
 	protected config: Omit<IDetectionConfig, 'pathLib'> & {
 		pathLib: Required<NonNullable<IDetectionConfig["pathLib"]>>,
 	};
@@ -152,6 +153,16 @@ export class IDEDetector
 		}
 	}
 
+	/**
+	 * 取得用戶資料目錄核心邏輯
+	 * Get user data directory core logic
+	 *
+	 * 優先使用配置的用戶資料目錄，若未配置則嘗試從系統環境變數取得
+	 * Priority: configured user data dir > system environment variables
+	 *
+	 * @returns 用戶資料目錄路徑，若無法取得則返回空字串
+	 * @returns User data directory path, returns empty string if not available
+	 */
 	protected _getUserDataPathCore(): string
 	{
 		/**
@@ -209,8 +220,7 @@ export class IDEDetector
 		this.log(`[IDE Detection] 開始偵測 ${ide.name}`);
 		this.log(`[IDE Detection] Starting detection for ${ide.name}`);
 
-		// 嘗試多個可能的資料夾名稱
-		// Try multiple possible folder name variations
+		/** 嘗試多個可能的資料夾名稱 / Try multiple possible folder name variations */
 		for (const appFolderName of ide.appFolderNames)
 		{
 			const testPath = this.config.pathLib.normalize(this.getUserDataPath(appFolderName, 'User'));
@@ -221,29 +231,34 @@ export class IDEDetector
 			this.log(`[IDE Detection] 嘗試檢測 ${ide.name} at ${testPath}`);
 			this.log(`[IDE Detection] Attempting to detect ${ide.name} at ${testPath}`);
 
-			// 步驟 1：檢查主資料夾是否存在
-			// Step 1: Check if the main folder exists
+			/**
+			 * 步驟 1：檢查主資料夾是否存在
+			 * Step 1: Check if the main folder exists
+			 */
 			if (existsSync(testPath))
 			{
 				detectedPath = testPath;
 				this.log(`[IDE Detection] ✓ 找到資料夾 ${ide.name} at ${testPath}`);
 				this.log(`[IDE Detection] ✓ Found folder for ${ide.name} at ${testPath}`);
 
-				// 步驟 2：檢查 settings.json 檔案是否存在
-				// Step 2: Check if settings.json file exists
+				/**
+				 * 步驟 2：檢查 settings.json 檔案是否存在
+				 * Step 2: Check if settings.json file exists
+				 */
 				if (existsSync(settingsJsonPath))
 				{
 					foundPath = testPath;
 					this.log(`[IDE Detection] ✓✓ 成功偵測到 ${ide.name}，settings.json 已找到`);
 					this.log(`[IDE Detection] ✓✓ Successfully detected ${ide.name}, settings.json found`);
-					// 成功找到，退出迴圈
-					// Found successfully, exit loop
+					/** 成功找到，退出迴圈 / Found successfully, exit loop */
 					break;
 				}
 				else
 				{
-					// 資料夾存在但缺少 settings.json 檔案
-					// Folder exists but settings.json is missing
+					/**
+					 * 資料夾存在但缺少 settings.json 檔案
+					 * Folder exists but settings.json is missing
+					 */
 					this.log(`[IDE Detection] ⚠ 資料夾存在但找不到 settings.json: ${settingsJsonPath}`);
 					this.log(`[IDE Detection] ⚠ Folder exists but settings.json not found: ${settingsJsonPath}`);
 				}
@@ -254,8 +269,7 @@ export class IDEDetector
 			}
 		}
 
-		// 處理偵測結果
-		// Handle detection result
+		/** 處理偵測結果 / Handle detection result */
 		if (foundPath)
 		{
 			result.detected = true;
@@ -345,13 +359,17 @@ export class IDEDetector
 		this.log(`[Custom IDE] 檢查自訂 IDE: ${customIDE.name} at ${customIDE.path}`);
 		this.log(`[Custom IDE] Checking custom IDE: ${customIDE.name} at ${customIDE.path}`);
 
-		// 嘗試多個可能的 settings.json 路徑
-		// Try multiple possible settings.json paths
+		/**
+		 * 嘗試多個可能的 settings.json 路徑
+		 * Try multiple possible settings.json paths
+		 */
 		let settingsJsonPath: string | null = null;
 		let foundPath: string | null = null;
 
-		// 選項 1: 直接在提供的路徑下尋找
-		// Option 1: Look directly in the provided path
+		/**
+		 * 選項 1: 直接在提供的路徑下尋找
+		 * Option 1: Look directly in the provided path
+		 */
 		let _path = path.isAbsolute(customIDE.path)
 			? customIDE.path
 			: this.config.pathLib!.join(this._getUserDataPathCore(), customIDE.path)
@@ -368,8 +386,10 @@ export class IDEDetector
 			this.log(`[Custom IDE] Found settings.json in direct path: ${directPath}`);
 		}
 
-		// 選項 2: 在 User 子資料夾中尋找
-		// Option 2: Look in User subfolder
+		/**
+		 * 選項 2: 在 User 子資料夾中尋找
+		 * Option 2: Look in User subfolder
+		 */
 		if (!settingsJsonPath)
 		{
 			_path = this.config.pathLib!.join(_path, 'User');
@@ -386,8 +406,7 @@ export class IDEDetector
 			}
 		}
 
-		// 檢查最終結果
-		// Check final result
+		/** 檢查最終結果 / Check final result */
 		if (settingsJsonPath && foundPath)
 		{
 			result.detected = true;
@@ -398,8 +417,7 @@ export class IDEDetector
 		}
 		else
 		{
-			// settings.json 檔案不存在
-			// settings.json file does not exist
+			/** settings.json 檔案不存在 / settings.json file does not exist */
 			const directCheck = existsSync(directPath);
 			const userCheck = existsSync(this.config.pathLib!.join(_path, 'settings.json'));
 

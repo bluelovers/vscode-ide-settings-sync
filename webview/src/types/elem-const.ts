@@ -15,6 +15,11 @@
  *
  * 所有 DOM ID 選擇器應統一定義於此，避免各處硬編碼造成的維護困難。
  * All DOM ID selectors should be defined here to avoid maintenance issues from hardcoded strings.
+ *
+ * 使用 const enum 讓 esbuild 在編譯時直接 inline 字串值，
+ * 避免在 Webview bundle 中產生額外的列舉查表程式碼。
+ * Using const enum allows esbuild to inline string values at compile time,
+ * avoiding extra enum lookup code in the Webview bundle.
  */
 export const enum EnumWebviewElemId
 {
@@ -50,6 +55,9 @@ export const enum EnumWebviewElemId
  *
  * 所有 CSS 類別選擇器應統一定義於此，避免各處硬編碼。
  * All CSS class selectors should be defined here to avoid hardcoded strings.
+ *
+ * 集中管理 CSS 類別名稱，方便全域重新命名與樣式除錯。
+ * Centralized CSS class names make global renaming and style debugging easier.
  */
 export const enum EnumCssClassSelector
 {
@@ -74,6 +82,11 @@ export const enum EnumCssClassSelector
  *
  * All places that need to enumerate tabs (switchTab, effect, TABS array) derive from this,
  * avoiding Shotgun Surgery caused by hardcoded strings in multiple places.
+ *
+ * 使用 const enum 讓 esbuild 在編譯時直接 inline 字串值，
+ * 減少 Webview bundle 體積並提升執行效能。
+ * Using const enum lets esbuild inline string values at compile time,
+ * reducing Webview bundle size and improving runtime performance.
  */
 export const enum EnumTabName
 {

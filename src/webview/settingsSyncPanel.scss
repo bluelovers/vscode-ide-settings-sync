@@ -1,6 +1,9 @@
 /**
  * Settings Sync Panel - 優化後的 SCSS
  * Optimized SCSS with variables, mixins, and nesting
+ *
+ * 使用 CSS 變數（var(--vscode-*)）以適應 VS Code 主題
+ * Uses CSS variables (var(--vscode-*)) to adapt to VS Code themes
  */
 
 /**
@@ -9,40 +12,91 @@
  * ============================================
  */
 
-/* --- 間距變數 --- */
+/**
+ * 間距變數：統一管理元件內距與外距，便於主題調整與維護
+ * Spacing variables: centralized spacing management for consistent layout and easy maintenance
+ *
+ * 間距變數：4px 基礎單位，符合 VS Code 設計規範
+ * Spacing vars: 4px base unit following VS Code design spec
+ */
+
+/** 超小間距：用於元素內部緊密排列 / Extra small: tight inline spacing */
 $spacing-xs: 4px;
+/** 小間距：按鈕內距、相鄰元素間距 / Small: button padding, adjacent elements */
 $spacing-sm: 8px;
+/** 中間距：表單元素內距 / Medium: form element padding */
 $spacing-md: 10px;
+/** 大間距：區塊內部間距 / Large: section internal spacing */
 $spacing-lg: 12px;
+/** 超大間距：標題與內容間距 / Extra large: heading-to-content spacing */
 $spacing-xl: 15px;
+/** 最大間距：主要區塊之間的間距 / XXL: major section separation */
 $spacing-xxl: 20px;
 
-/* --- 圓角變數 --- */
+/**
+ * 圓角變數：統一邊框圓角，保持視覺一致性
+ * Radius variables: consistent border-radius for visual cohesion
+ *
+ * 圓角變數：3-4px 提供現代化柔和邊角
+ * Radius vars: 3-4px for modern soft corners
+ */
+
+ /** 小圓角：標籤、徽章 / Small: tags, badges */
 $radius-sm: 3px;
+/** 中圓角：按鈕、輸入框、卡片 / Medium: buttons, inputs, cards */
 $radius-md: 4px;
 
-/* --- 字體大小 --- */
+/**
+ * 字體大小：配合 VS Code 編輯器字型，提升可讀性
+ * Font sizes: matching VS Code editor fonts for readability
+ *
+ * 字體大小：11-24px 範圍涵蓋從輔助文字到主標題
+ * Font sizes: 11-24px range covering auxiliary text to main headings
+ */
+
+/** 超小字：UUID 顯示、輔助資訊 / Extra small: UUID display, auxiliary info */
 $font-size-xs: 11px;
+/** 小字：描述文字、狀態訊息 / Small: descriptions, status messages */
 $font-size-sm: 12px;
+/** 基礎字：一般內文、按鈕文字 / Base: body text, button text */
 $font-size-base: 14px;
+/** 中字：子標題 / Medium: sub-headings */
 $font-size-md: 16px;
+/** 大字：主標題 / Large: main headings */
 $font-size-lg: 24px;
 
-/* --- 間隙變數 --- */
+/**
+ * 間隙變數：flex/grid 佈局的元素間距
+ * Gap variables: spacing between elements in flex/grid layouts
+ *
+ * 間隙變數：用於 flex/grid 佈局的 gap 屬性
+ * Gap vars: for gap property in flex/grid layouts
+ */
+
+ /** 超小間隙：緊密排列的圖標與文字 / XS: tight icon+text pairs */
 $gap-xs: 6px;
+/** 小間隙：相關元素組合 / Small: related element groups */
 $gap-sm: 8px;
+/** 中間隙：表單行內元素 / Medium: elements within form rows */
 $gap-md: 10px;
+/** 大間隙：區塊內元素 / Large: elements within sections */
 $gap-lg: 12px;
 
 /**
  * ============================================
- * 2. Mixins
+ * 2. Mixins - 可重用樣式模板
  * ============================================
+ *
+ * 使用 mixin 封裝可重用樣式，減少程式碼重複
+ * Use mixins to encapsulate reusable styles and reduce repetition
  */
 
 /**
- * 按鈕基礎樣式
- * Button base style
+ * 按鈕基礎樣式：所有按鈕共享的基礎屬性
+ * Button base style: shared base properties for all buttons
+ *
+ * 為什麼：統一按鈕外觀，確保視覺一致性
+ * Why: Unified button appearance ensures visual consistency
  */
 @mixin btn-base
 {
@@ -56,14 +110,21 @@ $gap-lg: 12px;
 
 	&:disabled
 	{
+		/**
+		 * 禁用狀態：降低不透明度，變更游標樣式
+		 * Disabled state: reduce opacity, change cursor style
+		 */
 		opacity: 0.6;
 		cursor: not-allowed;
 	}
 }
 
 /**
- * 表單元素基礎樣式
- * Form element base style
+ * 表單元素基礎樣式：輸入框、下拉選單等共用樣式
+ * Form element base style: shared styles for inputs, selects, etc.
+ *
+ * 為什麼：表單元素需要統一的 VS Code 主題配色與邊框樣式
+ * Why: Form elements need unified VS Code theme colors and border styles
  */
 @mixin form-element
 {
@@ -79,74 +140,150 @@ $gap-lg: 12px;
  * ============================================
  * 3. Export/Import 樣式
  * ============================================
+ *
+ * 匯出/匯入區塊：提供 JSON 檔案匯出匯入功能
+ * Export/Import section: JSON file export/import functionality
+ *
+ * 為什麼分為三個子區塊：section（主標題）、export/import-section（功能區）、path-selection（路徑選擇）
+ * Why three sub-sections: main section, functional areas, path selection
  */
 
+/**
+ * 匯出/匯入主容器：包含多個功能子區塊
+ * Export/Import main container: wraps multiple functional sub-sections
+ */
 .export-import-section
 {
+	/**
+	 * 主區塊：包含匯出與匯入兩個功能區
+	 * Main section: contains both export and import functional areas
+	 */
 	.section
 	{
+		/** 與下方區塊保持足夠間距 / Sufficient spacing from below sections */
 		margin-bottom: $spacing-xxl;
+		/** 內部留白提供呼吸空間 / Internal padding for visual breathing room */
 		padding: $spacing-xxl;
+		/** 邊框區分不同功能區塊 / Border to distinguish functional areas */
 		border: 1px solid var(--vscode-panel-border);
+		/** 圓角提供現代化外觀 / Rounded corners for modern appearance */
 		border-radius: $radius-md;
 
+		/**
+		 * 區塊標題樣式
+		 * Section heading style
+		 */
 		h2
 		{
+			/** 標題與內容之間的間距 / Spacing between heading and content */
 			margin: 0 0 $spacing-xl 0;
+			/** 使用 VS Code 前景色確保可讀性 / Use VS Code foreground for readability */
 			color: var(--vscode-foreground);
 		}
 	}
 
+	/**
+	 * 匯出與匯入子區塊：設定選項與操作按鈕
+	 * Export and Import sub-sections: configuration options and action buttons
+	 */
 	.export-section,
 	.import-section
 	{
+		/** 子區塊之間需要較大間距 / Larger gaps between sub-sections */
 		margin-bottom: $spacing-xxl;
+		/** 統一內部留白 / Consistent internal padding */
 		padding: $spacing-xxl;
+		/** 邊框樣式與主區塊一致 / Border style consistent with main section */
 		border: 1px solid var(--vscode-panel-border);
 		border-radius: $radius-md;
 
+		/**
+		 * 子區塊標題（h3 層級）
+		 * Sub-section heading (h3 level)
+		 */
 		h3
 		{
+			/** 標題下方間距較大，區分標題與內容 / Larger bottom margin to separate heading from content */
 			margin: 0 0 $spacing-xl 0;
 			color: var(--vscode-foreground);
 		}
 	}
 
+	/**
+	 * 路徑選擇區塊：瀏覽按鈕與路徑輸入框
+	 * Path selection section: browse button and path input
+	 */
 	.path-selection
 	{
+		/** 與下方選項區保持間距 / Spacing from options below */
 		margin-bottom: $spacing-xxl;
+		/** 內部留白使內容不會太擁擠 / Internal padding prevents crowding */
 		padding: $spacing-xl;
+		/** 邊框識別路徑選擇區域 / Border identifies path selection area */
 		border: 1px solid var(--vscode-panel-border);
 		border-radius: $radius-md;
 
+		/**
+		 * 路徑選擇區標題
+		 * Path selection section title
+		 */
 		h4
 		{
+			/** 標題與輸入組之間的間距 / Spacing between title and input group */
 			margin: 0 0 $spacing-md 0;
+			/** 使用基礎字體大小，不搶眼 / Base font size, not too prominent */
 			font-size: $font-size-base;
 		}
 
+		/**
+		 * 路徑輸入組：輸入框 + 瀏覽按鈕的水平排列
+		 * Path input group: input + browse button in horizontal layout
+		 *
+		 * 為什麼使用 flex：讓輸入框自適應剩餘空間，按鈕固定大小
+		 * Why flex: input fills remaining space, button stays fixed size
+		 */
 		.path-input-group
 		{
 			display: flex;
+			/** 輸入框與按鈕之間的間距 / Gap between input and button */
 			gap: $gap-md;
+			/** 垂直置中對齊 / Vertical center alignment */
 			align-items: center;
+			/** 每個輸入組之間需要間距 / Spacing between input groups */
 			margin-bottom: $spacing-md;
 
+			/**
+			 * 路徑輸入框：可伸縮，佔據主要空間
+			 * Path input: flexible, takes most space
+			 */
 			.path-input
 			{
+				/** flex:1 讓輸入框填滿剩餘空間 / flex:1 fills remaining space */
 				flex: 1;
 				padding: $spacing-sm;
+				/** 使用 VS Code 輸入框樣式保持一致性 / VS Code input style for consistency */
 				border: 1px solid var(--vscode-input-border);
 				background: var(--vscode-input-background);
 				color: var(--vscode-input-foreground);
 				border-radius: $radius-md;
 				font-size: $font-size-base;
 
+				/**
+				 * 占位文字顏色：使用 VS Code 主題變數
+				 * Placeholder color: VS Code theme variable
+				 */
 				&::placeholder
 				{
 					color: var(--vscode-input-placeholderForeground);
 				}
 
+				/**
+				 * 焦點狀態：使用 VS Code 焦點邊框色
+				 * Focus state: VS Code focus border color
+				 *
+				 * outline-offset: -1px 讓邊框內縮，避免擴展到外部
+				 * outline-offset: -1px shrinks border inward to avoid expansion
+				 */
 				&:focus
 				{
 					outline: 1px solid var(--vscode-focusBorder);
@@ -154,13 +291,23 @@ $gap-lg: 12px;
 				}
 			}
 
+			/**
+			 * 瀏覽按鈕：觸發系統檔案/資料夾選擇對話框
+			 * Browse button: triggers system file/folder selection dialog
+			 */
 			.browse-btn
 			{
 				@include btn-base;
+				/** 使用次要按鈕配色與主操作區分 / Secondary button color to differentiate from primary actions */
 				background: var(--vscode-button-secondaryBackground);
 				color: var(--vscode-button-secondaryForeground);
+				/** 防止文字換行，保持按鈕寬度緊湊 / Prevent text wrap, keep button compact */
 				white-space: nowrap;
 
+				/**
+				 * 懸停狀態：使用 VS Code 次要按鈕懸停色
+				 * Hover state: VS Code secondary button hover color
+				 */
 				&:hover:not(:disabled)
 				{
 					background: var(--vscode-button-secondaryHoverBackground);
@@ -169,22 +316,40 @@ $gap-lg: 12px;
 		}
 	}
 
+	/**
+	 * 選項區：核取方塊組（如「包含內建 IDE」）
+	 * Options area: checkbox groups (e.g., "Include built-in IDEs")
+	 */
 	.options
 	{
+		/** 與下方操作按鈕區保持間距 / Spacing from action buttons below */
 		margin-bottom: $spacing-xxl;
 
+		/**
+		 * 核取方塊組：水平排列的選項
+		 * Checkbox group: horizontally arranged options
+		 */
 		.checkbox-group
 		{
 			display: flex;
 			align-items: center;
 			gap: $gap-sm;
+			/** 游標改為指針，提示可點擊 / Cursor pointer indicates clickable */
 			cursor: pointer;
 
+			/**
+			 * 核取方塊本身：移除預設邊距
+			 * Checkbox itself: remove default margin
+			 */
 			.checkbox-input
 			{
 				margin: 0;
 			}
 
+			/**
+			 * 核取方塊標籤：與方塊對齊
+			 * Checkbox label: aligned with checkbox
+			 */
 			.checkbox-label
 			{
 				font-size: $font-size-base;
@@ -192,20 +357,40 @@ $gap-lg: 12px;
 		}
 	}
 
+	/**
+	 * 操作按鈕區：匯出/匯入的主要動作按鈕
+	 * Actions area: primary action buttons for export/import
+	 */
 	.actions
 	{
+		/**
+		 * 操作按鈕：觸發匯出/匯入動作
+		 * Action button: triggers export/import action
+		 */
 		.action-btn
 		{
 			@include btn-base;
 			background: var(--vscode-button-background);
 			color: var(--vscode-button-foreground);
+			/** 中等字重讓按鈕文字更明顯 / Medium weight makes button text more prominent */
 			font-weight: 500;
 
+			/**
+			 * 懸停狀態：使用 VS Code 按鈕懸停背景色
+			 * Hover state: VS Code button hover background
+			 */
 			&:hover:not(:disabled)
 			{
 				background: var(--vscode-button-hoverBackground);
 			}
 
+			/**
+			 * 處理中狀態：半透明 + 等待游標
+			 * Processing state: semi-transparent + wait cursor
+			 *
+			 * 為什麼：提示使用者操作正在進行中，避免重複點擊
+			 * Why: indicates operation in progress, prevents duplicate clicks
+			 */
 			&.processing
 			{
 				opacity: 0.7;
@@ -214,54 +399,82 @@ $gap-lg: 12px;
 		}
 	}
 
+	/**
+	 * 匯入結果顯示區：成功/失敗訊息與詳細資訊
+	 * Import result display: success/error messages and details
+	 */
 	.import-result
 	{
 		padding: $spacing-xl;
+		/** 邊框區分結果區塊 / Border distinguishes result area */
 		border: 1px solid var(--vscode-panel-border);
 		border-radius: $radius-md;
+		/** 使用編輯器背景色與主內容區分 / Editor background to differentiate from main content */
 		background: var(--vscode-editor-background);
 
+		/**
+		 * 結果區標題
+		 * Result section title
+		 */
 		h4
 		{
 			margin: 0 0 $spacing-md 0;
 			color: var(--vscode-foreground);
 		}
 
+		/**
+		 * 結果訊息：成功或失敗的簡短訊息
+		 * Result message: brief success or error message
+		 */
 		.result-message
 		{
 			&.success
 			{
+				/** 成功訊息使用測試通過圖示的綠色 / Success uses test passed icon green */
 				color: var(--vscode-testing-iconPassed);
 			}
 
 			&.error
 			{
+				/** 錯誤訊息使用 VS Code 錯誤前景色 / Error uses VS Code error foreground */
 				color: var(--vscode-errorForeground);
 			}
 		}
 
+		/**
+		 * 結果摘要：匯入設定的統計資訊
+		 * Result summary: statistics of imported settings
+		 */
 		.result-summary
 		{
+			/** 與上方訊息保持間距 / Spacing from message above */
 			margin-top: $spacing-md;
 
 			.summary-title
 			{
+				/** 摘要標題使用半粗體 / Summary title uses semi-bold */
 				font-weight: 600;
 				margin-bottom: $spacing-sm;
 			}
 
 			.summary-list
 			{
+				/** 列表縮排對齊 / List indented for alignment */
 				margin: $spacing-sm 0;
 				padding-left: $spacing-xl;
 
 				li
 				{
+					/** 列表項目之間的小間距 / Small gap between list items */
 					margin-bottom: $spacing-xs;
 				}
 			}
 		}
 
+		/**
+		 * 結果詳細資訊：展開顯示具體變更
+		 * Result details: expanded view of specific changes
+		 */
 		.result-details
 		{
 			margin-top: $spacing-md;
@@ -288,13 +501,68 @@ $gap-lg: 12px;
 
 /**
  * ============================================
- * 4. 原有樣式繼續...
+ * 4. 全域重置 (Global Reset)
  * ============================================
+ *
+ * 為什麼：確保跨瀏覽器一致性，移除預設邊距與內距
+ * Why: ensures cross-browser consistency, removes default margins/padding
  */
+*, *::before, *::after
+{
+	margin: 0;
+	padding: 0;
+	/**
+	 * 使用 border-box 簡化寬度計算，padding 不會增加元素總寬度
+	 * border-box simplifies width calculations; padding doesn't increase total width
+	 */
+	box-sizing: border-box;
+}
 
+/**
+ * ============================================
+ * 5. 主體樣式 (Body)
+ * ============================================
+ *
+ * 為什麼：設定 Webview 整體外觀，使用 VS Code 主題變數
+ * Why: sets Webview overall appearance using VS Code theme variables
+ */
+body
+{
+	/**
+	 * 使用系統字體堆疊，確保跨平台視覺一致性
+	 * System font stack ensures cross-platform visual consistency
+	 */
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+	/**
+	 * 整體內距提供呼吸空間
+	 * Overall padding for visual breathing room
+	 */
+	padding: $spacing-xxl;
+	/**
+	 * 使用 VS Code 前景色與背景色
+	 * Use VS Code foreground and background colors
+	 */
+	color: var(--vscode-foreground);
+	background-color: var(--vscode-editor-background);
+	/** 基礎字體大小與 VS Code 編輯器一致 / Base font size matches VS Code editor */
+	font-size: $font-size-base;
+}
+
+/**
+ * ============================================
+ * 6. 按鈕樣式 (Button Styles)
+ * ============================================
+ *
+ * 通用按鈕樣式，可被多個按鈕類別引用
+ * Generic button styles, reused by multiple button classes
+ */
 .btn
 {
 	@include btn-base;
+	/**
+	 * 輸入框樣式按鈕：與表單元素視覺一致
+	 * Input-style button: visual consistency with form elements
+	 */
 	background-color: var(--vscode-input-background);
 	color: var(--vscode-input-foreground);
 	border: 1px solid var(--vscode-textBlockQuote-border);
@@ -407,14 +675,150 @@ body
 
 /**
  * ============================================
- * 5. 佈局 (Layout)
+ * 5. 文字省略顯示 (Text Ellipsis Mixin)
  * ============================================
+ *
+ * 防止文字溢出容器，使用省略符號表示被截斷的文字
+ * Prevents text overflow, uses ellipsis for truncated text
  */
+@mixin text-ellipsis
+{
+	white-space: nowrap;
+	overflow: hidden;
+	/**
+	 * text-overflow: ellipsis 在空間不足時顯示 ...
+	 * text-overflow: ellipsis shows ... when space is insufficient
+	 */
+	text-overflow: ellipsis;
+}
 
+/**
+ * ============================================
+ * 6. 區塊容器樣式 (Section Container Mixin)
+ * ============================================
+ *
+ * 可重用的區塊容器：使用 VS Code 編輯器行高亮背景色
+ * Reusable section container: uses VS Code editor line highlight background
+ */
+@mixin section-container
+{
+	padding: $spacing-xl;
+	/**
+	 * 使用編輯器行高亮背景色，與主內容區分
+	 * Uses editor line highlight background to differentiate from main content
+	 */
+	background-color: var(--vscode-editor-lineHighlightBackground);
+	border: 1px solid var(--vscode-editorGroup-border);
+	border-radius: $radius-md;
+}
+
+/**
+ * ============================================
+ * 7. 列表項目基礎樣式 (List Item Mixin)
+ * ============================================
+ *
+ * 通用列表項目樣式：flex 水平排列，左側邊框標識
+ * Generic list item style: flex horizontal layout with left border indicator
+ */
+@mixin list-item
+{
+	display: flex;
+	align-items: center;
+	gap: $spacing-sm;
+	padding: $spacing-sm $spacing-md;
+	/**
+	 * 使用列表懸停背景色，提供視覺回饋
+	 * Uses list hover background for visual feedback
+	 */
+	background-color: var(--vscode-list-hoverBackground);
+	border-radius: $radius-md;
+	/**
+	 * 左側 3px 邊框作為視覺標識符
+	 * Left 3px border as visual identifier
+	 */
+	border-left: 3px solid var(--vscode-textBlockQuote-border);
+}
+
+/**
+ * ============================================
+ * 8. 錯誤狀態樣式 (Error State Mixin)
+ * ============================================
+ *
+ * 錯誤狀態：使用 VS Code 輸入驗證錯誤背景色與前景色
+ * Error state: uses VS Code input validation error colors
+ */
+@mixin error-state
+{
+	background-color: var(--vscode-inputValidation-errorBackground);
+	color: var(--vscode-inputValidation-errorForeground);
+}
+
+/**
+ * ============================================
+ * 9. 資訊狀態樣式 (Info State Mixin)
+ * ============================================
+ *
+ * 資訊狀態：使用 VS Code 輸入驗證資訊背景色與邊框
+ * Info state: uses VS Code input validation info colors
+ */
+@mixin info-state
+{
+	background-color: var(--vscode-inputValidation-infoBackground);
+	border: 1px solid var(--vscode-inputValidation-infoBorder);
+}
+
+/**
+ * ============================================
+ * 10. Flex 工具類 (Flex Utilities)
+ * ============================================
+ *
+ * 常用 flex 佈局模式的快速工具類
+ * Quick utility classes for common flex layout patterns
+ */
+@mixin flex-center
+{
+	display: flex;
+	align-items: center;
+}
+
+@mixin flex-between
+{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+/**
+ * ============================================
+ * 11. 佈局 (Layout)
+ * ============================================
+ *
+ * 主容器與頁首佈局：限制最大寬度並置中
+ * Main container and header layout: max-width with centering
+ */
 .container
 {
+	/**
+	 * 限制最大寬度為 1000px，防止超寬螢幕上內容過於稀疏
+	 * Max-width 1000px prevents content from being too sparse on ultra-wide screens
+	 */
 	max-width: 1000px;
+	/** margin: 0 auto 實現水平置中 / Horizontal centering */
 	margin: 0 auto;
+}
+
+.header
+{
+	@include flex-between;
+	/** 頁首與下方內容保持較大間距 / Larger gap between header and content below */
+	margin-bottom: $spacing-xxl;
+}
+
+.header-actions
+{
+	display: flex;
+	/** 操作按鈕之間的間距 / Gap between action buttons */
+	gap: $gap-md;
 }
 
 .header

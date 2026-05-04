@@ -65,15 +65,28 @@ export interface ISettingItemProps
 function IdeValueItem({ entry }: { entry: ISettingValueEntry })
 {
 	/**
-	 * 直接在 JSX 中讀取 signal.value，Preact 會自動追蹤依賴，
+	 * 判斷是否為來源 IDE：直接讀取 signal.value，Preact 會自動追蹤依賴，
 	 * sourceIDEUuid 改變時只有這個組件重新渲染，不影響其他項目。
 	 *
-	 * Reading signal.value directly in JSX; Preact automatically tracks the dependency.
+	 * Check if this is the source IDE: read signal.value directly,
+	 * Preact automatically tracks the dependency.
 	 * Only this component re-renders when sourceIDEUuid changes, not the entire list.
 	 */
 	const isSource = entry.ideUuid === sourceIDEUuid.value;
 
 	let displayValue: string;
+
+	/**
+	 * 根據設定值型別決定顯示方式：
+	 * - undefined：顯示 'Not set'（未設定）
+	 * - object：使用 JSON.stringify 格式化，縮排 2 格便於閱讀
+	 * - 其他：轉為字串顯示
+	 *
+	 * Determine display format based on setting value type:
+	 * - undefined: show 'Not set' (not configured)
+	 * - object: use JSON.stringify with 2-space indent for readability
+	 * - others: convert to string
+	 */
 	if (entry.value === undefined)
 	{
 		displayValue = 'Not set';
@@ -87,6 +100,19 @@ function IdeValueItem({ entry }: { entry: ISettingValueEntry })
 		displayValue = String(entry.value);
 	}
 
+	/**
+	 * 組合 CSS 類別：
+	 * - ide-value：基礎類別
+	 * - ide-value-missing：值未設定時新增（紅色/警告樣式）
+	 * - current：標記為當前執行此擴充的 IDE（綠色邊框）
+	 * - source-ide：標記為來源 IDE（藍色邊框，用於同步來源比對）
+	 *
+	 * Combine CSS classes:
+	 * - ide-value: base class
+	 * - ide-value-missing: added when value is not set (red/warning style)
+	 * - current: marks the IDE currently running this extension (green border)
+	 * - source-ide: marks the source IDE (blue border, used for sync source matching)
+	 */
 	const classes = [
 		'ide-value',
 		entry.value === undefined ? 'ide-value-missing' : '',
@@ -157,13 +183,27 @@ export function SettingItem({
 	 */
 	const isChecked = checkedSettingKeys.value.has(settingKey);
 
+	/**
+	 * checkbox 勾選狀態變更處理器
+	 * Handle checkbox state change
+	 *
+	 * 從事件目標讀取勾選狀態，更新全域 checkedSettingKeys signal
+	 * Read checked state from event target, update global checkedSettingKeys signal
+	 */
 	function handleCheckboxChange(e: Event)
 	{
+		/** 從事件目標讀取勾選狀態 / Read checked state from event target */
 		const checked = (e.target as HTMLInputElement).checked;
 
 		/**
 		 * 更新全域 checkedSettingKeys signal（建立新 Set 觸發響應式更新）
 		 * Update global checkedSettingKeys signal (create new Set to trigger reactive update)
+		 *
+		 * Preact signals 使用參考比較，直接修改原 Set 不會觸發更新，
+		 * 必須建立新的 Set 實例並重新賦值。
+		 *
+		 * Preact signals use reference comparison; directly modifying the original Set
+		 * won't trigger updates. Must create a new Set instance and reassign.
 		 */
 		const next = new Set(checkedSettingKeys.value);
 		if (checked)
@@ -177,6 +217,16 @@ export function SettingItem({
 		checkedSettingKeys.value = next;
 	}
 
+	/**
+	 * 移除按鈕點擊處理器（Selected 分頁使用）
+	 * Handle remove button click (used in Selected tab)
+	 *
+	 * 呼叫 window 上的 removeFromSelectedSettings 方法，
+	 * 將當前設定 key 從已選取列表中移除。
+	 *
+	 * Calls the removeFromSelectedSettings method on window,
+	 * removing the current setting key from the selected list.
+	 */
 	function handleRemove()
 	{
 		(window as any as IWebviewWindow).removeFromSelectedSettings?.(settingKey);

@@ -119,17 +119,18 @@ export const checkedSettingKeys = signal<Set<string>>(new Set());
  */
 export function initStore(): void
 {
+	/** 從 window 讀取初始狀態，若無則使用空物件 / Read initial state from window, use empty object if not provided */
 	const state: Partial<IWebviewState> = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 
 	/**
-	 * 初始化 IDE 列表
-	 * Initialize IDE list
+	 * 初始化 IDE 列表：從初始狀態讀取，若無則使用空陣列
+	 * Initialize IDE list: read from initial state, use empty array if not provided
 	 */
 	ideList.value = state.ideList ?? [];
 
 	/**
-	 * 初始化活躍分頁（預設為 sync）
-	 * Initialize active tab (defaults to sync)
+	 * 初始化活躍分頁：預設為 sync 分頁
+	 * Initialize active tab: defaults to sync tab
 	 */
 	activeTab.value = EnumTabName.sync;
 
@@ -148,14 +149,14 @@ export function initStore(): void
 	sourceIDEUuid.value = initialSourceUuid;
 
 	/**
-	 * 初始化搜尋字串（從已儲存的搜尋歷史恢復）
-	 * Initialize search query (restored from saved search history)
+	 * 初始化搜尋字串：從已儲存的搜尋歷史恢復，若無則為空字串
+	 * Initialize search query: restored from saved search history, empty string if not available
 	 */
 	searchQuery.value = state.savedSearchHistory ?? '';
 
 	/**
-	 * 初始化已勾選的設定 key（從已儲存的選取設定恢復）
-	 * Initialize checked setting keys (restored from saved selected settings)
+	 * 初始化已勾選的設定 key：從已儲存的選取設定恢復，若無則為空 Set
+	 * Initialize checked setting keys: restored from saved selected settings, empty Set if not available
 	 */
 	checkedSettingKeys.value = new Set(state.savedSelectedSettings ?? []);
 }

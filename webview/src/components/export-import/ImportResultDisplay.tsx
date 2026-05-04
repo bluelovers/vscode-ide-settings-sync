@@ -8,7 +8,13 @@
 
 import { IImportResult } from '../../types';
 
-/** 匯入結果顯示的 Props 介面 / Props interface for the import result display */
+/**
+ * 匯入結果顯示的 Props 介面
+ * Props interface for the import result display
+ *
+ * 定義匯入結果組件所需的屬性結構，確保型別安全與可選性處理。
+ * Defines the property structure required by the import result display component, ensuring type safety and optional handling.
+ */
 interface IImportResultDisplayProps
 {
 	/** 匯入結果物件，未提供時不渲染任何內容 / Import result object; renders nothing when not provided */
@@ -26,6 +32,9 @@ export function ImportResultDisplay({ importResult }: IImportResultDisplayProps)
 	/**
 	 * 無匯入結果時不渲染任何內容
 	 * Render nothing when no import result is available
+	 *
+	 * 原因：避免顯示空白或錯誤狀態，符合條件渲染的最佳實踐。
+	 * Reason: Avoid displaying blank or error states; follows conditional rendering best practice.
 	 */
 	if (!importResult)
 	{
@@ -44,6 +53,9 @@ export function ImportResultDisplay({ importResult }: IImportResultDisplayProps)
 			{/**
 			 * 有匯入數量時顯示摘要統計
 			 * Show summary statistics when there are imported items
+			 *
+			 * 原因：讓使用者快速了解匯入操作的成果，提升使用體驗。
+			 * Reason: Allows users to quickly understand import operation results, improving UX.
 			 */}
 			{(importResult.importedCustomIDEs > 0 || importResult.importedSelectedSettings > 0) && (
 				<div class="result-summary">
@@ -68,6 +80,9 @@ export function ImportResultDisplay({ importResult }: IImportResultDisplayProps)
 			{/**
 			 * 有錯誤時顯示錯誤列表
 			 * Show error list when there are errors
+			 *
+			 * 原因：讓使用者清楚知道匯入失敗的具體原因，便於排錯。
+			 * Reason: Allows users to clearly understand specific import  failure reasons for troubleshooting.
 			 */}
 			{importResult.errors && importResult.errors.length > 0 && (
 				<div class="result-details">

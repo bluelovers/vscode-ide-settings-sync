@@ -5,7 +5,9 @@
  * executed in the VS Code Webview browser sandbox environment.
  */
 
+/** 匯入 Webview 初始狀態介面 / Import Webview initial state interface */
 import { IWebviewState } from "../types";
+/** 匯入 Webview 與 Extension host 之間的通訊訊息型別 / Import message type for Webview <-> Extension host communication */
 import { IWebviewMessage } from "../webviewMessages";
 
 /**

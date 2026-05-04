@@ -104,12 +104,10 @@ export class StandaloneIDEProvider
 	{
 		this.detectionResults.clear();
 
-		// 使用統一的偵測方法
-		// Use unified detection method
+		/** 使用統一的偵測方法 / Use unified detection method */
 		const allResults = this.detector.detectAllIDEs(this.knownIDEs, this.config.customIDEs);
 
-		// 存儲所有結果
-		// Store all results
+		/** 存儲所有結果 / Store all results */
 		for (const result of allResults.allResults)
 		{
 			this.detectionResults.set(result.name, result);

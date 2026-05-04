@@ -8,6 +8,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { IIDEInfoBase } from '../../src/types';
+import { IGlobalStateCustomIDEs } from '../providers/vscode/globalState';
 
 /**
  * 快取檔案名稱
@@ -80,13 +81,12 @@ export function getExistingUuid(options: {
 	extensionPath: string;
 	ideName: string;
 	idePath: string;
-	globalStateIDEs?: Array<{ uuid: string; name: string; path: string }>;
+	globalStateIDEs?: IGlobalStateCustomIDEs["value"];
 }): string | undefined
 {
 	const { extensionPath, ideName, idePath, globalStateIDEs } = options;
 
-	// 嘗試從檔案快取取得 UUID
-	// Try to get UUID from file cache
+	/** 嘗試從檔案快取取得 UUID / Try to get UUID from file cache */
 	const cachedData = loadIDECache(extensionPath);
 	if (cachedData?.ides)
 	{
@@ -101,8 +101,7 @@ export function getExistingUuid(options: {
 		}
 	}
 
-	// 嘗試從 globalState 取得 UUID
-	// Try to get UUID from globalState
+	/** 嘗試從 globalState 取得 UUID / Try to get UUID from globalState */
 	if (globalStateIDEs && globalStateIDEs.length > 0)
 	{
 		const globalStateIDE = globalStateIDEs.find(ide => ide.name === ideName);

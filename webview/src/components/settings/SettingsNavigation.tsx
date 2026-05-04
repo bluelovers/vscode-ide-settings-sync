@@ -29,6 +29,13 @@ const TAB_LABELS: Record<EnumTabName, string> = {
 	[EnumTabName.exportImport]: 'Export/Import',
 };
 
+/**
+ * 從全域分頁名稱列表生成分頁配置陣列
+ * Generate tab configuration array from the global tab name list
+ *
+ * 使用 ALL_TAB_NAMES.map 可確保分頁順序與枚舉定義一致，維持單一事實來源原則。
+ * Using ALL_TAB_NAMES.map ensures tab order matches enum definition, maintaining Single Source of Truth principle.
+ */
 const TABS: ITabConfig[] = ALL_TAB_NAMES.map(name => ({
 	name,
 	label: TAB_LABELS[name],
@@ -37,6 +44,12 @@ const TABS: ITabConfig[] = ALL_TAB_NAMES.map(name => ({
 /**
  * 設定導覽列組件（渲染 .tabs 的子內容）
  * Settings navigation bar component (renders children of .tabs)
+ *
+ * 原因：此組件只負責渲染分頁按鈕，不包含外層容器，
+ * 以便由 index.tsx 進行 hydrate 時能正確掛載至既有的 .tabs DOM 元素。
+ *
+ * Reason: This component only renders tab buttons without the outer container,
+ * so that index.tsx can correctly hydrate onto the existing .tabs DOM element.
  */
 export function SettingsNavigation()
 {

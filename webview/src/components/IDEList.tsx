@@ -14,6 +14,21 @@ import { IIDEListProps, IRemoveCustomIDEParams } from './types';
 import { ITSRequireAtLeastOne } from 'ts-type';
 import { EnumCssClassSelector } from '../types/elem-const';
 
+/**
+ * 可用 IDE 列表項目組件
+ * Available IDE list item component
+ *
+ * 渲染單一可用 IDE 項目，包含來源選擇單選鈕、設定勾選框、
+ * 開啟資料夾按鈕、開啟設定檔按鈕以及自訂 IDE 的刪除按鈕。
+ *
+ * Renders a single available IDE item, including source selection radio, settings checkbox,
+ * open folder button, open settings button, and remove button for custom IDEs.
+ *
+ * @param props.ide - IDE 資訊物件 / IDE information object
+ * @param props.index - IDE 在列表中的索引 / IDE index in the list
+ * @param props.isCurrent - 是否為當前執行此擴充的 IDE / Whether this is the IDE currently running the extension
+ * @param props.isSource - 是否為選取的同步來源 IDE / Whether this is the selected sync source IDE
+ */
 function AvailableIDEItem(props: {
 	ide: { uuid: string; name: string; type: string; nativePath: string };
 	index: number;
@@ -61,6 +76,19 @@ function AvailableIDEItem(props: {
 	</>);
 }
 
+/**
+ * 移除自訂 IDE 按鈕組件
+ * Remove custom IDE button component
+ *
+ * 將移除所需的參數序列化為 JSON 字串，透過 onclick 傳遞給 window 掛載的函數。
+ * 使用 `JSON.stringify` 確保參數能正確嵌入 onclick 字串中。
+ *
+ * Serializes removal parameters to JSON string, passed to window-mounted function via onclick.
+ * Uses `JSON.stringify` to ensure parameters are correctly embedded in onclick string.
+ *
+ * @param props.ide - IDE 資訊物件 / IDE information object
+ * @param props.index - IDE 在列表中的索引 / IDE index in the list
+ */
 function BtnRemoveCustomIDE(props: {
 	ide: { uuid: string; name: string; nativePath: string };
 	index: number;
@@ -85,12 +113,37 @@ function BtnRemoveCustomIDE(props: {
 	);
 }
 
+/**
+ * 開啟 IDE 資料夾按鈕組件
+ * Open IDE folder button component
+ *
+ * 透過 onclick 字串呼叫 window 掛載的函數，開啟 IDE 設定資料夾。
+ * 使用 `JSON.stringify` 確保路徑字串能正確嵌入 onclick 字串。
+ *
+ * Calls window-mounted function via onclick string to open the IDE settings folder.
+ * Uses `JSON.stringify` to ensure path string is correctly embedded in onclick string.
+ *
+ * @param props.path - IDE 設定資料夾路徑 / IDE settings folder path
+ */
 function BtnOpenIDEFolder(props: { path: string })
 {
 	// @ts-ignore
 	return (<button className="btn btn-small" onclick={`openIDEFolder && openIDEFolder(${JSON.stringify(props.path)})`} title="Open IDE folder">📂</button>);
 }
 
+/**
+ * 開啟設定 JSON 檔案按鈕元件
+ * Open settings.json file button component
+ *
+ * 透過 onclick 字串呼叫 window 掛載的函數，在編輯器中開啟該 IDE 的設定檔。
+ * 使用 `JSON.stringify` 確保路徑與名稱能正確嵌入 onclick 字串。
+ *
+ * Calls window-mounted function via onclick string to open the IDE's settings file in editor.
+ * Uses `JSON.stringify` to ensure path and name are correctly embedded in onclick string.
+ *
+ * @param props.idePath - IDE 設定資料夾路徑 / IDE settings folder path
+ * @param props.ideName - IDE 顯示名稱 / IDE display name
+ */
 function BtnOpenSettingsJson(props: { idePath: string; ideName: string })
 {
 	// @ts-ignore

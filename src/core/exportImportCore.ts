@@ -17,46 +17,154 @@ import {
 	EnumGlobalStateName,
 } from '../types';
 
+/**
+ * @deprecated 已棄用：此邏輯不再使用，僅保留供參考
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
+ *
+ * 儲存提供者介面：定義全域狀態儲存的讀寫操作
+ * Storage provider interface: defines read/write operations for global state storage
+ */
 export interface IStorageProvider
 {
+	/**
+	 * 從儲存中取得指定鍵的值，若不存在則回傳預設值
+	 * Get value from storage by key, return default if not exists
+	 */
 	get<T>(key: string, defaultValue?: T): T;
 
+	/**
+	 * 更新儲存中指定鍵的值
+	 * Update value in storage for the given key
+	 */
 	update(key: string, value: any): Promise<void>;
 }
 
+/**
+ * @deprecated 已棄用：此邏輯不再使用，僅保留供參考
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
+ *
+ * 檔案系統提供者介面：定義檔案讀寫操作
+ * File system provider interface: defines file read/write operations
+ */
 export interface IFileSystemProvider
 {
+	/**
+	 * 非同步讀取指定路徑的檔案內容
+	 * Asynchronously read file content from given path
+	 */
 	readFile(path: string): Promise<string>;
 
+	/**
+	 * 非同步將內容寫入指定路徑的檔案
+	 * Asynchronously write content to file at given path
+	 */
 	writeFile(path: string, content: string): Promise<void>;
 }
 
+/**
+ * @deprecated 已棄用：此邏輯不再使用，僅保留供參考
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
+ * 
+ * 對話框提供者介面：定義使用者互動對話框的操作
+ * Dialog provider interface: defines user interaction dialog operations
+ */
 export interface IDialogProvider
 {
+	/**
+	 * 顯示儲存檔案對話框，讓使用者選擇儲存位置
+	 * Show save file dialog for user to choose save location
+	 */
 	showSaveDialog(options: any): Promise<string | undefined>;
 
+	/**
+	 * 顯示開啟檔案對話框，讓使用者選擇要匯入的檔案
+	 * Show open file dialog for user to choose import file
+	 */
 	showOpenDialog(options: any): Promise<string[] | undefined>;
 
+	/**
+	 * 顯示快速選擇對話框，讓使用者選擇設定項目
+	 * Show quick pick dialog for user to select setting items
+	 */
 	showQuickPick(items: any[], options: any): Promise<any[] | undefined>;
 
+	/**
+	 * 顯示訊息提示，根據類型顯示不同樣式
+	 * Show message notification with different styles based on type
+	 */
 	showMessage(message: string, type: EnumShowMessageType): Promise<void>;
 }
 
+/**
+ * @deprecated 已棄用：此邏輯不再使用，僅保留供參考
+ * @deprecated Deprecated: This logic is no longer in use, kept only for reference.
+ *
+ * 匯出匯入核心類別
+ * Export/Import Core class
+ *
+ * 獨立於 VSCode 的核心匯出匯入邏輯，便於測試和重用
+ * Core export/import logic independent of VSCode for testing and reusability
+ */
 export class ExportImportCore
 {
+	/**
+	 * 匯出匯入資料版本號
+	 * Export/import data version number
+	 *
+	 * 用於版本相容性檢查，確保匯入的資料格式可被當前系統解析
+	 * Used for version compatibility check to ensure imported data format is parseable by current system
+	 */
 	private readonly VERSION = '1.0.0';
+
+	/**
+	 * 儲存體提供者實例
+	 * Storage provider instance
+	 *
+	 * 用於存取全域狀態（如自訂 IDE 清單、選擇的設定等）
+	 * Used to access global state (e.g., custom IDE list, selected settings)
+	 */
 	private storageProvider: IStorageProvider;
+
+	/**
+	 * 檔案系統提供者實例
+	 * File system provider instance
+	 *
+	 * 用於讀寫匯出匯入的 JSON 檔案
+	 * Used to read/write export/import JSON files
+	 */
 	private fileSystemProvider: IFileSystemProvider;
+
+	/**
+	 * 對話框提供者實例
+	 * Dialog provider instance
+	 *
+	 * 用於顯示保存、開啟檔案對話框與快速選擇對話框
+	 * Used to show save/open file dialogs and quick pick dialogs
+	 */
 	private dialogProvider: IDialogProvider;
 
+		/**
+	 * 建構子：初始化核心服務並注入依賴提供者
+	 * Constructor: initializes core service and injects dependency providers
+	 *
+	 * @param storageProvider - 儲存體提供者，用於存取全域狀態 / Storage provider for accessing global state
+	 * @param fileSystemProvider - 檔案系統提供者，用於讀寫檔案 / File system provider for read/write operations
+	 * @param dialogProvider - 對話框提供者，用於顯示使用者介面 / Dialog provider for UI interactions
+	 */
 	constructor(
+		/** 儲存體提供者 / Storage provider */
 		storageProvider: IStorageProvider,
+		/** 檔案系統提供者 / File system provider */
 		fileSystemProvider: IFileSystemProvider,
+		/** 對話框提供者 / Dialog provider */
 		dialogProvider: IDialogProvider,
 	)
 	{
+		/** 初始化儲存體提供者 / Initialize storage provider */
 		this.storageProvider = storageProvider;
+		/** 初始化檔案系統提供者 / Initialize file system provider */
 		this.fileSystemProvider = fileSystemProvider;
+		/** 初始化對話框提供者 / Initialize dialog provider */
 		this.dialogProvider = dialogProvider;
 	}
 

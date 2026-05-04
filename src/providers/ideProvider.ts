@@ -24,21 +24,17 @@ import { AbstractClassWithContextGlobalState, AbstractClassWithGlobalState, Vsco
  */
 export class IDEProvider extends AbstractClassWithContextGlobalState
 {
-	// IDE 列表：存儲成功偵測到的可用 IDE
-	// IDE list: Stores successfully detected available IDEs
-	private ideList: IIDEInfo[] = [];
+	/** IDE 列表：存儲成功偵測到的可用 IDE / IDE list: Stores successfully detected available IDEs */
+	protected ideList: IIDEInfo[] = [];
 
-	// 不可用 IDE 列表：存儲偵測清單中但未找到的 IDE
-	// Unavailable IDEs: Stores IDEs in detection list but not found
-	private unavailableIDEs: IUnavailableIDE[] = [];
+	/** 不可用 IDE 列表：存儲偵測清單中但未找到的 IDE / Unavailable IDEs: Stores IDEs in detection list but not found */
+	protected unavailableIDEs: IUnavailableIDE[] = [];
 
-	// VS Code 擴展上下文
-	// VS Code extension context
-	private context: vscode.ExtensionContext;
+	/** VS Code 擴展上下文 / VS Code extension context */
+	protected context: vscode.ExtensionContext;
 
-	// 獨立 IDE 偵測器
-	// Standalone IDE detector
-	private ideDetector: IDEDetector;
+	/** 獨立 IDE 偵測器 / Standalone IDE detector */
+	protected ideDetector: IDEDetector;
 
 	/**
 	 * 建構子
@@ -62,18 +58,21 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 * 1. 清空現有的 IDE 列表
 	 * 2. 偵測所有已知的 IDE
 	 * 3. 載入使用者定義的自訂 IDE 路徑
+	 *
+	 * This method will:
+	 * 1. Clear existing IDE list
+	 * 2. Detect all known IDEs
+	 * 3. Load user-defined custom IDE paths
 	 */
 	async refreshIDEList(): Promise<void>
 	{
 		this.ideList = [];
 		this.unavailableIDEs = [];
 
-		// 偵測內建已知的 IDE
-		// Detect built-in known IDEs (VS Code, Insiders, etc.)
+		/** 偵測內建已知的 IDE / Detect built-in known IDEs (VS Code, Insiders, etc.) */
 		await this.detectKnownIDEs();
 
-		// 從擴展設定中載入自訂 IDE 路徑
-		// Load custom IDE paths from extension settings
+		/** 從擴充設定中載入自訂 IDE 路徑 / Load custom IDE paths from extension settings */
 		await this.loadCustomIDEs();
 	}
 
@@ -81,28 +80,20 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 * 偵測已知的 IDE
 	 * Detect known IDEs installed on the system
 	 *
-	 * 使用獨立的 IDE 偵測器進行偵測，然後將結果轉換為 VSCode 擴展格式
+	 * 使用獨立的 IDE 偵測器進行偵測，然後將結果轉換為 VSCode 擴充格式
 	 * Uses standalone IDE detector for detection, then converts results to VSCode extension format
 	 *
-	 * @param cachedIDEs - 快取的 IDE 列表，用於保持 UUID 一致性
+	 * @param cachedIDEs - 快取的 IDE 列表，用於保持 UUID 一致性 / Cached IDE list for UUID consistency
 	 */
-	private async detectKnownIDEs(cachedIDEs: Array<{
-		uuid: string;
-		name: string;
-		type: string;
-		nativePath: string
-	}> = []): Promise<void>
+	protected async detectKnownIDEs(): Promise<void>
 	{
-		// 使用獨立偵測器偵測所有已知 IDE
-		// Use standalone detector to detect all known IDEs
+		/** 使用獨立偵測器偵測所有已知 IDE / Use standalone detector to detect all known IDEs */
 		const detectionResults = this.ideDetector.detectIDEs([...knownIDEs]);
 
-		// 處理偵測結果
-		// Process detection results
+		/** 處理偵測結果 / Process detection results */
 		for (const result of detectionResults)
 		{
-			// 使用工具函數取得現有的 UUID
-			// Use utility function to get existing UUID
+			/** 使用工具函數取得現有的 UUID / Use utility function to get existing UUID */
 			const existingUuid = getExistingUuid({
 				extensionPath: this.context.extensionPath,
 				ideName: result.name,
@@ -111,14 +102,12 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 
 			if (result.detected && result.path && result.settingsPath)
 			{
-				// 成功找到 IDE，嘗試載入設定
-				// Successfully found IDE, attempt to load settings
+				/** 成功找到 IDE，嘗試載入設定 / Successfully found IDE, attempt to load settings */
 				this.processIDE(result.name, EnumIDEInfoType.known, result.settingsPath, result.path, existingUuid);
 			}
 			else
 			{
-				// 未能找到 IDE，標記為不可用
-				// Failed to find IDE, mark as unavailable
+				/** 未能找到 IDE，標記為不可用 / Failed to find IDE, mark as unavailable */
 				const defaultPath = this.getUserDataPath(knownIDEs.find(ide => ide.name === result.name)?.appFolderNames[0] || result.name, 'User');
 
 				this.addUnavailableIDE(
@@ -142,7 +131,7 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 *
 	 * @param cachedIDEs - 快取的 IDE 列表，用於保持 UUID 一致性
 	 */
-	private async loadCustomIDEs(cachedIDEs: Array<{
+	protected async loadCustomIDEs(cachedIDEs: Array<{
 		uuid: string;
 		name: string;
 		type: string;
@@ -216,7 +205,7 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 * - macOS: ~/.config/Code - Insiders/User
 	 * - Linux: ~/.config/Code - Insiders/User
 	 */
-	private getUserDataPath(appName: string, folderName: string): string
+	protected getUserDataPath(appName: string, folderName: string): string
 	{
 		// 取得平台相關的應用資料目錄
 		// Get platform-specific application data directory
@@ -287,7 +276,7 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 * @param settingProvider - 設定供應商
 	 * @param successLog - 成功時的日誌訊息
 	 */
-	private addAvailableIDE(
+	protected addAvailableIDE(
 		name: string,
 		type: EnumIDEInfoType,
 		nativePath: string,
@@ -319,7 +308,7 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 * @param expectedPath - 預期路徑
 	 * @param errorLog - 錯誤日誌訊息
 	 */
-	private addUnavailableIDE(
+	protected addUnavailableIDE(
 		name: string,
 		type: EnumIDEInfoType,
 		expectedPath: string,
@@ -350,7 +339,7 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 * @param uuid - 可選的 UUID，用於保持 IDE 識別碼一致性
 	 * @returns 是否成功載入
 	 */
-	private processIDE(
+	protected processIDE(
 		name: string,
 		type: EnumIDEInfoType,
 		settingsJsonPath: string,

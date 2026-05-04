@@ -65,20 +65,59 @@ export function showMessage(text: string, type: EnumShowMessageType): void
  */
 export function initMessageHandler(): void
 {
+	/**
+	 * 監聽來自 VS Code 擴展宿主的消息事件
+	 * Listen for message events from VS Code extension host
+	 *
+	 * 擴展宿主會透過 postMessage 向 Webview 發送指令與數據，此監聽器負責路由處理
+	 * Extension host sends commands and data to Webview via postMessage; this listener handles routing
+	 */
 	window.addEventListener('message', (event: IWebviewWindowMessageEvent) =>
 	{
 		const message = event.data as IHostMessage;
 
+		/**
+		 * 根據來自擴展宿主的指令類型進行路由處理
+		 * Route handling based on command type from extension host
+		 *
+		 * 使用 switch-case 結構確保每個指令都有明確的處理邏輯，
+		 * 便於未來擴充新的指令類型。
+		 * Uses switch-case structure to ensure clear handling logic for each command,
+		 * making it easy to extend with new command types in the future.
+		 */
 		switch (message.command)
 		{
+			/**
+			 * 同步完成：顯示成功訊息
+			 * Sync complete: Show success message
+			 *
+			 * 當擴展宿主完成設定同步後觸發，通知使用者操作成功
+			 * Triggered when extension host completes settings sync, notifies user of success
+			 */
 			case EnumHostCommand.SyncComplete:
 				showMessage('Settings synced successfully!', EnumShowMessageType.SUCCESS);
 				break;
 
+			/**
+			 * 刪除完成：顯示成功訊息
+			 * Delete complete: Show success message
+			 *
+			 * 當擴展宿主完成設定刪除後觸發，通知使用者操作成功
+			 * Triggered when extension host completes settings deletion, notifies user of success
+			 */
 			case EnumHostCommand.DeleteComplete:
 				showMessage('Settings deleted successfully!', EnumShowMessageType.SUCCESS);
 				break;
 
+			/**
+			 * 新增自定義 IDE 完成：根據結果顯示成功或失敗訊息
+			 * Add custom IDE complete: Show success or failure message based on result
+			 *
+			 * 根據 message.success 判斷操作是否成功，成功時顯示 IDE 名稱，
+			 * 失敗時顯示錯誤訊息以便使用者排查問題。
+			 * Check message.success to determine if operation succeeded; on success show IDE name,
+			 * on failure show error message to help user troubleshoot.
+			 */
 			case EnumHostCommand.AddCustomIDEComplete:
 				if (message.success)
 				{
@@ -90,10 +129,31 @@ export function initMessageHandler(): void
 				}
 				break;
 
+			/**
+			 * 資料重新整理完成：更新 IDE 列表並持久化
+			 * Data refreshed: Update IDE list and persist to state
+			 *
+			 * 當擴展宿主重新讀取 IDE 資料後，更新前端響應式狀態與持久化狀態，
+			 * 確保 UI 顯示與實際資料一致，並在頁面重新整理後仍能還原。
+			 * When extension host re-reads IDE data, update frontend reactive state and persistent state,
+			 * ensuring UI displays match actual data and can be restored after page refresh.
+			 */
 			case EnumHostCommand.DataRefreshed:
 				if (message.ideList)
 				{
+					/**
+					 * 更新響應式狀態，觸發 UI 重新渲染
+					 * Update reactive state to trigger UI re-render
+					 */
 					ideList.value = message.ideList;
+
+					/**
+					 * 持久化到 window 狀態物件，實現跨會話還原
+					 * Persist to window state object for cross-session restoration
+					 *
+					 * 透過 IWebviewWindow 擴充屬性 __INITIAL_STATE__ 保存資料
+					 * Save data via IWebviewWindow extended property __INITIAL_STATE__
+					 */
 					const state = (window as any as IWebviewWindow).__INITIAL_STATE__ ?? {};
 					state.ideList = message.ideList;
 				}

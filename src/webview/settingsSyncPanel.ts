@@ -20,13 +20,20 @@ import { AbstractClassWithContextGlobalState } from '../providers/vscode/globalS
 
 export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 {
+	/** Webview 面板實例 / Webview panel instance */
 	public readonly panel: vscode.WebviewPanel;
-	private disposables: vscode.Disposable[] = [];
-	private ideProvider: IDEProvider;
-	private context: vscode.ExtensionContext;
-	private onDisposeCallback?: () => void;
-	private languageConfig: ILanguageConfig;
-	private currentLanguage: EnumLanguageCode;
+	/** 可釋放的資源列表 / List of disposable resources */
+	protected disposables: vscode.Disposable[] = [];
+	/** IDE 檢測與管理提供者 / IDE detection and management provider */
+	protected ideProvider: IDEProvider;
+	/** VS Code 擴充上下文 / VS Code extension context */
+	protected context: vscode.ExtensionContext;
+	/** 面板釋放時的回調函數 / Callback function when panel is disposed */
+	protected onDisposeCallback?: () => void;
+	/** 語言配置物件 / Language configuration object */
+	protected languageConfig: ILanguageConfig;
+	/** 當前選取的語言代碼 / Currently selected language code */
+	protected currentLanguage: EnumLanguageCode;
 
 	constructor(context: vscode.ExtensionContext, ideProvider: IDEProvider, languageConfig?: ILanguageConfig)
 	{
@@ -85,23 +92,29 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 	}
 
 	/**
-	 * Update the webview HTML. By default this will also refresh the IDE
-	 * list from disk, but callers can opt-out if they only need to reload
-	 * settings for the already-detected IDEs.
+	 * 推送訊息至 Webview
+	 * Post message to Webview
 	 *
-	 * / 更新 webview 的 HTML。預設會連同重新讀取 IDE 列表，但呼叫方
-	 * 可以選擇只重新載入現有 IDE 的設定值。
-	 *
-	 * @param refreshIDEList whether to refresh the IDE list (default true)
+	 * @param message - 要推送的主機訊息 / Host message to post
 	 */
-	private postToWebview(message: IHostMessage): void
+	protected postToWebview(message: IHostMessage): void
 	{
 		console.log('[SettingsSyncPanel] Posting message to webview:', message.command, message);
 
 		this.panel.webview.postMessage(message);
 	}
 
-	private async updateWebview(refreshIDEList: boolean = true): Promise<void>
+	/**
+	 * 更新 Webview HTML 內容（重新產生並設定 HTML）
+	 * Update the webview HTML content (regenerate and set HTML)
+	 *
+	 * 預設會連同重新掃描 IDE 列表，但呼叫方可以選擇只重新載入現有 IDE 的設定值。
+	 * By default this will also refresh the IDE list from disk, but callers can opt-out
+	 * if they only need to reload settings for the already-detected IDEs.
+	 *
+	 * @param refreshIDEList - 是否重新整理 IDE 列表（預設 true）/ Whether to refresh the IDE list (default true)
+	 */
+	protected async updateWebview(refreshIDEList: boolean = true): Promise<void>
 	{
 		if (refreshIDEList)
 		{
@@ -120,7 +133,7 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 	}
 
 	/**
-	 * 推送最新的 IDE 設定資料至 Webview，不重繪整頁 HTML。
+	 * 推送最新的 IDE 設定資料至 Webview，不重繪整個 HTML。
 	 * Push the latest IDE settings data to the Webview without redrawing the entire HTML.
 	 *
 	 * 適用於只有設定值改變（sync / delete / refreshData）的情況：
@@ -138,8 +151,10 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 	 * 若需要重新掃描 IDE 安裝或 IDE 列表結構改變，仍需呼叫 updateWebview()。
 	 * If IDE installations need to be re-scanned or the IDE list structure changes,
 	 * updateWebview() must still be called.
+	 *
+	 * @returns Promise<void>
 	 */
-	private async pushDataRefresh(): Promise<void>
+	protected async pushDataRefresh(): Promise<void>
 	{
 		/**
 		 * 重新讀取各 IDE 的 settings.json（完整重新掃描，確保資料最新）
@@ -168,24 +183,34 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 		});
 	}
 
-	private getWebviewContent(): string
+	/**
+	 * 取得 Webview HTML 內容（SSR 渲染）
+	 * Get Webview HTML content (SSR rendering)
+	 *
+	 * 組裝所有必要的 props 並透過 renderJsxToString 產生 HTML 字串。
+	 * Assembles all required props and generates HTML string via renderJsxToString.
+	 *
+	 * @returns 完整的 HTML 字串 / Complete HTML string
+	 */
+	protected getWebviewContent(): string
 	{
 		const availableIDEs = this.ideProvider.getIDEListToWebviewContent();
 		const unavailableIDEs = this.ideProvider.getUnavailableIDEs();
 		/**
+		 * 根據 VS Code 應用程式名稱判斷當前運行的 IDE
 		 * Determine which IDE corresponds to the running host (by name)
 		 * e.g. "Visual Studio Code" or "Visual Studio Code - Insiders"
 		 */
 		const currentIDEName = vscode.env.appName;
 		const currentIDEUuid = availableIDEs.find(ide => ide.name === currentIDEName)?.uuid;
 
-		/** 👇 從 globalState 中獲取已保存的值 */
+		/** 👇 從 globalState 中獲取已保存的值 / Retrieve saved values from globalState */
 		const savedSearchHistory = this.globalState.get(EnumGlobalStateName.searchHistory, '');
 		const savedSelectedSettings = this.globalState.get(EnumGlobalStateName.selectedSettings, []);
 		const savedSelectedIDEs = this.globalState.get(EnumGlobalStateName.selectedIDEs, []);
 		const savedSourceIDEUuid = this.globalState.get(EnumGlobalStateName.sourceIDEUuid, '');
 
-		/** 解析 webview script URI */
+		/** 解析 webview script URI / Resolve webview script URI */
 		const scriptUri = this.panel.webview.asWebviewUri(
 			vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'webview', 'index.js'),
 		);
@@ -225,8 +250,13 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 	/**
 	 * 生成多語言設定描述對象
 	 * Generate multi-language setting descriptions object for WebView injection
+	 *
+	 * 遍歷所有設定鍵值，取得雙語描述（主要語言 + 次要語言）。
+	 * Iterates through all setting keys and gets bilingual descriptions (primary + secondary).
+	 *
+	 * @returns 設定鍵到雙語描述的映射 / Map of setting keys to bilingual descriptions
 	 */
-	private generateMultilingualDescriptions(): Record<string, { primary: string; secondary?: string }>
+	protected generateMultilingualDescriptions(): Record<string, { primary: string; secondary?: string }>
 	{
 		const descriptions: Record<string, { primary: string; secondary?: string }> = {};
 		const allKeys = getAllSettingKeys();
@@ -245,7 +275,14 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 		return descriptions;
 	}
 
-	private setupMessageHandler(): void
+	/**
+	 * 設定 Webview 訊息處理器（監聽來自 Webview 的訊息）
+	 * Setup Webview message handler (listen for messages from Webview)
+	 *
+	 * 根據訊息命令執行對應操作：新增/移除 IDE、同步/刪除設定、重新整理等。
+	 * Execute corresponding operations based on message command: add/remove IDE, sync/delete settings, refresh, etc.
+	 */
+	protected setupMessageHandler(): void
 	{
 		this.panel.webview.onDidReceiveMessage(
 			async (message: IWebviewMessage) =>
@@ -542,7 +579,19 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 		);
 	}
 
-	private async performSync(
+	/**
+	 * 執行設定同步：將來源 IDE 的指定設定同步至目標 IDE 列表
+	 * Perform settings sync: sync specified settings from source IDE to target IDE list
+	 *
+	 * 實際同步邏輯由 _performSyncCore 處理。
+	 * Actual sync logic is handled by _performSyncCore.
+	 *
+	 * @param sourceIDEIndex - 來源 IDE 的索引 / Source IDE index
+	 * @param targetIDEIndices - 目標 IDE 的索引列表 / Target IDE indices list
+	 * @param settingKeys - 要同步的設定鍵列表 / Setting keys to sync
+	 * @returns Promise<void>
+	 */
+	protected async performSync(
 		sourceIDEIndex: number,
 		targetIDEIndices: number[],
 		settingKeys: string[],
@@ -551,7 +600,18 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 		return _performSyncCore(this.ideProvider, sourceIDEIndex, targetIDEIndices, settingKeys);
 	}
 
-	private async performDelete(ideIndices: number[], settingKeys: string[]): Promise<void>
+	/**
+	 * 從指定的 IDE 列表中刪除指定的設定鍵
+	 * Delete specified setting keys from the specified IDE list
+	 *
+	 * 遍歷所有設定鍵與 IDE 索引，逐一刪除設定值。
+	 * Iterates through all setting keys and IDE indices, deleting setting values one by one.
+	 *
+	 * @param ideIndices - IDE 索引列表 / IDE indices list
+	 * @param settingKeys - 要刪除的設定鍵列表 / Setting keys to delete
+	 * @returns Promise<void>
+	 */
+	protected async performDelete(ideIndices: number[], settingKeys: string[]): Promise<void>
 	{
 		for (const settingKey of settingKeys)
 		{
@@ -562,41 +622,81 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 		}
 	}
 
+	/**
+	 * 重新整理 Webview 內容（公開方法，供外部呼叫）
+	 * Refresh Webview content (public method, called externally)
+	 *
+	 * 會重新掃描 IDE 列表並更新整個 HTML 內容。
+	 * Will re-scan IDE list and update the entire HTML content.
+	 */
 	refreshData(): void
 	{
 		this.updateWebview();
 	}
 
+	/**
+	 * 顯示並聚焦 Webview 面板
+	 * Reveal and focus the Webview panel
+	 */
 	reveal(): void
 	{
 		this.panel.reveal();
 	}
 
+	/**
+	 * 釋放 Webview 面板與相關資源
+	 * Dispose the Webview panel and related resources
+	 *
+	 * 釋放面板本身以及所有註冊的可釋放資源。
+	 * Disposes the panel itself and all registered disposable resources.
+	 */
 	dispose(): void
 	{
 		this.panel.dispose();
 		this.disposables.forEach((d) => d.dispose());
 	}
 
+	/**
+	 * 註冊面板釋放時的回調函數
+	 * Register callback function when panel is disposed
+	 *
+	 * @param callback - 釋放時執行的回調 / Callback to execute on dispose
+	 */
 	onDispose(callback: () => void): void
 	{
 		this.onDisposeCallback = callback;
 	}
 
+	/**
+	 * 同步已選取的設定（預留方法，實際由 Webview 訊息處理器處理）
+	 * Sync selected settings (placeholder method, actually handled by Webview message handler)
+	 *
+	 * 當使用者點擊同步按鈕時，擴充會呼叫此方法（但實際同步由訊息處理器完成）。
+	 * When user clicks sync button, extension calls this (but actual sync is done by message handler).
+	 */
 	async syncSelectedSettings(): Promise<void>
 	{
 		/**
+		 * 當使用者點擊同步時，擴充會呼叫此方法
 		 * This would be called by the extension when user clicks sync
+		 *
+		 * 實際的同步邏輯由 WebView 訊息處理器處理。
 		 * The actual sync is handled by the WebView message handler
 		 */
 	}
 
 	/**
+	 * 開啟指定 IDE 的 settings.json 檔案
 	 * Open settings.json file for the specified IDE
-	 * @param idePath - The IDE path
-	 * @param ideName - The IDE name
+	 *
+	 * 嘗試多個可能的 settings.json 路徑，找到後在 VS Code 編輯器中開啟。
+	 * Try multiple possible settings.json paths, open in VS Code editor when found.
+	 *
+	 * @param idePath - IDE 的路徑 / The IDE path
+	 * @param ideName - IDE 的名稱 / The IDE name
+	 * @returns Promise<void>
 	 */
-	private async openSettingsJsonFile(idePath: string, ideName: string): Promise<void>
+	protected async openSettingsJsonFile(idePath: string, ideName: string): Promise<void>
 	{
 		try
 		{

@@ -238,8 +238,13 @@ export const enum EnumHostCommand
  * 請求 Extension host 彈出 VS Code 輸入框，讓使用者輸入自訂 IDE 路徑與名稱
  * Request Extension host to show VS Code input boxes for custom IDE path and name
  */
+/**
+ * 請求 Extension host 彈出 VS Code 輸入框，請使用者輸入自訂 IDE 路徑與名稱
+ * Request Extension host to show VS Code input boxes for custom IDE path and name
+ */
 export interface IMsg_RequestAddCustomIDE
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.RequestAddCustomIDE;
 }
 
@@ -249,6 +254,7 @@ export interface IMsg_RequestAddCustomIDE
  */
 export interface IMsg_AddCustomIDE
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.AddCustomIDE;
 	/** 自訂 IDE 的顯示名稱 / Display name for the custom IDE */
 	name: string;
@@ -262,6 +268,7 @@ export interface IMsg_AddCustomIDE
  */
 export interface IMsg_RemoveCustomIDE
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.RemoveCustomIDE;
 	/** IDE 在列表中的索引 / IDE index in the list */
 	index: number;
@@ -279,6 +286,7 @@ export interface IMsg_RemoveCustomIDE
  */
 export interface IMsg_OpenIDEFolder
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.OpenIDEFolder;
 	/** IDE 資料夾的絕對路徑 / Absolute path to the IDE folder */
 	path: string;
@@ -290,6 +298,7 @@ export interface IMsg_OpenIDEFolder
  */
 export interface IMsg_OpenSettingsJson
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.OpenSettingsJson;
 	/** IDE 設定資料夾的絕對路徑 / Absolute path to the IDE settings folder */
 	idePath: string;
@@ -303,6 +312,7 @@ export interface IMsg_OpenSettingsJson
  */
 export interface IMsg_SyncSettings
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.SyncSettings;
 	/**
 	 * 來源 IDE 的索引字串（從 DOM radio 的 data-index 讀取，Extension host 端需 parseInt）
@@ -321,6 +331,7 @@ export interface IMsg_SyncSettings
  */
 export interface IMsg_DeleteSettings
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.DeleteSettings;
 	/** 要刪除設定的 IDE 索引列表 / List of IDE indices to delete settings from */
 	ideIndices: number[];
@@ -334,6 +345,7 @@ export interface IMsg_DeleteSettings
  */
 export interface IMsg_RefreshIDEs
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.RefreshIDEs;
 }
 
@@ -343,6 +355,7 @@ export interface IMsg_RefreshIDEs
  */
 export interface IMsg_RefreshData
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.RefreshData;
 }
 
@@ -352,6 +365,7 @@ export interface IMsg_RefreshData
  */
 export interface IMsg_ChangePrimaryLanguage
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.ChangePrimaryLanguage;
 	/** 新的語言代碼（如 'en'、'zh-tw'）/ New language code (e.g. 'en', 'zh-tw') */
 	language: string;
@@ -363,6 +377,7 @@ export interface IMsg_ChangePrimaryLanguage
  */
 export interface IMsg_OpenLanguageConfig
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.OpenLanguageConfig;
 }
 
@@ -372,6 +387,7 @@ export interface IMsg_OpenLanguageConfig
  */
 export interface IMsg_SaveSearchHistory
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.SaveSearchHistory;
 	/** 要儲存的搜尋字串 / Search string to save */
 	searchText: string;
@@ -383,6 +399,7 @@ export interface IMsg_SaveSearchHistory
  */
 export interface IMsg_SaveSelectedSettings
 {
+	/** 訊息指令 / Message command */
 	command: EnumWebviewCommand.SaveSelectedSettings;
 	/** 已勾選的設定 key 列表 / List of checked setting keys */
 	selectedSettings: string[];

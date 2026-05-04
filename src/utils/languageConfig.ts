@@ -13,6 +13,7 @@
  * @module
  */
 import * as vscode from 'vscode';
+/** 导入语言配置接口（ILanguageConfig）、语言代码枚举（EnumLanguageCode）和全局状态名称枚举（EnumGlobalStateName） / Import language configuration interface, language code enum, and global state name enum */
 import { ILanguageConfig, EnumLanguageCode, EnumGlobalStateName } from '../types';
 import { isValidLanguageCode } from './settingsDescriptions';
 import { newVscodeExtensionContextGlobalStateByContext } from '../providers/vscode/globalState';

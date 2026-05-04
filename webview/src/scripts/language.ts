@@ -31,6 +31,14 @@ export function changePrimaryLanguage(value?: string): void
 	vscode.postMessage({ command: EnumWebviewCommand.ChangePrimaryLanguage, language: lang });
 }
 
+/**
+ * 開啟語言設定面板
+ * Open language configuration panel
+ *
+ * 通知擴充開啟 IDE 的語言設定頁面，讓使用者可以安裝或切換顯示語言。
+ * Notifies extension to open IDE's language configuration page,
+ * allowing user to install or switch display language.
+ */
 export function openLanguageConfig(): void
 {
 	vscode.postMessage({ command: EnumWebviewCommand.OpenLanguageConfig });

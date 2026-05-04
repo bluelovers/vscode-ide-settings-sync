@@ -6,9 +6,13 @@
 
 import { EnumLanguageCode } from '../types';
 
-// 英文設定描述
+/**
+ * 英文設定描述
+ * English Setting Descriptions
+ */
 const enDescriptions: Record<string, string> = {
-	// Editor Settings
+	/** ==================== Editor Settings ==================== */
+
 	'editor.fontFamily': 'The font family to use in the editor',
 	'editor.fontSize': 'The font size in pixels',
 	'editor.fontWeight': 'The font weight to use in the editor (normal, bold, or number 100-900)',
@@ -45,7 +49,8 @@ const enDescriptions: Record<string, string> = {
 	'editor.selectionClipboard': 'Enable selection clipboard',
 	'editor.selectionHighlight': 'Enable highlight of matches from Find widget',
 
-	// Files Settings
+	/** ==================== Files Settings ==================== */
+
 	'files.autoSave': 'Enable auto save (off, afterDelay, onFocusChange, onWindowChange)',
 	'files.autoSaveDelay': 'Delay in milliseconds after which the auto save is triggered',
 	'files.exclude': 'Configure glob patterns for excluding files/folders from workspace',
@@ -57,12 +62,14 @@ const enDescriptions: Record<string, string> = {
 	'files.maxMemoryForLargeFilesMB': 'Maximum memory for large files (MB)',
 	'files.hotExit': 'Restore windows/editors without reading their contents',
 
-	// Search Settings
+	/** ==================== Search Settings ==================== */
+
 	'search.exclude': 'Configure glob patterns for excluding files/folders from search',
 	'search.location': 'Search panel location (sideBar or panel)',
 	'search.followSymlinks': 'Follow symbolic links when searching',
 
-	// Extensions Settings
+	/** ==================== Extensions Settings ==================== */
+	
 	'extensions.showRecommendationsOnInstall': 'Show recommended extensions when installing',
 	'extensions.autoCheckUpdates': 'Check for extension updates automatically',
 	'extensions.autoUpdate': 'Update extensions automatically',
@@ -149,7 +156,7 @@ const enDescriptions: Record<string, string> = {
 	'rest-client.environmentVariables': 'Environment variables',
 };
 
-// 繁體中文設定描述
+/** 繁體中文設定描述 / Traditional Chinese setting descriptions */
 const zhTwDescriptions: Record<string, string> = {
 	'editor.fontFamily': '編輯器中要使用的字體系列',
 	'editor.fontSize': '以像素為單位的字體大小',
@@ -277,7 +284,10 @@ const zhTwDescriptions: Record<string, string> = {
 	'rest-client.environmentVariables': '環境變數',
 };
 
-// 語言映射
+/**
+ * 語言映射 — 將各語言代碼對應到其描述表
+ * Language mapping — maps language codes to their description tables
+ */
 const languageDescriptions: Record<EnumLanguageCode, Record<string, string>> = {
 	[EnumLanguageCode.en]: enDescriptions,
 	[EnumLanguageCode.zhTw]: zhTwDescriptions,

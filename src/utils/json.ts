@@ -37,7 +37,7 @@ const MAX_LINES = 30;
  */
 export function detectFormat(text: string): IJsonHandlerFormattingOptions
 {
-	// 預設值
+	/** 預設值 / Default values */
 	const options: IJsonHandlerFormattingOptions = {
 		insertSpaces: true,
 		tabSize: 2,
@@ -46,7 +46,7 @@ export function detectFormat(text: string): IJsonHandlerFormattingOptions
 
 	text = text.slice(0, MAX_CHARS);
 
-	// true 表示忽略註解
+	/** true 表示忽略註解 / true means ignore comments */
 	const scanner = createScanner(text, false);
 	let kind = scanner.scan();
 	let lineCount = 0;
@@ -72,7 +72,7 @@ export function detectFormat(text: string): IJsonHandlerFormattingOptions
 				else if (indent.length === 2 || indent.length === 4)
 				{
 					options.insertSpaces = true;
-					// tabSize only work for space indent
+					/** tabSize only work for space indent / tabSize 僅對空格縮排有效 */
 					options.tabSize = indent.length;
 				}
 				break;
@@ -133,7 +133,7 @@ export function _handleJsonHandlerParseErrorsToLogs(parseErrors: IParseError[])
 {
 	const logs: string[] = [];
 
-	// 如果有解析錯誤，發出警告
+	/** 如果有解析錯誤，發出警告 / If there are parse errors, issue a warning */
 	if (parseErrors.length > 0)
 	{
 		logs.push(
@@ -531,6 +531,13 @@ export class JsonHandler
 		return this.getValueFromParsed(path) !== undefined;
 	}
 
+	/**
+	 * 覆蓋暫存區 — 清除現有暫存並替換為新的修改
+	 * Overwrite staging — clear existing staging and replace with new modifications
+	 *
+	 * @param staging - 新的暫存區來源 (JsonHandler 或 Map)
+	 * @returns 當前 JsonHandler 實例（支援鏈式呼叫）
+	 */
 	overwriteStaged(staging: IStagingInput)
 	{
 		this.staging = _getStaging(staging);
@@ -538,6 +545,15 @@ export class JsonHandler
 		return this;
 	}
 
+	/**
+	 * 套用暫存區 — 將外部修改合併至現有暫存區
+	 * Apply staging — merge external modifications into existing staging
+	 *
+	 * 與 overwriteStaged 不同，此方法保留現有暫存區的修改
+	 * Unlike overwriteStaged, this method preserves existing staged changes
+	 * @param staging - 外部暫存區來源 (JsonHandler 或 Map)
+	 * @returns 當前 JsonHandler 實例（支援鏈式呼叫）
+	 */
 	applyStaged(staging: IStagingInput)
 	{
 		_getStaging(staging).forEach((v, k) =>
@@ -559,6 +575,12 @@ export class JsonHandler
 		return new Map(this.staging);
 	}
 
+	/**
+	 * 檢查暫存區是否有變更
+	 * Check if staging has any changes
+	 *
+	 * @returns 暫存區的大小（0 表示無變更）
+	 */
 	isStagedChanged()
 	{
 		return this.staging.size
