@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.2](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.1.1...vscode-ide-settings-sync@0.1.2) (2026-05-04)
+
+**Note:** Version bump only for package vscode-ide-settings-sync
+
+
+
+
+
 ## [0.1.1](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.0.6...vscode-ide-settings-sync@0.1.1) (2026-05-04)
 
 
