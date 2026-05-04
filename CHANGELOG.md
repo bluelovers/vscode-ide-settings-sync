@@ -3,6 +3,93 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.0.6...vscode-ide-settings-sync@0.1.1) (2026-05-04)
+
+
+### BREAKING CHANGES
+
+* **vscode:** 抽象化全域狀態管理
+* **webview:** 移除了 createSettingHTML 和 displayAllSettings 函數。
+這些函數之前被導出供其他模組使用，若外部代碼依賴這些函數，需要更新為新的渲染方式。
+* **webview:** 迁移至枚举 CSS 选择器
+* **types:** 将语言代码从 string union 迁移至 EnumLanguageCode 枚举，
+TabName 迁移至 EnumTabName 枚举。所有相关类型和函数签章已更新，
+需同步更新调用端代码。
+* **webview:** migrate HTML string events to Preact JSX handlers and signals
+
+
+
+### 🐛　Bug Fixes
+
+* **webview:** 迁移至枚举 CSS 选择器 ([f1b606f](https://github.com/bluelovers/vscode-ide-settings-sync/commit/f1b606f1d06e73d4c8d5775e8ec674908a53cb8b))
+* **webview:** fix comment formatting ([18dd21a](https://github.com/bluelovers/vscode-ide-settings-sync/commit/18dd21a4bc6913c69bb908efd2df39974088824c))
+
+
+### ✨　Features
+
+* **ide:** 添加 kiro IDE 到已知 IDE 列表 ([a8635e1](https://github.com/bluelovers/vscode-ide-settings-sync/commit/a8635e16641e4ff4c398a4d2be511de691fb8fca))
+* **webview:** Preact hydration for settings lists and source IDE indicator ([1112f5b](https://github.com/bluelovers/vscode-ide-settings-sync/commit/1112f5ba631f485ad29681b30b16aa1a3033b936))
+* **webview:** use @preact/signals to reactively update source IDE indicator and settings list ([ee8d147](https://github.com/bluelovers/vscode-ide-settings-sync/commit/ee8d1474ffd68345ed2f0a62285ae97dbcd164bb))
+
+
+### 📦　Code Refactoring
+
+* **ideDetector:** 使用可配置的 path 函式庫提升跨平台相容性 ([e38f428](https://github.com/bluelovers/vscode-ide-settings-sync/commit/e38f428256a53f834ddb4791fe8bc6f162556982))
+* **settings:** 提取設定同步邏輯到共用工具模組提高可測試性 ([b5876c0](https://github.com/bluelovers/vscode-ide-settings-sync/commit/b5876c0b5b39a35673650c8c25131009aea8fb29))
+* **types:** 迁移至枚举类型并建立单一事实来源 ([a78fc7f](https://github.com/bluelovers/vscode-ide-settings-sync/commit/a78fc7f4a23aa2ef9fbe22346882f7128211728f))
+* **types:** 以 EnumShowMessageType 列舉值取代字串字面值 ([ec1f6ef](https://github.com/bluelovers/vscode-ide-settings-sync/commit/ec1f6ef1ed5fe2075b721947f7c3c3e186d60359))
+* **vscode:** 弃用 VSCode 导出导入服务适配器 ([9a871a5](https://github.com/bluelovers/vscode-ide-settings-sync/commit/9a871a557a2da9120c47f617a0383a7f2a0a23a2))
+* **vscode:** 抽象化全域狀態管理 ([5add493](https://github.com/bluelovers/vscode-ide-settings-sync/commit/5add493b745e2aee67cc3b41a4e024ca2660522f))
+* **vscode:** 迁移至枚举命令标识符 ([12dea93](https://github.com/bluelovers/vscode-ide-settings-sync/commit/12dea9306a90d3e7a838dde7345847fbe5011b58))
+* **webview:** 合併 window-types 至 window-this 並更新所有導入路徑 ([9b187df](https://github.com/bluelovers/vscode-ide-settings-sync/commit/9b187df0f5dbeada1af136b55dac76d44ab9cae7))
+* **webview:** 移除設定 HTML 生成與顯示函數 ([90d8456](https://github.com/bluelovers/vscode-ide-settings-sync/commit/90d8456f50655a446046bd2b5ecf70c3c172fdbb))
+* **webview:** 集中管理枚举定义和元素选择器 ([e52b789](https://github.com/bluelovers/vscode-ide-settings-sync/commit/e52b789f2cd62c52023edb3d5db85395b561ab3b))
+* **webview:** migrate hardcoded selectors to enums ([135f452](https://github.com/bluelovers/vscode-ide-settings-sync/commit/135f45238fa7b8ccd922e4011cd4fbdd831347d9))
+* **webview:** migrate HTML string events to Preact JSX handlers and signals ([3984999](https://github.com/bluelovers/vscode-ide-settings-sync/commit/39849999fc645079e50ca1bbb3a464874ba71826))
+* **webview:** rename components for improved clarity and consistency ([cc9ec13](https://github.com/bluelovers/vscode-ide-settings-sync/commit/cc9ec1376d7d0f4d90edcc004922dc5be0b2434f))
+* **webview:** 重構全域類型與 API 至獨立模組 ([9852c8e](https://github.com/bluelovers/vscode-ide-settings-sync/commit/9852c8efaecda79434b443e77a67a5befc39c851))
+* **webview:** 重構設定列表操作為添加模式並提升類型安全 ([9303eab](https://github.com/bluelovers/vscode-ide-settings-sync/commit/9303eaba3c5850b8a978860a05905f4af5d3b9d0))
+* **webview:** 重命名 ideList 為 availableIDEs 並將 sourceIDEUuid 設為可選 ([c55902b](https://github.com/bluelovers/vscode-ide-settings-sync/commit/c55902bc4e0eb5066dbd2b3970ba8cc691c2baac))
+* **webview:** improve type safety with IWebviewState and IWebviewWindow interfaces ([f6762ee](https://github.com/bluelovers/vscode-ide-settings-sync/commit/f6762ee7f78e32ae69f240191f72836615edca53))
+* **webview:** 重命名命令列舉以遵循命名規範 ([3b2cbc6](https://github.com/bluelovers/vscode-ide-settings-sync/commit/3b2cbc6890c05f92e5227711ca62790084661c76))
+* **webview:** unified message protocol with WebviewCommand/HostCommand enums ([937d290](https://github.com/bluelovers/vscode-ide-settings-sync/commit/937d2903f0e53f4193e4a9aa1b5f04ca0d5a0669))
+* **webview:** remove legacy SSR components after migration to webview/src ([0fe0538](https://github.com/bluelovers/vscode-ide-settings-sync/commit/0fe05382ee1df80ca2f14a9b2d52dfc2a3e9dcd7))
+* **webview:** replace updateWebview with pushDataRefresh for sync/delete/refresh ([05dec34](https://github.com/bluelovers/vscode-ide-settings-sync/commit/05dec3414bb7896e6d2d601c085ecd44b18a5d03))
+* **webview:** migrate to Preact JSX with dedicated webview/ bundle ([35680b0](https://github.com/bluelovers/vscode-ide-settings-sync/commit/35680b02c6c63be133a6a8eec2a533559e52f539))
+
+
+### 📚　Documentation
+
+* 更新 Marketplace 安裝說明和關鍵字 ([7808e7a](https://github.com/bluelovers/vscode-ide-settings-sync/commit/7808e7acff0d451d5320cf8025fb0ab13ea1f063))
+* 新增 VSCode Marketplace 安裝連結 ([f1795d8](https://github.com/bluelovers/vscode-ide-settings-sync/commit/f1795d8f1871aab07beb40af8d258f0940944a0f))
+* **ide:** add documentation for new IDE detection workflow ([cacbff5](https://github.com/bluelovers/vscode-ide-settings-sync/commit/cacbff556cbae59d3a2a70d3c767b02034685780))
+* **standards:** 實施嚴格的程式碼文檔與可維護性規範 ([496cb6c](https://github.com/bluelovers/vscode-ide-settings-sync/commit/496cb6c9ced57c01bc7c4e9691f8e9e76ef0e015))
+* **webview:** add bilingual comments to WebviewCommand/HostCommand enums, interfaces, and switch-cases ([075cb32](https://github.com/bluelovers/vscode-ide-settings-sync/commit/075cb325be0f5f819665834933404ae5b4b45307))
+
+
+### 🚨　Tests
+
+* 重構測試框架使用 fixture 資料並簡化 mock 依賴 ([1a2abbf](https://github.com/bluelovers/vscode-ide-settings-sync/commit/1a2abbf3a54afea7cdbbf986668c6733f3071ebb))
+* **infrastructure:** 添加測試模擬設施工具並重構測試框架 ([2b8b0ba](https://github.com/bluelovers/vscode-ide-settings-sync/commit/2b8b0ba1abcf2bd743bf2712016e469928f674c8))
+
+
+### 🛠　Build System
+
+* **config:** 更新 TypeScript 模組目標為 ES2022 ([0619c92](https://github.com/bluelovers/vscode-ide-settings-sync/commit/0619c9249c1c843b6f5871301e959f6356445463))
+
+
+### 📌　Dependencies
+
+* update deps ([34be698](https://github.com/bluelovers/vscode-ide-settings-sync/commit/34be6988b68b054a309ecb32e30d3a47b720fcf9))
+
+
+### 🔖　Miscellaneous
+
+* . ([017b5c7](https://github.com/bluelovers/vscode-ide-settings-sync/commit/017b5c7a579417e1423f6af7c73812a66700c5c2))
+* . ([634893b](https://github.com/bluelovers/vscode-ide-settings-sync/commit/634893b37ecb22a5ff867c37a02d4a4d933eadd6))
+
+
+
 ## [0.0.6](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.0.5...vscode-ide-settings-sync@0.0.6) (2026-04-12)
 
 
