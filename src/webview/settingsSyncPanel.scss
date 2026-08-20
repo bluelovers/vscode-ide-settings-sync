@@ -921,7 +921,21 @@ h2
 
 	.source-name
 	{
-		color: var(--vscode-focusBorder);
+		display: inline-flex;
+		align-items: center;
+		gap: $spacing-xs;
+		padding: 2px $spacing-sm;
+		border-radius: $radius-sm;
+
+		/**
+		 * 使用 badge 前景/背景色對：不同 IDE 主題下兩者保證互為高對比，
+		 * 避免來源 IDE 名稱因文字顏色與背景相同而隱形。
+		 * Use the badge foreground/background pair: across IDE themes these two are
+		 * guaranteed to contrast, preventing the source IDE name from becoming
+		 * invisible when its text color matches the background.
+		 */
+		background-color: var(--vscode-badge-background);
+		color: var(--vscode-badge-foreground);
 		font-weight: 600;
 	}
 }
