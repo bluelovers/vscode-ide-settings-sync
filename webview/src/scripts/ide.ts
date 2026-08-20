@@ -92,6 +92,20 @@ export function setBackupIDEPath(backupPath: string): void
 	vscode.postMessage({ command: EnumWebviewCommand.SetBackupIDEPath, backupPath });
 }
 
+/**
+ * 開啟資料夾選擇對話框以選取內建備份 IDE 的路徑
+ * Open a folder selection dialog to pick the built-in backup IDE path
+ *
+ * 向 Extension host 發送瀏覽請求；Extension host 顯示系統資料夾選擇器，
+ * 並將所選路徑透過 backupPathSelected 回傳填入輸入框。
+ * Sends a browse request to the Extension host; the host shows the system folder picker
+ * and returns the selected path via backupPathSelected to fill into the input.
+ */
+export function browseBackupPath(): void
+{
+	vscode.postMessage({ command: EnumWebviewCommand.BrowseBackupPath });
+}
+
 export function handleSourceIDEChange(event: Event): void
 {
 	const target = event.target as HTMLInputElement;

@@ -1,4 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname } from "path";
 import { IStagingInput, JsonHandler } from "../utils/json";
 import { JSONPath as IJSONPath } from "jsonc-parser";
 
@@ -18,15 +19,48 @@ export class IdeSettingProvider
 	protected jsonHandler: JsonHandler;
 	/** 標記設定是否已載入完成 / Flag indicating whether settings have been loaded */
 	protected _loaded: boolean = false;
+	/**
+	 * 載入時是否自動建立過檔案（代表原本不存在，沒有資料可複製）
+	 * Whether the file was auto-created during load (means it didn't exist before, nothing to copy)
+	 */
+	protected wasAutoCreated: boolean = false;
+
+	/**
+	 * 取得載入時是否自動建立了檔案
+	 * Get whether the file was auto-created during load
+	 *
+	 * 為 true 時代表 settings.json 原本不存在，因此該 IDE 不應被選為同步來源。
+	 * When true, settings.json did not exist before, so the IDE should not be selectable as a sync source.
+	 */
+	public get isAutoCreated(): boolean
+	{
+		return this.wasAutoCreated;
+	}
 
 	/**
 	 * 建構子
-	 * @param settingsJsonPath - settings.json 的完整路徑
-	 * @param settingsPath - （選填）settings 資料夾的路徑，用於顯示/記錄
+	 * Constructor
+	 *
+	 * @param settingsJsonPath - settings.json 的完整路徑 / Full path to settings.json
+	 * @param settingsPath - （選填）settings 資料夾的路徑，用於顯示/記錄 / (Optional) path to the settings folder, for display/logging
+	 * @param autoCreate - （選填）載入時若 settings.json 不存在則自動建立（含父資料夾）/ (Optional) if true, auto-creates settings.json (and parent folders) on load when missing
 	 */
-	constructor(protected settingsJsonPath: string, protected settingsPath?: string)
+	constructor(protected settingsJsonPath: string, protected settingsPath?: string, protected autoCreate: boolean = false)
 	{
 
+	}
+
+	/**
+	 * 自動建立 settings.json 檔案（含其父資料夾）
+	 * Auto-create the settings.json file (including its parent folders)
+	 *
+	 * 以空的 JSON 物件 `{}` 作為初始內容，確保載入與同步流程可正常運作。
+	 * Uses an empty JSON object `{}` as the initial content so load/sync flows work correctly.
+	 */
+	protected createSettingsFile(): void
+	{
+		mkdirSync(dirname(this.settingsJsonPath), { recursive: true });
+		writeFileSync(this.settingsJsonPath, '{}', 'utf-8');
 	}
 
 	/**
@@ -102,10 +136,25 @@ export class IdeSettingProvider
 			 * Check if settings file exists; cannot proceed without it
 			 * 設定檔案是必要的前置條件，不存在時應該明確拋出錯誤
 			 * Settings file is a required prerequisite; throw clear error if missing
+			 *
+			 * 若啟用 autoCreate，則會自動建立檔案（含父資料夾）後繼續載入。
+			 * If autoCreate is enabled, the file (and parent folders) is auto-created first.
 			 */
 			if (!this.checkExists())
 			{
-				throw new Error(`✗ 沒有找到 ${this.settingsJsonPath} 的設定檔案`);
+				if (this.autoCreate)
+				{
+					/**
+					 * 自動建立檔案並標記：代表原本不存在，沒有資料可複製
+					 * Auto-create the file and flag it: means it didn't exist before, nothing to copy
+					 */
+					this.wasAutoCreated = true;
+					this.createSettingsFile();
+				}
+				else
+				{
+					throw new Error(`✗ 沒有找到 ${this.settingsJsonPath} 的設定檔案`);
+				}
 			}
 
 			/**

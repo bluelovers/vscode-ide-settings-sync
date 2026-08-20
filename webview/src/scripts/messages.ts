@@ -58,12 +58,14 @@ export function showMessage(text: string, type: EnumShowMessageType): void
  * - `deleteComplete`：刪除完成，顯示成功訊息並請求重新載入資料
  * - `addCustomIDEComplete`：新增自訂 IDE 完成，根據結果顯示成功或失敗訊息
  * - `backupIDEPathUpdated`：備份 IDE 路徑更新完成，根據結果顯示成功或失敗訊息
+ * - `backupPathSelected`：備份 IDE 路徑選擇完成，將所選路徑填入輸入框
  *
  * Handled commands:
  * - `syncComplete`: Sync complete, show success message and request data reload
  * - `deleteComplete`: Delete complete, show success message and request data reload
  * - `addCustomIDEComplete`: Add custom IDE complete, show success or failure message based on result
  * - `backupIDEPathUpdated`: Backup IDE path update complete, show success or failure message based on result
+ * - `backupPathSelected`: Backup IDE path selected, fill the selected path into the input
  */
 export function initMessageHandler(): void
 {
@@ -143,6 +145,18 @@ export function initMessageHandler(): void
 				else
 				{
 					showMessage(`✗ Failed to update backup IDE path: ${message.error}`, EnumShowMessageType.ERROR);
+				}
+				break;
+
+			/**
+			 * 備份 IDE 路徑選擇完成：將所選路徑填入路徑輸入框
+			 * Backup IDE path selected: fill the selected path into the path input
+			 */
+			case EnumHostCommand.BackupPathSelected:
+				const backupPathInput = querySelectorById<HTMLInputElement>(EnumWebviewElemId.backupIDEPath);
+				if (backupPathInput)
+				{
+					backupPathInput.value = message.path;
 				}
 				break;
 

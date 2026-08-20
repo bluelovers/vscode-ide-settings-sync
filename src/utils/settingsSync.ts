@@ -130,6 +130,21 @@ export async function _performSyncCore(
 	settingKeys: string[],
 )
 {
+	/**
+	 * 驗證來源 IDE 是否可作為同步來源
+	 * Validate that the source IDE can be used as a sync source
+	 *
+	 * 當來源 IDE 的 settings.json 不存在（自動建立、沒有資料可複製）時，
+	 * 不允許以它作為同步來源，避免把空資料同步到其他 IDE。
+	 * When the source IDE's settings.json does not exist (auto-created, nothing to copy),
+	 * it cannot be used as a sync source, preventing empty data from being synced to other IDEs.
+	 */
+	const sourceIde = ideProvider.getIdeByIndex(sourceIDEIndex);
+	if (sourceIde && sourceIde.canBeSource === false)
+	{
+		throw new Error(`[Sync] Source IDE "${sourceIde.name}" has no data to copy (settings.json does not exist yet)`);
+	}
+
 	const {
 		sourceIDE,
 		targetIDEs,

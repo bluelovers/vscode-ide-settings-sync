@@ -1518,6 +1518,21 @@ h2
 	}
 
 	/**
+	 * 瀏覽按鈕：使用次要按鈕配色，與 Apply 主操作區分
+	 * Browse button: secondary button colors to differentiate from the Apply primary action
+	 */
+	.btn.btn-small.backup-ide-browse
+	{
+		background-color: var(--vscode-button-secondaryBackground);
+		color: var(--vscode-button-secondaryForeground);
+
+		&:hover:not(:disabled)
+		{
+			background-color: var(--vscode-button-secondaryHoverBackground);
+		}
+	}
+
+	/**
 	 * 路徑輸入框：可視寬度彈性縮放
 	 * Path input: flexible width
 	 */

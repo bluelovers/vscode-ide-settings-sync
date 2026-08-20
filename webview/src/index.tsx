@@ -21,7 +21,7 @@ import { initExportImportMessageHandler } from './scripts/export-import';
 import { clearSearch, refreshSettings, clearAllSelectedSettings, removeFromSelectedSettings } from './scripts/settings';
 import { syncSettings, deleteSettings } from './scripts/sync';
 import { changePrimaryLanguage, openLanguageConfig } from './scripts/language';
-import { addCustomIDE, refreshIDEs, removeCustomIDE, openIDEFolder, openSettingsJson, setBackupIDEPath } from './scripts/ide';
+import { addCustomIDE, refreshIDEs, removeCustomIDE, openIDEFolder, openSettingsJson, setBackupIDEPath, browseBackupPath } from './scripts/ide';
 import { handleExportCustomIDEs, handleExportSelectedSettings, handleExportAll, handleImport, handleBrowseExportPath, handleBrowseImportPath } from './scripts/export-import';
 
 /** ─── Import Preact / Import Preact ─── */
@@ -65,6 +65,7 @@ Object.assign(window, {
 	addCustomIDE,
 	refreshIDEs,
 	setBackupIDEPath,
+	browseBackupPath,
 	handleExportCustomIDEs,
 	handleExportSelectedSettings,
 	handleExportAll,

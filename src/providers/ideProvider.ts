@@ -244,11 +244,15 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 *
 	 * 內建備份 IDE 永遠存在於列表中（專用於利用同步功能備份設定）。
 	 * 若尚未設定路徑，則以「尚未設定」提示加入不可用列表；
-	 * 若已設定路徑，則嘗試偵測該路徑下的 settings.json。
+	 * 若已設定路徑，則無論 settings.json 是否存在都會加入「可用」列表，
+	 * 使其可被選取為同步對象。當 settings.json 不存在時，
+	 * IdeSettingProvider 會在載入/同步時自動建立（含父資料夾）。
 	 *
 	 * The built-in backup IDE always exists in the list (dedicated to backing up settings via the sync feature).
 	 * If no path is configured, it is added to the unavailable list with a "not configured" hint;
-	 * otherwise it attempts to detect settings.json under the configured path.
+	 * otherwise it is added to the available list regardless of whether settings.json exists,
+	 * so it can always be selected as a sync target. When settings.json is missing,
+	 * the IdeSettingProvider auto-creates it (including parent folders) on load/sync.
 	 */
 	protected async loadBackupIDE(): Promise<void>
 	{
@@ -272,42 +276,74 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 		console.log(`[Backup IDE] 偵測備份路徑 / Detecting backup path: ${backupPath}`);
 
 		/**
-		 * 使用獨立偵測器偵測備份路徑下的 settings.json
-		 * Use the standalone detector to detect settings.json under the backup path
+		 * 使用獨立偵測器尋找既有的 settings.json（可能在路徑下或 User 子資料夾）
+		 * Use the standalone detector to find an existing settings.json (at the path or in a User subfolder)
 		 */
 		const [result] = this.ideDetector.detectCustomIDEs([{ name: BACKUP_IDE_NAME, path: backupPath }]);
 
-		if (result.detected && result.path && result.settingsPath)
+		/**
+		 * 已偵測到 settings.json 時沿用既有檔案路徑；
+		 * 否則預設在備份路徑下建立 settings.json（同步時自動建立）
+		 * Use the detected settings.json path when found;
+		 * otherwise default to creating settings.json under the backup path (auto-created on sync)
+		 */
+		const detected = !!(result.detected && result.path && result.settingsPath);
+		const settingsJsonPath = detected
+			? result.settingsPath!
+			: path.join(backupPath, 'settings.json');
+		const idePath = detected ? result.path! : backupPath;
+
+		/**
+		 * 使用工具函數取得現有的 UUID（從檔案快取比對 name + path）
+		 * Use the utility to get the existing UUID (matched by name + path from the file cache)
+		 */
+		const existingUuid = getExistingUuid({
+			extensionPath: this.context.extensionPath,
+			ideName: BACKUP_IDE_NAME,
+			idePath,
+		});
+
+		/**
+		 * 啟用 autoCreate：settings.json 不存在時於載入/同步時自動建立
+		 * Enable autoCreate: settings.json is auto-created on load/sync when missing
+		 */
+		const settingProvider = new IdeSettingProvider(settingsJsonPath, backupPath, true);
+
+		try
 		{
-			/**
-			 * 使用工具函數取得現有的 UUID（從檔案快取比對 name + path）
-			 * Use the utility to get the existing UUID (matched by name + path from the file cache)
-			 */
-			const existingUuid = getExistingUuid({
-				extensionPath: this.context.extensionPath,
-				ideName: BACKUP_IDE_NAME,
-				idePath: result.path,
-			});
+			settingProvider.load();
 
-			console.log(`[Backup IDE] 偵測到備份 IDE (UUID: ${existingUuid || 'new'})`);
-			console.log(`[Backup IDE] Backup IDE detected (UUID: ${existingUuid || 'new'})`);
+			console.log(`[Backup IDE] ✓ 備份 IDE 已可用 / Backup IDE is available (UUID: ${existingUuid || 'new'})`);
+			console.log(`[Backup IDE] settings.json 不存在時將自動建立 / settings.json is auto-created when missing`);
 
-			this.processIDE(
+			this.addAvailableIDE(
 				BACKUP_IDE_NAME,
 				EnumIDEInfoType.backup,
-				result.settingsPath,
-				result.path,
+				idePath,
+				settingProvider,
+				`[Backup IDE] ✓ 成功載入 ${BACKUP_IDE_NAME} 的設定`,
 				existingUuid,
+				/**
+				 * settings.json 原本不存在（載入時自動建立）時不可作為同步來源，
+				 * 因為沒有資料可複製；但仍可作為同步目標。
+				 * When settings.json did not exist (auto-created on load), the backup IDE
+				 * cannot be a sync source because there is no data to copy; it can still be a target.
+				 */
+				!settingProvider.isAutoCreated,
 			);
 		}
-		else
+		catch (error)
 		{
-			console.log(`[Backup IDE] 無法偵測備份 IDE / Failed to detect backup IDE: ${result.reason}`);
+			/**
+			 * settings.json 存在但無法解析（如格式錯誤）：標記為不可用
+			 * settings.json exists but cannot be parsed (e.g. malformed): mark as unavailable
+			 */
+			console.log(`[Backup IDE] 無法載入備份 IDE / Failed to load backup IDE: ${error}`);
 			this.addUnavailableIDE(
 				BACKUP_IDE_NAME,
 				EnumIDEInfoType.backup,
-				backupPath,
-				result.reason || `[Backup IDE] ✗ Backup path not detected: ${backupPath}`,
+				idePath,
+				`[Backup IDE] ✗ 無法讀取或解析備份設定檔案: ${error}`,
 			);
 		}
 	}
@@ -395,6 +431,8 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 	 * @param nativePath - IDE 實際路徑
 	 * @param settingProvider - 設定供應商
 	 * @param successLog - 成功時的日誌訊息
+	 * @param uuid - 可選的 IDE UUID（保持識別碼一致性）
+	 * @param canBeSource - 是否可被選為同步來源 IDE（預設 true）
 	 */
 	protected addAvailableIDE(
 		name: string,
@@ -403,6 +441,7 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 		settingProvider: IdeSettingProvider,
 		successLog: string,
 		uuid?: string,
+		canBeSource: boolean = true,
 	): void
 	{
 		const finalUuid = uuid || nanoid();
@@ -413,6 +452,7 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 			available: true,
 			nativePath,
 			settingProvider,
+			canBeSource,
 		});
 
 		console.log(successLog);

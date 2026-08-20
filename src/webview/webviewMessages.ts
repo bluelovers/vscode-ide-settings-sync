@@ -69,6 +69,12 @@ export const enum EnumWebviewCommand
 	SetBackupIDEPath = 'setBackupIDEPath',
 
 	/**
+	 * 請求 Extension host 開啟資料夾選擇對話框以選取內建備份 IDE 路徑
+	 *  Request Extension host to open a folder selection dialog for the backup IDE path
+	 */
+	BrowseBackupPath = 'browseBackupPath',
+
+	/**
 	 * 在系統檔案總管中開啟指定的 IDE 資料夾
 	 *  Reveal the specified IDE folder in the OS file explorer
 	 */
@@ -209,6 +215,12 @@ export const enum EnumHostCommand
 	BackupIDEPathUpdated = 'backupIDEPathUpdated',
 
 	/**
+	 * 使用者已選取內建備份 IDE 路徑，回傳所選路徑字串
+	 *  User has selected a backup IDE path; returns the selected path string
+	 */
+	BackupPathSelected = 'backupPathSelected',
+
+	/**
 	 * 推送最新的 IDE 設定資料（不整頁重繪）
 	 *  Push the latest IDE settings data without full page redraw.
 	 *  觸發時機：syncSettings、deleteSettings、refreshData 完成後
@@ -302,6 +314,16 @@ export interface IMsg_SetBackupIDEPath
 	command: EnumWebviewCommand.SetBackupIDEPath;
 	/** 新的備份 IDE 路徑（空字串可清除設定）/ New backup IDE path (empty string clears the setting) */
 	backupPath: string;
+}
+
+/**
+ * 請求 Extension host 開啟資料夾選擇對話框以選取內建備份 IDE 路徑
+ * Request Extension host to open a folder selection dialog for the backup IDE path
+ */
+export interface IMsg_BrowseBackupPath
+{
+	/** 訊息指令 / Message command */
+	command: EnumWebviewCommand.BrowseBackupPath;
 }
 
 /**
@@ -531,6 +553,7 @@ export type IWebviewMessage =
 	| IMsg_AddCustomIDE
 	| IMsg_RemoveCustomIDE
 	| IMsg_SetBackupIDEPath
+	| IMsg_BrowseBackupPath
 	| IMsg_OpenIDEFolder
 	| IMsg_OpenSettingsJson
 	| IMsg_SyncSettings
@@ -607,6 +630,20 @@ export interface IMsg_BackupIDEPathUpdated
 	success: boolean;
 	/** 失敗時：錯誤訊息字串 / On failure: error message string */
 	error?: string;
+}
+
+/**
+ * 使用者已選取內建備份 IDE 路徑，回傳所選路徑字串
+ * User has selected a backup IDE path; returns the selected path string
+ *
+ * Webview 端將此路徑填入內建備份 IDE 路徑輸入框。
+ * Webview fills the built-in backup IDE path input with this path.
+ */
+export interface IMsg_BackupPathSelected
+{
+	command: EnumHostCommand.BackupPathSelected;
+	/** 使用者選取的資料夾絕對路徑 / Absolute path of the folder selected by the user */
+	path: string;
 }
 
 /**
@@ -691,6 +728,7 @@ export type IHostMessage =
 	| IMsg_DeleteComplete
 	| IMsg_AddCustomIDEComplete
 	| IMsg_BackupIDEPathUpdated
+	| IMsg_BackupPathSelected
 	| IMsg_DataRefreshed
 	| IMsg_ExportPathSelected
 	| IMsg_ImportPathSelected

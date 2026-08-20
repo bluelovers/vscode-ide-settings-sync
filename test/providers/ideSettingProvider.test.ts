@@ -157,6 +157,35 @@ describe('IdeSettingProvider', () =>
 		});
 	});
 
+	describe('autoCreate', () =>
+	{
+		const autoCreateDir = join(__ROOT_TEST_TEMP, 'mock', 'auto-create');
+		const autoCreateJsonPath = join(autoCreateDir, 'settings.json');
+
+		it('should create settings.json and parent folders when autoCreate is enabled and the file is missing', () =>
+		{
+			/**
+			 * unionfs mock 會向真實檔案系統查詢，需先清除先前測試可能遺留的檔案
+			 * The unionfs mock falls through to the real filesystem, so remove leftover files from previous runs
+			 */
+			fs.rmSync(autoCreateDir, { recursive: true, force: true });
+
+			const provider = new IdeSettingProvider(autoCreateJsonPath, autoCreateDir, true);
+			provider.load();
+
+			expect(provider.loaded()).toBe(true);
+			expect(provider.isAutoCreated).toBe(true);
+			expect(fs.existsSync(autoCreateJsonPath)).toBe(true);
+			expect(provider.valueOf()).toEqual({});
+		});
+
+		it('should throw when autoCreate is disabled and the file is missing', () =>
+		{
+			const provider = new IdeSettingProvider(testSettingsJsonPathNotExists, testSettingsPathNotExists, false);
+			expect(() => provider.load()).toThrow(/沒有找到.*的設定檔案/);
+		});
+	});
+
 	describe('get and set operations', () =>
 	{
 		// beforeEach(() =>

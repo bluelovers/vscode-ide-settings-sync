@@ -47,6 +47,8 @@ export const enum EnumWebviewElemId
 	importPath = 'importPath',
 	/** 主語言選擇下拉選單 / Primary language select dropdown */
 	primaryLang = 'primaryLang',
+	/** 內建備份 IDE 路徑輸入框 / Built-in backup IDE path input */
+	backupIDEPath = 'backup-ide-path',
 }
 
 /**

@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { existsSync } from 'fs';
+import { dirname } from 'path';
 import { IDEProvider } from '../providers/ideProvider';
 import { ILanguageConfig, EnumGlobalStateName, EnumLanguageCode } from '../types';
 import {
@@ -381,11 +383,51 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 						}
 						break;
 
+/**
+				 * 開啟資料夾選擇對話框以選取內建備份 IDE 的路徑，回傳所選路徑
+				 *  Open a folder selection dialog to pick the built-in backup IDE path; return the selected path
+				 */
+				case EnumWebviewCommand.BrowseBackupPath: {
 					/**
-					 * 在 VS Code 編輯器中開啟指定 IDE 的 settings.json
-					 *  Open the specified IDE's settings.json in the VS Code editor
+					 * 已設定 Backup IDE Path 時，資料夾選擇對話框從該路徑開始
+					 * When a Backup IDE Path is configured, the folder picker starts from that path
+					 *
+					 * 若該路徑尚不存在，則退回其父資料夾；兩者皆不存在時不設定 defaultUri，
+					 * 由作業系統使用上次記住的資料夾。
+					 * If the configured path does not exist yet, fall back to its parent folder;
+					 * if neither exists, leave defaultUri unset so the OS uses its last-remembered folder.
 					 */
-					case EnumWebviewCommand.OpenSettingsJson:
+					let defaultUri: vscode.Uri | undefined;
+					const configuredBackupPath = this.ideProvider.getBackupIDEPath();
+					if (configuredBackupPath)
+					{
+						const startFolder = existsSync(configuredBackupPath) ? configuredBackupPath : dirname(configuredBackupPath);
+						if (existsSync(startFolder))
+						{
+							defaultUri = vscode.Uri.file(startFolder);
+						}
+					}
+
+					const backupPath = await vscode.window.showOpenDialog({
+						canSelectFiles: false,
+						canSelectFolders: true,
+						canSelectMany: false,
+						openLabel: 'Select Backup Folder',
+						title: 'Select the folder where backup settings will be stored (settings.json is auto-created)',
+						defaultUri,
+					});
+					if (backupPath && backupPath[0])
+					{
+						this.postToWebview({ command: EnumHostCommand.BackupPathSelected, path: backupPath[0].fsPath });
+					}
+					break;
+				}
+
+				/**
+				 * 在 VS Code 編輯器中開啟指定 IDE 的 settings.json
+				 *  Open the specified IDE's settings.json in the VS Code editor
+				 */
+				case EnumWebviewCommand.OpenSettingsJson:
 						await this.openSettingsJsonFile(message.idePath, message.ideName);
 						break;
 

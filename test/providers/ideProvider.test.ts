@@ -9,7 +9,7 @@
  */
 
 import { join } from 'path';
-import { mkdirSync } from 'fs';
+import { existsSync, mkdirSync, rmSync } from 'fs';
 import { IDEProvider } from '../../src/providers/ideProvider';
 import { EnumIDEInfoType, EnumGlobalStateName } from '../../src/types';
 import { BACKUP_IDE_NAME, BACKUP_IDE_NOT_CONFIGURED_REASON } from '../../src/data/backupIDE';
@@ -56,6 +56,15 @@ describe('IDEProvider backup IDE', () =>
 
 	beforeEach(() =>
 	{
+		/**
+		 * 清理先前測試可能遺留的備份資料夾，確保每次測試的檔案狀態獨立
+		 * Clean up backup folders possibly left by previous tests, keeping each test's file state independent
+		 */
+		[join(__ROOT_TEST_TEMP, 'nonexistent-backup-folder'), join(__ROOT_TEST_TEMP, 'auto-create-backup-folder'), join(__ROOT_TEST_TEMP, 'backup-settings')].forEach(dir =>
+		{
+			rmSync(dir, { recursive: true, force: true });
+		});
+
 		mockGlobalState = createMockGlobalState();
 		const context = {
 			extensionPath,
@@ -93,15 +102,26 @@ describe('IDEProvider backup IDE', () =>
 			expect(backup!.reason).toContain(BACKUP_IDE_NOT_CONFIGURED_REASON);
 		});
 
-		it('should add an unavailable Backup entry with the path when not detected', async () =>
+		it('should add an available Backup IDE when a path is configured even without settings.json', async () =>
 		{
 			const backupPath = join(__ROOT_TEST_TEMP, 'nonexistent-backup-folder');
 			await provider.setBackupIDEPath(backupPath);
 
-			const backup = provider.getUnavailableIDEs().find(ide => ide.name === BACKUP_IDE_NAME);
+			const backup = provider.getIDEList().find(ide => ide.name === BACKUP_IDE_NAME);
 			expect(backup).toBeDefined();
 			expect(backup!.type).toBe(EnumIDEInfoType.backup);
-			expect(backup!.expectedPath).toBe(backupPath);
+			expect(backup!.available).toBe(true);
+			expect(backup!.canBeSource).toBe(false);
+
+			expect(provider.getUnavailableIDEs().find(ide => ide.name === BACKUP_IDE_NAME)).toBeUndefined();
+		});
+
+		it('should auto-create settings.json under the configured backup path when missing', async () =>
+		{
+			const backupPath = join(__ROOT_TEST_TEMP, 'auto-create-backup-folder');
+			await provider.setBackupIDEPath(backupPath);
+
+			expect(existsSync(join(backupPath, 'settings.json'))).toBe(true);
 		});
 	});
 

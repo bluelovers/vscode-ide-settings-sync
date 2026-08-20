@@ -96,6 +96,21 @@ export function syncSettings(): void
 	const sourceIndex = sourceRadio?.dataset.index;
 
 	/**
+	 * 驗證來源 IDE 是否可作為同步來源
+	 * Validate that the source IDE can be used as a sync source
+	 *
+	 * 當來源 IDE 的 settings.json 不存在（自動建立、沒有資料可複製）時，
+	 * 該來源單選按鈕會被停用，此時不應進行同步。
+	 * When the source IDE's settings.json does not exist (auto-created, nothing to copy),
+	 * its source radio is disabled, so syncing should not proceed.
+	 */
+	if (!sourceRadio || (sourceRadio as HTMLInputElement).disabled)
+	{
+		showMessage('Selected source IDE has no data to copy (settings.json does not exist yet)', EnumShowMessageType.ERROR);
+		return;
+	}
+
+	/**
 	 * 向 Extension host 發送同步指令
 	 * Post sync command to Extension host
 	 *

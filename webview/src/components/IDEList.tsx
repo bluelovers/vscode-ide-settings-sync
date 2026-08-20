@@ -12,7 +12,7 @@
 import { formatPath } from '../../../src/utils/formatPath';
 import { IIDEListProps, IRemoveCustomIDEParams } from './types';
 import { ITSRequireAtLeastOne } from 'ts-type';
-import { EnumCssClassSelector } from '../types/elem-const';
+import { EnumCssClassSelector, EnumWebviewElemId } from '../types/elem-const';
 
 /**
  * 可用 IDE 列表項目組件
@@ -30,7 +30,7 @@ import { EnumCssClassSelector } from '../types/elem-const';
  * @param props.isSource - 是否為選取的同步來源 IDE / Whether this is the selected sync source IDE
  */
 function AvailableIDEItem(props: {
-	ide: { uuid: string; name: string; type: string; nativePath: string };
+	ide: { uuid: string; name: string; type: string; nativePath: string; canBeSource?: boolean };
 	index: number;
 	isCurrent: boolean;
 	isSource: boolean;
@@ -49,7 +49,8 @@ function AvailableIDEItem(props: {
 				className={EnumCssClassSelector.ideSourceRadio}
 				value={props.ide.uuid}
 				checked={props.isSource}
-				title="Select as source IDE"
+				disabled={props.ide.canBeSource === false}
+				title={props.ide.canBeSource === false ? 'Cannot select as source: settings.json does not exist yet (no data to copy)' : 'Select as source IDE'}
 				data-index={props.index}
 				data-name={props.ide.name}
 				data-uuid={props.ide.uuid}
@@ -190,7 +191,7 @@ export function IDEList({
 	sourceIDEUuid,
 }: IIDEListProps)
 {
-	const defaultSourceUuid = sourceIDEUuid ?? (availableIDEs.length > 0 ? availableIDEs[0].uuid : undefined);
+	const defaultSourceUuid = sourceIDEUuid ?? availableIDEs.find(ide => ide.canBeSource !== false)?.uuid ?? (availableIDEs.length > 0 ? availableIDEs[0].uuid : undefined);
 
 	return (<>
 		<div class="ide-list">
@@ -225,23 +226,31 @@ function BackupIDEConfig(props: { backupIDEPath?: string })
 {
 	return (<>
 		<div className="backup-ide-config">
-			<label htmlFor="backup-ide-path" className="backup-ide-label">
+			<label htmlFor={EnumWebviewElemId.backupIDEPath} className="backup-ide-label">
 				Backup IDE Path
 			</label>
-			<span className="backup-ide-hint">Use the sync feature to back up settings to this folder (must contain settings.json)</span>
+			<span className="backup-ide-hint">Use the sync feature to back up settings to this folder. settings.json is auto-created when missing.</span>
 			<div className="backup-ide-row">
 				{/* @ts-ignore */}
 				<input
-					id="backup-ide-path"
+					id={EnumWebviewElemId.backupIDEPath}
 					type="text"
 					className="backup-ide-input"
 					value={props.backupIDEPath ?? ''}
 					placeholder="e.g. D:\IDE-Settings-Backup\User"
 				/>
 				<button
+					className="btn btn-small backup-ide-browse"
+					// @ts-ignore
+					onclick="browseBackupPath && browseBackupPath()"
+					title="Browse for backup folder"
+				>
+					📁 Browse
+				</button>
+				<button
 					className="btn btn-small"
 					// @ts-ignore
-					onclick="setBackupIDEPath && setBackupIDEPath(document.getElementById('backup-ide-path').value)"
+					onclick={`setBackupIDEPath && setBackupIDEPath(document.getElementById('${EnumWebviewElemId.backupIDEPath}').value)`}
 					title="Apply backup IDE path"
 				>
 					Apply

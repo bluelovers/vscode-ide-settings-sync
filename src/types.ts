@@ -179,6 +179,16 @@ export interface IIDEInfoBase
 	languageId?: string;
 	/** i18n 資源路徑（若有）/ i18n resource path (if any) */
 	i18nPath?: string;
+	/**
+	 * 是否可被選為同步來源 IDE（預設 true）
+	 * Whether this IDE can be selected as the sync source IDE (defaults to true)
+	 *
+	 * 當為 false 時代表該 IDE 的 settings.json 不存在（尚未有資料可複製），
+	 * 因此不能被選為來源，但仍可作為同步目標。
+	 * When false, the IDE's settings.json does not exist yet (no data to copy),
+	 * so it cannot be a source, but it can still be a sync target.
+	 */
+	canBeSource?: boolean;
 }
 
 /**
