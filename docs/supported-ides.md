@@ -13,57 +13,43 @@
 | Antigravity | `Antigravity` | Antigravity IDE |
 | CodeBuddy CN | `CodeBuddy CN`<br>`CodeBuddy-CN`<br>`CodeBuddyCN` | CodeBuddy 中文版 |
 | Windsurf | `Windsurf` | Windsurf IDE |
+| kiro | `Kiro`<br>`kiro` | AI 驅動的 IDE |
+| Cursor | `Cursor` | AI 程式碼編輯器 |
+| Devin | `Devin` | Devin AI 工程師 |
 
 ---
 
 ## 各系統設定檔路徑
 
-### Windows
+不同作業系統的預設路徑如下，並排顯示便於快速查閱：
 
-**預設路徑格式：**
+| IDE | Windows | macOS | Linux |
+|-----|---------|-------|-------|
+| Visual Studio Code | `%APPDATA%\Code\User\settings.json` | `~/.config/Code/User/settings.json` | `~/.config/Code/User/settings.json` |
+| Visual Studio Code - Insiders | `%APPDATA%\Code - Insiders\User\settings.json` | `~/.config/Code - Insiders/User/settings.json` | `~/.config/Code - Insiders/User/settings.json` |
+| Antigravity | `%APPDATA%\Antigravity\User\settings.json` | `~/.config/Antigravity/User/settings.json` | `~/.config/Antigravity/User/settings.json` |
+| CodeBuddy CN | `%APPDATA%\CodeBuddy CN\User\settings.json` | `~/.config/CodeBuddy CN/User/settings.json` | `~/.config/CodeBuddy CN/User/settings.json` |
+| Windsurf | `%APPDATA%\Windsurf\User\settings.json` | `~/.config/Windsurf/User/settings.json` | `~/.config/Windsurf/User/settings.json` |
+| kiro | `%APPDATA%\Kiro\User\settings.json` | `~/.config/Kiro/User/settings.json` | `~/.config/Kiro/User/settings.json` |
+| Cursor | `%APPDATA%\Cursor\User\settings.json` | `~/.config/Cursor/User/settings.json` | `~/.config/Cursor/User/settings.json` |
+| Devin | `%APPDATA%\Devin\User\settings.json` | `~/.config/Devin/User/settings.json` | `~/.config/Devin/User/settings.json` |
 
-```
-%APPDATA%\{IDEName}\User\settings.json
-```
+**各系統路徑格式：**
 
-**完整範例：**
+| 系統 | 路徑格式 |
+|------|----------|
+| Windows | `%APPDATA%\{IDEName}\User\settings.json` |
+| macOS | `~/.config/{IDEName}/User/settings.json` |
+| Linux | `~/.config/{IDEName}/User/settings.json` |
 
-| IDE | 路徑 |
-|-----|------|
-| Visual Studio Code | `%APPDATA%\Code\User\settings.json` |
-| Visual Studio Code - Insiders | `%APPDATA%\Code - Insiders\User\settings.json` |
-| Antigravity | `%APPDATA%\Antigravity\User\settings.json` |
-| CodeBuddy CN | `%APPDATA%\CodeBuddy CN\User\settings.json` |
-| Windsurf | `%APPDATA%\Windsurf\User\settings.json` |
-
-**常見實際路徑：**
+**常見實際路徑（Windows）：**
 
 ```
 C:\Users\{UserName}\AppData\Roaming\Code\User\settings.json
 C:\Users\{UserName}\AppData\Roaming\Code - Insiders\User\settings.json
 ```
 
----
-
-### macOS
-
-**預設路徑格式：**
-
-```
-~/.config/{IDEName}/User/settings.json
-```
-
-**完整範例：**
-
-| IDE | 路徑 |
-|-----|------|
-| Visual Studio Code | `~/.config/Code/User/settings.json` |
-| Visual Studio Code - Insiders | `~/.config/Code - Insiders/User/settings.json` |
-| Antigravity | `~/.config/Antigravity/User/settings.json` |
-| CodeBuddy CN | `~/.config/CodeBuddy CN/User/settings.json` |
-| Windsurf | `~/.config/Windsurf/User/settings.json` |
-
-**常見實際路徑：**
+**常見實際路徑（macOS）：**
 
 ```
 ~/.config/Code/User/settings.json
@@ -71,33 +57,6 @@ C:\Users\{UserName}\AppData\Roaming\Code - Insiders\User\settings.json
 ```
 
 > **Note:** 在 macOS 上，部分應用程式可能將資料儲存於 `~/Library/Application Support/` 目錄。
-
----
-
-### Linux
-
-**預設路徑格式：**
-
-```
-~/.config/{IDEName}/User/settings.json
-```
-
-**完整範例：**
-
-| IDE | 路徑 |
-|-----|------|
-| Visual Studio Code | `~/.config/Code/User/settings.json` |
-| Visual Studio Code - Insiders | `~/.config/Code - Insiders/User/settings.json` |
-| Antigravity | `~/.config/Antigravity/User/settings.json` |
-| CodeBuddy CN | `~/.config/CodeBuddy CN/User/settings.json` |
-| Windsurf | `~/.config/Windsurf/User/settings.json` |
-
-**常見實際路徑：**
-
-```
-~/.config/Code/User/settings.json
-~/.config/Code - Insiders/User/settings.json
-```
 
 ---
 

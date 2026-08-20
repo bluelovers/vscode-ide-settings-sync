@@ -105,6 +105,18 @@ export const knownIDEs = [
 		 * Cursor default folder name
 		 */
 		appFolderNames: ['Cursor'],
+	},
+	{
+		/** IDE 顯示名稱，用於介面展示 / IDE display name, used for UI display */
+		name: 'Devin',
+		/**
+		 * 可能的資料夾名稱列表，依常見程度排序
+		 * Possible folder names list, ordered by commonness
+		 *
+		 * Devin 預設資料夾名稱
+		 * Devin default folder name
+		 */
+		appFolderNames: ['Devin'],
 	}
 ] as const;
 
