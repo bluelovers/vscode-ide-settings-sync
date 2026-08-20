@@ -1,7 +1,7 @@
 {
   "name": "vscode-ide-settings-sync",
   "displayName": "VSCode IDE Settings Sync",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Synchronize IDE settings across multiple VSCode-based IDEs (Antigravity, VS Code Insiders, CodeBuddy CN, Windsurf, custom paths)",
   "categories": [
     "Other"
@@ -44,13 +44,14 @@
   "scripts": {
     "pretest": "node --run compile",
     "test": "node --run test:unit --",
-    "test:unit": "jest --passWithNoTests",
+    "test:unit": "node --run test:tsc && dotenv --override -- jest --passWithNoTests",
     "test:unit:coverage": "node --run test:unit -- --coverage",
     "test:unit:snapshot": "node --run test:unit -- --u",
     "test:unit:watch": "node --run test:unit -- --watch",
+    "test:tsc": "dotenv --override -- tsc --noEmit & echo typescheck completed",
     "prebuild": "node --run test:unit:snapshot",
     "build": "node --run esbuild-base",
-    "version:bump": "yarn-tool version",
+    "version:bump": "dotenv --override -- yarn-tool version",
     "version:bump:major": "node --run version:bump -- --bump major",
     "version:bump:minor": "node --run version:bump -- --bump minor",
     "version:bump:patch": "node --run version:bump -- --bump patch",
@@ -59,23 +60,23 @@
     "publish": "pnpm run version:bump && pnpm run vscode:publish",
     "publish:vscode": "node --run vscode:prepublish && node --run vscode:publish",
     "postpublish": "node --run postpublish:changelog && node --run postpublish:git:commit && node --run postpublish:git:tag && node --run postpublish:git:push",
-    "postpublish:changelog": "ynpx --quiet @yarn-tool/changelog && git add ./CHANGELOG.md",
+    "postpublish:changelog": "dotenv --override -- ynpx --quiet @yarn-tool/changelog && git add ./CHANGELOG.md",
     "postpublish:git:commit": "git add ./test/__file_snapshots__ & git commit -m \"chore(release): publish\" . & echo postpublish:git:commit",
     "postpublish:git:push": "git push --follow-tags",
-    "postpublish:git:tag": "ynpx --quiet @yarn-tool/tag",
+    "postpublish:git:tag": "dotenv --override -- ynpx --quiet @yarn-tool/tag",
     "postpublishOnly": "echo postpublishOnly",
-    "compile": "tsc -p ./",
+    "compile": "dotenv --override -- tsc -p ./",
     "esbuild": "node --run esbuild-base --",
-    "esbuild-base": "tsx esbuild.config",
+    "esbuild-base": "dotenv --override -- tsx esbuild.config",
     "esbuild-watch": "node --run esbuild-base -- --watch",
-    "ncu": "yarn-tool ncu -u",
+    "ncu": "dotenv --override -- yarn-tool ncu -u",
     "package": "pnpm run vscode:publish",
     "sort-package-json": "yarn-tool sort",
     "vscode:prepublish": "node --run esbuild-base -- --minify",
-    "vscode:publish": "pnpm vsce publish --no-dependencies",
-    "vscode:list": "pnpm vsce ls --no-dependencies",
-    "vscode:package": "pnpm vsce package",
-    "watch": "tsc -watch -p ./"
+    "vscode:publish": "dotenv --override -- pnpm vsce publish --no-dependencies",
+    "vscode:list": "dotenv --override -- pnpm vsce ls --no-dependencies",
+    "vscode:package": "dotenv --override -- pnpm vsce package --no-dependencies",
+    "watch": "dotenv --override -- tsc -watch -p ./"
   },
   "contributes": {
     "commands": [
@@ -149,34 +150,34 @@
   ],
   "dependencies": {
     "@lazy-node/types-path": "^1.0.3",
-    "@preact/signals": "^2.9.0",
-    "js-yaml": "^4.1.1",
+    "@preact/signals": "^2.11.1",
+    "js-yaml": "^5.3.0",
     "jsonc-parser": "^3.3.1",
-    "nanoid": "^5.1.11",
+    "nanoid": "^6.0.1",
     "path-is-same": "^1.0.29",
-    "preact": "^10.29.1",
-    "preact-render-to-string": "^6.6.7",
+    "preact": "^10.29.8",
+    "preact-render-to-string": "^6.7.0",
     "ts-type": "^3.0.13",
     "react": "npm:@preact/compat",
     "react-dom": "npm:@preact/compat",
-    "upath2": "^3.1.23"
+    "upath2": "^3.1.25"
   },
   "devDependencies": {
     "@testing-library/preact": "^3.2.4",
     "@types/fs-extra": "^11.0.4",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.6.0",
-    "@types/vscode": "^1.109.0",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.28.0",
+    "@types/node": "^26.2.0",
+    "@types/vscode": "1.109.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "esbuild": "^0.28.2",
     "esbuild-sass-plugin": "^3.7.0",
-    "fs-extra": "^11.3.4",
-    "jest": "^30.3.0",
-    "memfs": "^4.57.2",
+    "fs-extra": "^11.4.0",
+    "jest": "^30.4.2",
+    "memfs": "^4.68.1",
     "memfs-extra": "^1.0.4",
-    "sass": "^1.99.0",
-    "ts-jest": "^29.4.9",
+    "sass": "^1.103.0",
+    "ts-jest": "^29.4.12",
     "typescript": "^6.0.3",
     "unionfs": "^4.6.0"
   },
@@ -187,6 +188,6 @@
     "react/jsx-runtime": "preact/jsx-runtime"
   },
   "engines": {
-    "vscode": "^1.109.0"
+    "vscode": ">=1.109.0"
   }
 }

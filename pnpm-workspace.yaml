@@ -1,4 +1,13 @@
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  unrs-resolver: true
+
 ignoredBuiltDependencies: []
+
+minimumReleaseAgeExclude:
+  - '@types/vscode@1.134.0'
+  - sass@1.103.0
 
 onlyBuiltDependencies:
   - '@parcel/watcher'
