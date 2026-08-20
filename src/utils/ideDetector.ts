@@ -215,7 +215,8 @@ export class IDEDetector
 		};
 
 		let foundPath: string | null = null;
-		let detectedPath: string | null = null;
+		/** 已找到 IDE 資料夾的路徑（即使尚未建立 settings.json）/ Found IDE folder path (even if settings.json not created yet) */
+		let foundDir: string | null = null;
 
 		this.log(`[IDE Detection] 開始偵測 ${ide.name}`);
 		this.log(`[IDE Detection] Starting detection for ${ide.name}`);
@@ -237,7 +238,11 @@ export class IDEDetector
 			 */
 			if (existsSync(testPath))
 			{
-				detectedPath = testPath;
+				/**
+				 * 記錄已存在的資料夾，供後續產生提示訊息
+				 * Record the existing folder for later hint message
+				 */
+				foundDir = testPath;
 				this.log(`[IDE Detection] ✓ 找到資料夾 ${ide.name} at ${testPath}`);
 				this.log(`[IDE Detection] ✓ Found folder for ${ide.name} at ${testPath}`);
 
@@ -277,6 +282,32 @@ export class IDEDetector
 			result.settingsPath = this.config.pathLib!.join(foundPath, 'settings.json');
 			this.log(`[IDE Detection] ✓ 成功偵測到 ${ide.name}`);
 			this.log(`[IDE Detection] ✓ Successfully detected ${ide.name}`);
+		}
+		else if (foundDir)
+		{
+			/**
+			 * 資料夾已存在但尚未建立 settings.json
+			 * Folder exists but settings.json has not been created yet
+			 *
+			 * 通常發生於安裝後即使已執行過 IDE，但尚未變更任何設定
+			 * （IDE 只有在變更設定時才會建立 settings.json）
+			 * Usually happens after installation when the IDE was opened
+			 * but no settings have been changed yet
+			 * (the IDE only creates settings.json when a setting is modified)
+			 */
+			result.detected = false;
+			result.path = foundDir;
+			result.reason = [
+				`資料夾已存在但尚未建立 settings.json: ${foundDir}`,
+				`通常發生於安裝後即使已執行過 ${ide.name}，但尚未變更任何設定。`,
+				`請開啟 ${ide.name} 並變更任一設定後再重試。`,
+				'',
+				`Folder exists but settings.json has not been created yet: ${foundDir}`,
+				`This usually happens after installation when ${ide.name} was opened but no settings were changed.`,
+				`Open ${ide.name} and change any setting before retrying.`,
+			].join('\n');
+			this.log(`[IDE Detection] ⚠ ${ide.name} 資料夾已存在，但尚未建立 settings.json`);
+			this.log(`[IDE Detection] ⚠ ${ide.name} folder exists, but settings.json has not been created yet`);
 		}
 		else
 		{

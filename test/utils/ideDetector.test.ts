@@ -58,6 +58,12 @@ const mockIDEs: MockIDE[] = [
 		],
 		existsPathIndex: 1,
 	},
+	{
+		name: 'IDE4 Folder Exists No Settings',
+		appFolderNames: [
+			join('IDE', 'FolderExistsNoSettings'),
+		],
+	},
 ];
 
 const mockIDEsCustom: MockIDE[] = [
@@ -145,6 +151,23 @@ console.dir({
 	depth: 4,
 });
 
+/**
+ * 建立「資料夾已存在但沒有 settings.json」的 IDE 目錄
+ * Create an IDE directory where the folder exists but settings.json is absent
+ *
+ * 用於測試資料夾存在但尚未建立設定檔時的提示訊息
+ * Used to test the hint message when the folder exists but the settings file has not been created
+ */
+const folderExistsNoSettingsDir = toGitBashPath(path.normalize(
+	join(defautDetectionConfig.userDataDir, 'IDE', 'FolderExistsNoSettings', 'User'),
+));
+if (!fse.existsSync(folderExistsNoSettingsDir))
+{
+	vol.fromJSON({
+		[join(folderExistsNoSettingsDir, '.keep')]: '',
+	});
+}
+
 function toGitBashPath(inputPath: string) {
   if (!inputPath) return inputPath;
 
@@ -212,6 +235,20 @@ describe('IDEDetector', () =>
 			expect(result.detected).toBe(false);
 			expect(result.reason).toContain('IDE not found');
 			expect(result.reason).toContain('Tried paths');
+		});
+
+		it('should provide helpful hint when folder exists but settings.json not created yet', () =>
+		{
+			const ide = mockIDEs.find(ide => ide.name === 'IDE4 Folder Exists No Settings')!;
+
+			const result = detector.detectIDE(ide as any);
+
+			expect(result.detected).toBe(false);
+			expect(result.path).toBeDefined();
+			expect(result.path).toContain('FolderExistsNoSettings');
+			expect(result.reason).toContain('尚未建立 settings.json');
+			expect(result.reason).toContain('變更任一設定');
+			expect(result.reason).toContain('settings.json has not been created yet');
 		});
 	});
 

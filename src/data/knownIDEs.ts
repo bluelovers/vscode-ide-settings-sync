@@ -117,7 +117,7 @@ export const knownIDEs = [
 		 * Devin default folder name
 		 */
 		appFolderNames: ['Devin'],
-	}
+	},
 ] as const satisfies I_KnownIDE[];
 
 interface I_KnownIDE
