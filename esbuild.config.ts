@@ -24,7 +24,30 @@ const extensionConfig: BuildOptions = {
 	entryPoints: ['./src/extension.ts'],
 	bundle: true,
 	outfile: 'dist/extension.js',
-	external: ['vscode', 'jsonc-parser'],
+	/**
+	 * 僅將 vscode 設為 external：VS Code 執行期會提供 vscode 模組。
+	 * 其餘相依（如 jsonc-parser）必須全部 bundle 進 dist/extension.js，
+	 * 因為發佈時使用 `--no-dependencies`，VSIX 內不含 node_modules。
+	 *
+	 * Only vscode is kept external: the VS Code runtime provides the vscode module.
+	 * All other dependencies (e.g. jsonc-parser) must be bundled into dist/extension.js
+	 * because the extension is published with `--no-dependencies` (no node_modules in the VSIX).
+	 */
+	external: ['vscode'],
+	/**
+	 * jsonc-parser 的 package.json main 指向 UMD build，其內層 factory 中的
+	 * `require("./impl/format")` 無法被 esbuild 靜態解析，會殘留相對 require，
+	 * 造成執行期 `Cannot find module './impl/format'`。
+	 * 改為 alias 至 ESM build（靜態 import），可完整 bundle 進 dist/extension.js。
+	 *
+	 * jsonc-parser's main points to the UMD build, whose inner factory
+	 * `require("./impl/format")` calls cannot be statically resolved by esbuild,
+	 * leaving relative requires behind and causing `Cannot find module './impl/format'`.
+	 * Alias to the ESM build (static imports) so it bundles fully into dist/extension.js.
+	 */
+	alias: {
+		'jsonc-parser': require.resolve('jsonc-parser/lib/esm/main.js'),
+	},
 	format: 'cjs',
 	platform: 'node',
 	target: 'node18',

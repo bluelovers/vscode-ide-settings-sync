@@ -27,7 +27,7 @@
     "type": "git",
     "url": "git+https://github.com/bluelovers/vscode-ide-settings-sync.git"
   },
-  "license": "ISC",
+  "license": "CC-BY-NC-SA-4.0",
   "author": "",
   "publisher": "bluelovers",
   "type": "commonjs",
@@ -39,7 +39,9 @@
   },
   "files": [
     "dist/webview/index.js",
-    "dist/extension.js"
+    "dist/extension.js",
+    "media/sidebar-icon.svg",
+    "LICENSE"
   ],
   "scripts": {
     "pretest": "node --run compile",
@@ -143,10 +145,30 @@
           "group": "z_custom"
         }
       ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vscode-ide-settings-sync",
+          "title": "IDE Settings Sync",
+          "icon": "media/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "vscode-ide-settings-sync": [
+        {
+          "id": "vscodeIdeSettingsSyncView",
+          "name": "IDE Settings Sync",
+          "icon": "media/sidebar-icon.svg",
+          "type": "webview"
+        }
+      ]
     }
   },
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onView:vscodeIdeSettingsSyncView"
   ],
   "dependencies": {
     "@lazy-node/types-path": "^1.0.3",

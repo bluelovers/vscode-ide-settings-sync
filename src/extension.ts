@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { IDEProvider } from './providers/ideProvider';
 import { SettingsSyncPanel } from './webview/settingsSyncPanel';
+import { SettingsSyncSidebarProvider } from './webview/settingsSyncSidebarProvider';
 import { ExportImportCommands } from './commands/exportImportCommands';
 import { ILanguageConfig, ILanguageSourceInfo, EnumLanguageCode, EnumGlobalStateName } from './types';
 import { isValidLanguageCode, getDefaultFallbackList } from './utils/settingsDescriptions';
@@ -50,6 +51,13 @@ export async function activate(context: vscode.ExtensionContext)
 				});
 			}
 		},
+	);
+	context.subscriptions.push(disposable);
+
+	// Sidebar (Activity Bar) view: clicking the icon opens the panel
+	disposable = vscode.window.registerWebviewViewProvider(
+		SettingsSyncSidebarProvider.viewType,
+		new SettingsSyncSidebarProvider(context),
 	);
 	context.subscriptions.push(disposable);
 

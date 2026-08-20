@@ -18,3 +18,4 @@ examples/webview-content-demo.js
 !__mocks__
 !__mocks__/
 !__mocks__/*
+.env
