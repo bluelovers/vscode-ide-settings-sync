@@ -209,6 +209,7 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 		const savedSelectedSettings = this.globalState.get(EnumGlobalStateName.selectedSettings, []);
 		const savedSelectedIDEs = this.globalState.get(EnumGlobalStateName.selectedIDEs, []);
 		const savedSourceIDEUuid = this.globalState.get(EnumGlobalStateName.sourceIDEUuid, '');
+		const backupIDEPath = this.globalState.get(EnumGlobalStateName.backupIDEPath, '') || '';
 
 		/** 解析 webview script URI / Resolve webview script URI */
 		const scriptUri = this.panel.webview.asWebviewUri(
@@ -225,6 +226,7 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 			unavailableIDEs,
 			currentIDEName,
 			sourceIDEUuid: savedSourceIDEUuid,
+			backupIDEPath,
 			languageConfig: this.languageConfig,
 			supportedLanguages: getSupportedLanguages(),
 			currentLanguage: this.currentLanguage,
@@ -240,6 +242,7 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 				savedSearchHistory,
 				savedSelectedSettings,
 				savedSelectedIDEs,
+				backupIDEPath,
 				settingDescriptions: this.generateMultilingualDescriptions(),
 			},
 		};
@@ -354,6 +357,29 @@ export class SettingsSyncPanel extends AbstractClassWithContextGlobalState
 						}
 						break;
 					}
+
+					/**
+					 * 設定內建備份 IDE 的路徑
+					 *  Set the path of the built-in backup IDE
+					 *  完成後使用 updateWebview 整頁重繪，讓備份 IDE 以新路徑重新偵測
+					 *  Uses updateWebview (full redraw) after completion to re-detect the backup IDE at the new path
+					 */
+					case EnumWebviewCommand.SetBackupIDEPath:
+						try
+						{
+							await this.ideProvider.setBackupIDEPath(message.backupPath);
+							await this.updateWebview();
+							this.postToWebview({ command: EnumHostCommand.BackupIDEPathUpdated, success: true });
+						}
+						catch (error)
+						{
+							this.postToWebview({
+								command: EnumHostCommand.BackupIDEPathUpdated,
+								success: false,
+								error: String(error instanceof Error ? error.message : error),
+							});
+						}
+						break;
 
 					/**
 					 * 在 VS Code 編輯器中開啟指定 IDE 的 settings.json

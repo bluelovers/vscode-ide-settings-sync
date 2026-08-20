@@ -44,6 +44,8 @@ export interface IAppProps
 	currentIDEName: string;
 	/** 使用者選擇的來源 IDE UUID / UUID of the user-selected source IDE */
 	sourceIDEUuid: string;
+	/** 內建備份 IDE 的路徑（空字串代表尚未設定）/ Built-in backup IDE path (empty string means not configured) */
+	backupIDEPath: string;
 	/** 語言配置物件 / Language configuration object */
 	languageConfig: ILanguageConfig;
 	/** 所有支援的語言列表 / List of all supported languages */
@@ -133,6 +135,7 @@ export function App({
 	unavailableIDEs,
 	currentIDEName,
 	sourceIDEUuid,
+	backupIDEPath,
 	languageConfig,
 	supportedLanguages,
 	currentLanguage,
@@ -179,6 +182,7 @@ export function App({
 						unavailableIDEs={unavailableIDEs}
 						currentIDEName={currentIDEName}
 						sourceIDEUuid={sourceIDEUuid}
+						backupIDEPath={backupIDEPath}
 					/>
 
 					{/* 語言設定區塊：主語言下拉選單與 Fallback 列表 / Language config section: primary language dropdown and fallback list */}

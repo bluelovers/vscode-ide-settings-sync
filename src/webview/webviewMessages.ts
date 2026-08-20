@@ -63,6 +63,12 @@ export const enum EnumWebviewCommand
 	RemoveCustomIDE = 'removeCustomIDE',
 
 	/**
+	 * 設定內建備份 IDE 的路徑
+	 *  Set the path of the built-in backup IDE
+	 */
+	SetBackupIDEPath = 'setBackupIDEPath',
+
+	/**
 	 * 在系統檔案總管中開啟指定的 IDE 資料夾
 	 *  Reveal the specified IDE folder in the OS file explorer
 	 */
@@ -197,6 +203,12 @@ export const enum EnumHostCommand
 	AddCustomIDEComplete = 'addCustomIDEComplete',
 
 	/**
+	 * 更新內建備份 IDE 路徑完成，回傳成功或失敗結果
+	 *  Backup IDE path update complete; returns success or failure result
+	 */
+	BackupIDEPathUpdated = 'backupIDEPathUpdated',
+
+	/**
 	 * 推送最新的 IDE 設定資料（不整頁重繪）
 	 *  Push the latest IDE settings data without full page redraw.
 	 *  觸發時機：syncSettings、deleteSettings、refreshData 完成後
@@ -278,6 +290,18 @@ export interface IMsg_RemoveCustomIDE
 	name: string;
 	/** IDE 設定資料夾的實際路徑 / Actual path to the IDE settings folder */
 	nativePath: string;
+}
+
+/**
+ * 設定內建備份 IDE 的路徑
+ * Set the path of the built-in backup IDE
+ */
+export interface IMsg_SetBackupIDEPath
+{
+	/** 訊息指令 / Message command */
+	command: EnumWebviewCommand.SetBackupIDEPath;
+	/** 新的備份 IDE 路徑（空字串可清除設定）/ New backup IDE path (empty string clears the setting) */
+	backupPath: string;
 }
 
 /**
@@ -506,6 +530,7 @@ export type IWebviewMessage =
 	| IMsg_RequestAddCustomIDE
 	| IMsg_AddCustomIDE
 	| IMsg_RemoveCustomIDE
+	| IMsg_SetBackupIDEPath
 	| IMsg_OpenIDEFolder
 	| IMsg_OpenSettingsJson
 	| IMsg_SyncSettings
@@ -567,6 +592,19 @@ export interface IMsg_AddCustomIDEComplete
 	success: boolean;
 	/** 成功時：新增的 IDE 顯示名稱 / On success: display name of the added IDE */
 	name?: string;
+	/** 失敗時：錯誤訊息字串 / On failure: error message string */
+	error?: string;
+}
+
+/**
+ * 更新內建備份 IDE 路徑完成，回傳成功或失敗結果
+ * Backup IDE path update complete; returns success or failure result
+ */
+export interface IMsg_BackupIDEPathUpdated
+{
+	command: EnumHostCommand.BackupIDEPathUpdated;
+	/** 操作是否成功 / Whether the operation succeeded */
+	success: boolean;
 	/** 失敗時：錯誤訊息字串 / On failure: error message string */
 	error?: string;
 }
@@ -652,6 +690,7 @@ export type IHostMessage =
 	| IMsg_SyncComplete
 	| IMsg_DeleteComplete
 	| IMsg_AddCustomIDEComplete
+	| IMsg_BackupIDEPathUpdated
 	| IMsg_DataRefreshed
 	| IMsg_ExportPathSelected
 	| IMsg_ImportPathSelected

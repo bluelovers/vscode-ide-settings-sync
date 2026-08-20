@@ -75,10 +75,22 @@ export interface IGlobalStateLanguageConfig
 }
 
 /**
+ * 全域狀態：內建備份 IDE 的路徑
+ * Global state: Built-in backup IDE path
+ */
+export interface IGlobalStateBackupIDEPath
+{
+	/** 全域狀態鍵值 / Global state key */
+	key: EnumGlobalStateName.backupIDEPath;
+	/** 備份 IDE 的路徑（空字串代表尚未設定）/ Backup IDE path (empty string means not configured) */
+	value: string;
+}
+
+/**
  * 所有全域狀態類型的聯合
  * Union of all global state types
  */
-export type IGlobalStateAll = IGlobalStateSelectedSettings | IGlobalStateCustomIDEs | IGlobalStateSourceIDEUuid | IGlobalStateSearchHistory | IGlobalStateSelectedIDEs | IGlobalStateLanguageConfig;
+export type IGlobalStateAll = IGlobalStateSelectedSettings | IGlobalStateCustomIDEs | IGlobalStateSourceIDEUuid | IGlobalStateSearchHistory | IGlobalStateSelectedIDEs | IGlobalStateLanguageConfig | IGlobalStateBackupIDEPath;
 
 /**
  * VS Code 擴充全域狀態封裝類別

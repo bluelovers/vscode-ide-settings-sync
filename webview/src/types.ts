@@ -127,4 +127,6 @@ export interface IWebviewState
 	settingDescriptions: Record<string, { primary: string; secondary?: string }>;
 	/** 來源 IDE UUID / Source IDE UUID */
 	sourceIDEUuid?: string;
+	/** 內建備份 IDE 的路徑（空字串代表尚未設定）/ Built-in backup IDE path (empty string means not configured) */
+	backupIDEPath?: string;
 }

@@ -64,6 +64,7 @@ function AvailableIDEItem(props: {
 			/>
 			<label htmlFor={id}>
 				<strong>{props.ide.name}</strong>
+				{props.ide.type === 'backup' ? <span className="badge badge-backup" title="Built-in backup IDE (used to back up settings via sync)">Backup</span> : null}
 				<span className="uuid-area">
 					&nbsp;(<span className="uuid">{props.ide.uuid}</span>)
 				</span>
@@ -171,11 +172,11 @@ function UnavailableIDEItem(props: {
 	const id = `ide-unavail-${props.ide.name.replace(/\W/g, '')}${props.index}`;
 
 	return (<>
-		<div key={props.index} className="ide-item unavailable" title={`Not detected: ${props.ide.expectedPath}`}>
+		<div key={props.index} className="ide-item unavailable" title={`Not detected: ${props.ide.expectedPath || 'Path not set'}`}>
 			<input type="radio" className={EnumCssClassSelector.ideSourceRadio} disabled title="Cannot select unavailable IDE as source" />
 			<input type="checkbox" id={id} className={EnumCssClassSelector.ideCheckbox} disabled />
 			<label htmlFor={id}><strong>{props.ide.name}</strong></label>
-			<span className="ide-path">❌ Not detected: {props.ide.expectedPath}</span>
+			<span className="ide-path">❌ Not detected: {props.ide.expectedPath || 'Path not set'}</span>
 			<BtnOpenIDEFolder path={props.ide.expectedPath} />
 		</div>
 		<UnavailableIDEItemReason reason={props.ide.reason} ide={props.ide} />
@@ -209,11 +210,53 @@ export function IDEList({
 	</>);
 }
 
+/**
+ * 內建備份 IDE 路徑設定區塊
+ * Built-in backup IDE path configuration block
+ *
+ * 顯示可編輯的備份路徑輸入框，按下 Apply 後透過 window 掛載的
+ * setBackupIDEPath 函數將新路徑發送至 Extension host，並更新備份 IDE 的路徑。
+ *
+ * Renders an editable backup path input; clicking Apply sends the new path
+ * to the Extension host via the window-mounted setBackupIDEPath function,
+ * updating the backup IDE's path.
+ */
+function BackupIDEConfig(props: { backupIDEPath?: string })
+{
+	return (<>
+		<div className="backup-ide-config">
+			<label htmlFor="backup-ide-path" className="backup-ide-label">
+				Backup IDE Path
+			</label>
+			<span className="backup-ide-hint">Use the sync feature to back up settings to this folder (must contain settings.json)</span>
+			<div className="backup-ide-row">
+				{/* @ts-ignore */}
+				<input
+					id="backup-ide-path"
+					type="text"
+					className="backup-ide-input"
+					value={props.backupIDEPath ?? ''}
+					placeholder="e.g. D:\IDE-Settings-Backup\User"
+				/>
+				<button
+					className="btn btn-small"
+					// @ts-ignore
+					onclick="setBackupIDEPath && setBackupIDEPath(document.getElementById('backup-ide-path').value)"
+					title="Apply backup IDE path"
+				>
+					Apply
+				</button>
+			</div>
+		</div>
+	</>);
+}
+
 export function IDEListSection({
 	availableIDEs,
 	unavailableIDEs,
 	currentIDEName,
 	sourceIDEUuid,
+	backupIDEPath,
 }: IIDEListProps)
 {
 	return (<>
@@ -225,6 +268,7 @@ export function IDEListSection({
 				currentIDEName={currentIDEName}
 				sourceIDEUuid={sourceIDEUuid}
 			/>
+			<BackupIDEConfig backupIDEPath={backupIDEPath} />
 			{/* @ts-ignore */}
 			<button className="btn" onclick="addCustomIDE && addCustomIDE()" style="margin-top: 10px;" title="Manually specify an IDE/settings folder">
 				+ Add Custom IDE Path

@@ -57,11 +57,13 @@ export function showMessage(text: string, type: EnumShowMessageType): void
  * - `syncComplete`：同步完成，顯示成功訊息並請求重新載入資料
  * - `deleteComplete`：刪除完成，顯示成功訊息並請求重新載入資料
  * - `addCustomIDEComplete`：新增自訂 IDE 完成，根據結果顯示成功或失敗訊息
+ * - `backupIDEPathUpdated`：備份 IDE 路徑更新完成，根據結果顯示成功或失敗訊息
  *
  * Handled commands:
  * - `syncComplete`: Sync complete, show success message and request data reload
  * - `deleteComplete`: Delete complete, show success message and request data reload
  * - `addCustomIDEComplete`: Add custom IDE complete, show success or failure message based on result
+ * - `backupIDEPathUpdated`: Backup IDE path update complete, show success or failure message based on result
  */
 export function initMessageHandler(): void
 {
@@ -126,6 +128,21 @@ export function initMessageHandler(): void
 				else
 				{
 					showMessage(`✗ Failed to add IDE: ${message.error}`, EnumShowMessageType.ERROR);
+				}
+				break;
+
+			/**
+			 * 備份 IDE 路徑更新完成：根據結果顯示成功或失敗訊息
+			 * Backup IDE path update complete: show success or failure message based on result
+			 */
+			case EnumHostCommand.BackupIDEPathUpdated:
+				if (message.success)
+				{
+					showMessage(`✓ Backup IDE path updated successfully!`, EnumShowMessageType.SUCCESS);
+				}
+				else
+				{
+					showMessage(`✗ Failed to update backup IDE path: ${message.error}`, EnumShowMessageType.ERROR);
 				}
 				break;
 

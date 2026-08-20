@@ -25,6 +25,8 @@ export interface IIDEListProps
 	currentIDEName: string;
 	/** 使用者選擇的來源 IDE UUID（用於同步來源選擇，具持久化）/ UUID of the user-selected source IDE (for sync source selection, with persistence) */
 	sourceIDEUuid?: string;
+	/** 內建備份 IDE 的路徑（空字串代表尚未設定）/ Built-in backup IDE path (empty string means not configured) */
+	backupIDEPath?: string;
 }
 
 /**

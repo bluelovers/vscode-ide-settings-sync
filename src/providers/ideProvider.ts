@@ -7,6 +7,7 @@ import { EnumGlobalStateName, EnumIDEInfoType, IIDEInfo, IUnavailableIDE, ICusto
 import { _keyToPath } from '../utils/json';
 import { IdeSettingProvider } from './ideSettingProvider';
 import { knownIDEs } from '../data/knownIDEs';
+import { BACKUP_IDE_NAME, BACKUP_IDE_NOT_CONFIGURED_REASON } from '../data/backupIDE';
 import { IDEDetector, IDetectionResult } from '../utils/ideDetector';
 import { transformIDEListForWebview } from '../utils/ideListToWebviewContent';
 import { loadIDECache, getExistingUuid } from '../utils/ideCache';
@@ -74,6 +75,9 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 
 		/** 從擴充設定中載入自訂 IDE 路徑 / Load custom IDE paths from extension settings */
 		await this.loadCustomIDEs();
+
+		/** 載入內建備份 IDE / Load the built-in backup IDE */
+		await this.loadBackupIDE();
 	}
 
 	/**
@@ -189,6 +193,122 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 					result.reason || `[Custom IDE] ✗ ${result.name} not detected`,
 				);
 			}
+		}
+	}
+
+	/**
+	 * 取得內建備份 IDE 的路徑設定
+	 * Get the configured path of the built-in backup IDE
+	 *
+	 * @returns 備份路徑字串（空字串代表尚未設定）/ Backup path string (empty string means not configured)
+	 */
+	getBackupIDEPath(): string
+	{
+		return this.globalState.get(EnumGlobalStateName.backupIDEPath, '') || '';
+	}
+
+	/**
+	 * 設定內建備份 IDE 的路徑
+	 * Set the path of the built-in backup IDE
+	 *
+	 * 驗證路徑為絕對路徑後持久化至 globalState，並重新整理 IDE 列表
+	 * 讓備份 IDE 立即以新路徑重新偵測。
+	 *
+	 * Validates that the path is absolute, persists it to globalState,
+	 * then refreshes the IDE list so the backup IDE is re-detected at the new path.
+	 *
+	 * @param backupPath - 新的備份路徑（空字串可清除設定）/ New backup path (empty string clears the setting)
+	 * @throws Error 當路徑非絕對路徑時拋出錯誤 / Throws error when the path is not absolute
+	 */
+	async setBackupIDEPath(backupPath: string): Promise<void>
+	{
+		const trimmed = (backupPath || '').trim();
+
+		if (trimmed && !path.isAbsolute(trimmed))
+		{
+			const errorMsg = `[Backup IDE] 路徑必須是絕對路徑 / Backup path must be absolute: ${trimmed}`;
+			console.error(errorMsg);
+			throw new Error(errorMsg);
+		}
+
+		console.log(`[Backup IDE] 設定備份路徑 / Setting backup path: ${trimmed}`);
+		await this.globalState.update(EnumGlobalStateName.backupIDEPath, trimmed);
+
+		/** 重新整理 IDE 列表，讓備份 IDE 以新路徑重新偵測 / Refresh the IDE list to re-detect the backup IDE at the new path */
+		await this.refreshIDEList();
+	}
+
+	/**
+	 * 載入內建備份 IDE
+	 * Load the built-in backup IDE
+	 *
+	 * 內建備份 IDE 永遠存在於列表中（專用於利用同步功能備份設定）。
+	 * 若尚未設定路徑，則以「尚未設定」提示加入不可用列表；
+	 * 若已設定路徑，則嘗試偵測該路徑下的 settings.json。
+	 *
+	 * The built-in backup IDE always exists in the list (dedicated to backing up settings via the sync feature).
+	 * If no path is configured, it is added to the unavailable list with a "not configured" hint;
+	 * otherwise it attempts to detect settings.json under the configured path.
+	 */
+	protected async loadBackupIDE(): Promise<void>
+	{
+		const backupPath = this.getBackupIDEPath();
+
+		/**
+		 * 尚未設定路徑：顯示提示訊息
+		 * Path not configured: show a hint message
+		 */
+		if (!backupPath)
+		{
+			this.addUnavailableIDE(
+				BACKUP_IDE_NAME,
+				EnumIDEInfoType.backup,
+				'',
+				BACKUP_IDE_NOT_CONFIGURED_REASON,
+			);
+			return;
+		}
+
+		console.log(`[Backup IDE] 偵測備份路徑 / Detecting backup path: ${backupPath}`);
+
+		/**
+		 * 使用獨立偵測器偵測備份路徑下的 settings.json
+		 * Use the standalone detector to detect settings.json under the backup path
+		 */
+		const [result] = this.ideDetector.detectCustomIDEs([{ name: BACKUP_IDE_NAME, path: backupPath }]);
+
+		if (result.detected && result.path && result.settingsPath)
+		{
+			/**
+			 * 使用工具函數取得現有的 UUID（從檔案快取比對 name + path）
+			 * Use the utility to get the existing UUID (matched by name + path from the file cache)
+			 */
+			const existingUuid = getExistingUuid({
+				extensionPath: this.context.extensionPath,
+				ideName: BACKUP_IDE_NAME,
+				idePath: result.path,
+			});
+
+			console.log(`[Backup IDE] 偵測到備份 IDE (UUID: ${existingUuid || 'new'})`);
+			console.log(`[Backup IDE] Backup IDE detected (UUID: ${existingUuid || 'new'})`);
+
+			this.processIDE(
+				BACKUP_IDE_NAME,
+				EnumIDEInfoType.backup,
+				result.settingsPath,
+				result.path,
+				existingUuid,
+			);
+		}
+		else
+		{
+			console.log(`[Backup IDE] 無法偵測備份 IDE / Failed to detect backup IDE: ${result.reason}`);
+			this.addUnavailableIDE(
+				BACKUP_IDE_NAME,
+				EnumIDEInfoType.backup,
+				backupPath,
+				result.reason || `[Backup IDE] ✗ Backup path not detected: ${backupPath}`,
+			);
 		}
 	}
 
@@ -561,6 +681,14 @@ export class IDEProvider extends AbstractClassWithContextGlobalState
 		if (builtInNameMatch)
 		{
 			const errorMsg = `[Custom IDE] 名稱與內建 IDE "${builtInNameMatch.name}" 相同 / Name matches built-in IDE: ${name}`;
+			console.error(errorMsg);
+			throw new Error(errorMsg);
+		}
+
+		// 2b. 檢查名稱是否與內建備份 IDE 相同（忽略大小寫）/ Check if name matches the built-in backup IDE name
+		if (normalizedInputName === BACKUP_IDE_NAME.toLowerCase())
+		{
+			const errorMsg = `[Custom IDE] 名稱與內建備份 IDE "${BACKUP_IDE_NAME}" 相同 / Name matches built-in backup IDE: ${name}`;
 			console.error(errorMsg);
 			throw new Error(errorMsg);
 		}

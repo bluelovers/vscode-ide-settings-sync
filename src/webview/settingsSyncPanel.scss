@@ -1464,3 +1464,96 @@ h2
 	padding-top: $spacing-sm;
 	border-top: 1px solid var(--vscode-editorGroup-border);
 }
+
+/**
+ * ============================================
+ * 20. 內建備份 IDE 設定 (Backup IDE Config)
+ * ============================================
+ */
+
+/**
+ * 內建備份 IDE 路徑設定區塊容器
+ * Built-in backup IDE path configuration container
+ */
+.backup-ide-config
+{
+	margin-top: $spacing-lg;
+	padding: $spacing-md;
+	background-color: var(--vscode-editor-background);
+	border: 1px dashed var(--vscode-editorGroup-border);
+	border-radius: $radius-md;
+
+	/**
+	 * 標籤樣式：強調顯示區塊標題
+	 * Label style: emphasized block title
+	 */
+	.backup-ide-label
+	{
+		display: block;
+		font-weight: 600;
+		margin-bottom: $spacing-xs;
+	}
+
+	/**
+	 * 提示文字：次要資訊說明用途
+	 * Hint text: secondary info explaining the purpose
+	 */
+	.backup-ide-hint
+	{
+		display: block;
+		font-size: $font-size-sm;
+		color: var(--vscode-descriptionForeground);
+		margin-bottom: $spacing-sm;
+	}
+
+	/**
+	 * 輸入框與按鈕列：水平排列
+	 * Input and button row: horizontal layout
+	 */
+	.backup-ide-row
+	{
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+	}
+
+	/**
+	 * 路徑輸入框：可視寬度彈性縮放
+	 * Path input: flexible width
+	 */
+	.backup-ide-input
+	{
+		flex: 1;
+		padding: $spacing-xs $spacing-sm;
+		background-color: var(--vscode-input-background);
+		color: var(--vscode-input-foreground);
+		border: 1px solid var(--vscode-input-border, var(--vscode-textBlockQuote-border));
+		border-radius: $radius-md;
+	}
+}
+
+/**
+ * 標籤徽章：顯示於 IDE 名稱旁
+ * Badge: displayed next to the IDE name
+ */
+.badge
+{
+	display: inline-block;
+	margin-left: $spacing-sm;
+	padding: 1px 6px;
+	font-size: $font-size-xs;
+	font-weight: 600;
+	line-height: 1.4;
+	border-radius: $radius-sm;
+	vertical-align: middle;
+}
+
+/**
+ * 備份 IDE 徽章：獨特色彩強調特殊用途
+ * Backup IDE badge: distinct color for special-purpose emphasis
+ */
+.badge-backup
+{
+	background-color: var(--vscode-textLink-foreground);
+	color: var(--vscode-editor-background);
+}

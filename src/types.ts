@@ -34,6 +34,8 @@ export const enum EnumIDEInfoType
 {
 	known = 'known',
 	custom = 'custom',
+	/** 內建備份 IDE（利用同步功能備份設定的專用 IDE）/ Built-in backup IDE (dedicated IDE for backing up settings via the sync feature) */
+	backup = 'backup',
 }
 
 export const enum EnumLanguageOptionSource
@@ -52,6 +54,8 @@ export const enum EnumGlobalStateName
 	selectedSettings = 'selectedSettings',
 	selectedIDEs = 'selectedIDEs',
 	sourceIDEUuid = 'sourceIDEUuid',
+	/** 內建備份 IDE 的路徑設定 / Built-in backup IDE path setting */
+	backupIDEPath = 'backupIDEPath',
 }
 
 /**

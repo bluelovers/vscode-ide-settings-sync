@@ -77,6 +77,21 @@ export function refreshIDEs(): void
 	vscode.postMessage({ command: EnumWebviewCommand.RefreshIDEs });
 }
 
+/**
+ * 設定內建備份 IDE 的路徑
+ * Set the path of the built-in backup IDE
+ *
+ * 向擴展宿主發送新路徑，擴展宿主驗證後會更新備份 IDE 的路徑並重新偵測。
+ * Sends the new path to the extension host; after validation, the host updates
+ * the backup IDE's path and re-detects it.
+ *
+ * @param backupPath - 新的備份路徑（空字串可清除設定）/ New backup path (empty string clears the setting)
+ */
+export function setBackupIDEPath(backupPath: string): void
+{
+	vscode.postMessage({ command: EnumWebviewCommand.SetBackupIDEPath, backupPath });
+}
+
 export function handleSourceIDEChange(event: Event): void
 {
 	const target = event.target as HTMLInputElement;
