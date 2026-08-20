@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.6](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.1.2...vscode-ide-settings-sync@0.1.6) (2026-08-20)
+
+
+
+### ✨　Features
+
+* **config:** 新增 kiro, Cursor 與 Devin 的支援 ([ba1f498](https://github.com/bluelovers/vscode-ide-settings-sync/commit/ba1f498f729fa4a33033e11a91e1d31ae19209a4))
+* **ui:** 新增側邊欄視圖與 Activity Bar 圖示 ([273838e](https://github.com/bluelovers/vscode-ide-settings-sync/commit/273838eaa2fe248fa94bbdf8f02d9b09598d3cea))
+* **ui:** 新增內建備份 IDE 功能與路徑設定介面 ([ca85390](https://github.com/bluelovers/vscode-ide-settings-sync/commit/ca85390116626dd4499625d77ef9d659724b4221))
+* **utils:** 優化 IDE 偵測邏輯以處理缺少 settings.json 的情況 ([6781a82](https://github.com/bluelovers/vscode-ide-settings-sync/commit/6781a82d47820901f9c2b237c02b6e5946121e67))
+
+
+### 📦　Code Refactoring
+
+* **data:** 為 knownIDEs 加入型別檢查 ([864c7b4](https://github.com/bluelovers/vscode-ide-settings-sync/commit/864c7b4c5b85022c4dae55a4e4bee540c41decf2))
+* **sync:** 優化備份 IDE 的路徑處理與自動建立機制 ([34be03e](https://github.com/bluelovers/vscode-ide-settings-sync/commit/34be03e42b623918aead701c9a759e89a47a99af))
+
+
+### 💎　Styles
+
+* **ui:** 優化同步來源名稱的視覺呈現與對比度 ([b2fc92f](https://github.com/bluelovers/vscode-ide-settings-sync/commit/b2fc92f86ea7896c8bc7448421232bf8e5795b64))
+
+
+### 🛠　Build System
+
+* **deps:** 更新依賴套件並整合 dotenv 至指令腳本 ([1a48341](https://github.com/bluelovers/vscode-ide-settings-sync/commit/1a483418d81e4d58c3e35fd9b4a28042f13bdcde))
+
+
+
 ## [0.1.2](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.1.1...vscode-ide-settings-sync@0.1.2) (2026-05-04)
 
 **Note:** Version bump only for package vscode-ide-settings-sync

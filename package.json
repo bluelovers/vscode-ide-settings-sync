@@ -1,7 +1,7 @@
 {
   "name": "vscode-ide-settings-sync",
   "displayName": "VSCode IDE Settings Sync",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "description": "Synchronize IDE settings across multiple VSCode-based IDEs (Antigravity, VS Code Insiders, CodeBuddy CN, Windsurf, custom paths)",
   "categories": [
     "Other"
@@ -59,13 +59,13 @@
     "version:bump:patch": "node --run version:bump -- --bump patch",
     "version:bump:prerelease": "node --run version:bump -- --bump prerelease",
     "prepublishOnly": "pnpm run version:bump",
-    "publish": "pnpm run version:bump && pnpm run vscode:publish",
-    "publish:vscode": "node --run vscode:prepublish && node --run vscode:publish",
+    "publish": "pnpm run version:bump && node --run vscode:publish && node --run vscode:package",
+    "publish:vscode": "node --run vscode:prepublish && node --run vscode:publish && node --run vscode:package",
     "postpublish": "node --run postpublish:changelog && node --run postpublish:git:commit && node --run postpublish:git:tag && node --run postpublish:git:push",
-    "postpublish:changelog": "dotenv --override -- ynpx --quiet @yarn-tool/changelog && git add ./CHANGELOG.md",
+    "postpublish:changelog": "ynpx --quiet @yarn-tool/changelog && git add ./CHANGELOG.md",
     "postpublish:git:commit": "git add ./test/__file_snapshots__ & git commit -m \"chore(release): publish\" . & echo postpublish:git:commit",
     "postpublish:git:push": "git push --follow-tags",
-    "postpublish:git:tag": "dotenv --override -- ynpx --quiet @yarn-tool/tag",
+    "postpublish:git:tag": "ynpx --quiet @yarn-tool/tag",
     "postpublishOnly": "echo postpublishOnly",
     "compile": "dotenv --override -- tsc -p ./",
     "esbuild": "node --run esbuild-base --",
