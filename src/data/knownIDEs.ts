@@ -118,7 +118,13 @@ export const knownIDEs = [
 		 */
 		appFolderNames: ['Devin'],
 	}
-] as const;
+] as const satisfies I_KnownIDE[];
+
+interface I_KnownIDE
+{
+	name: string;
+	appFolderNames: readonly string[],
+}
 
 /**
  * IDE 資料夾名稱配置類型
