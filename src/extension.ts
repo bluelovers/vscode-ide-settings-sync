@@ -3,7 +3,7 @@ import { IDEProvider } from './providers/ideProvider';
 import { SettingsSyncPanel } from './webview/settingsSyncPanel';
 import { SettingsSyncSidebarProvider } from './webview/settingsSyncSidebarProvider';
 import { ExportImportCommands } from './commands/exportImportCommands';
-import { ILanguageConfig, ILanguageSourceInfo, EnumLanguageCode, EnumGlobalStateName } from './types';
+import { ILanguageConfig, ILanguageSourceInfo, EnumLanguageCode } from './types';
 import { isValidLanguageCode, getDefaultFallbackList } from './utils/settingsDescriptions';
 import {
 	loadLanguageConfig as loadLanguageConfigUtil,
@@ -97,9 +97,6 @@ export async function activate(context: vscode.ExtensionContext)
 		},
 	);
 	context.subscriptions.push(disposable);
-
-	// Auto-show panel on first activation
-	vscode.commands.executeCommand(EnumVscodeCommands.openSync);
 }
 
 /**

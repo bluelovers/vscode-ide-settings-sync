@@ -167,7 +167,6 @@
     }
   },
   "activationEvents": [
-    "onStartupFinished",
     "onView:vscodeIdeSettingsSyncView"
   ],
   "dependencies": {
