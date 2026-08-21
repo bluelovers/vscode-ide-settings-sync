@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.8](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.1.7...vscode-ide-settings-sync@0.1.8) (2026-08-21)
+
+
+
+### 📦　Code Refactoring
+
+* **core:** 移除啟動時自動開啟面板與不必要的啟動事件 ([b2731e6](https://github.com/bluelovers/vscode-ide-settings-sync/commit/b2731e6be1a5bd90d81fd2b3461af9dd587be25b))
+
+
+
 ## [0.1.7](https://github.com/bluelovers/vscode-ide-settings-sync/compare/vscode-ide-settings-sync@0.1.6...vscode-ide-settings-sync@0.1.7) (2026-08-20)
 
 **Note:** Version bump only for package vscode-ide-settings-sync
