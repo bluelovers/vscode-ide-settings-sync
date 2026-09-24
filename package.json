@@ -1,7 +1,7 @@
 {
   "name": "vscode-ide-settings-sync",
   "displayName": "VSCode IDE Settings Sync",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Synchronize IDE settings across multiple VSCode-based IDEs (Antigravity, VS Code Insiders, CodeBuddy CN, Windsurf, custom paths)",
   "categories": [
     "Other"
@@ -19,6 +19,7 @@
     "CodeBuddy CN",
     "Windsurf"
   ],
+  "icon": "assets/icon.png",
   "homepage": "https://github.com/bluelovers/vscode-ide-settings-sync#readme",
   "bugs": {
     "url": "https://github.com/bluelovers/vscode-ide-settings-sync/issues"

@@ -56,7 +56,7 @@ export const knownIDEs = [
 		 * Antigravity 預設資料夾名稱
 		 * Antigravity default folder name
 		 */
-		appFolderNames: ['Antigravity'],
+		appFolderNames: ['Antigravity IDE', 'Antigravity'],
 	},
 	{
 		/** IDE 顯示名稱，用於介面展示 / IDE display name, used for UI display */
