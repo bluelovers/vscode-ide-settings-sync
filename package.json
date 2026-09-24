@@ -41,7 +41,6 @@
     "dist/webview/index.js",
     "dist/extension.js",
     "media/sidebar-icon.svg",
-    "assets/icon.png",
     "LICENSE"
   ],
   "scripts": {
