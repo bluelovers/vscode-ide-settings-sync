@@ -19,7 +19,6 @@
     "CodeBuddy CN",
     "Windsurf"
   ],
-  "icon": "assets/icon.png",
   "homepage": "https://github.com/bluelovers/vscode-ide-settings-sync#readme",
   "bugs": {
     "url": "https://github.com/bluelovers/vscode-ide-settings-sync/issues"
@@ -42,6 +41,7 @@
     "dist/webview/index.js",
     "dist/extension.js",
     "media/sidebar-icon.svg",
+    "assets/icon.png",
     "LICENSE"
   ],
   "scripts": {
